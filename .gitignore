@@ -11,3 +11,12 @@ wheels/
 
 # Environment variables
 .env
+
+# Node / npm
+node_modules/
+
+# Tailwind generated output
+static/css/output.css
+
+# Generated for Vercel build
+requirements.txt
