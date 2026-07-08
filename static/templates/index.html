@@ -1,0 +1,64 @@
+{% extends "hero.html" %}
+
+{% block content %}
+
+<nav id="navbar" class="fixed top-0 left-0 w-full z-40 glass-mesa transition-all duration-700 opacity-0 -translate-y-full">
+  <div class="flex items-center justify-between px-4 sm:px-8 py-2 max-w-6xl mx-auto">
+    <a hx-get="/partial/welcome" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
+       class="text-display text-base sm:text-lg text-baroque hover:text-baroque/80 transition-colors whitespace-nowrap">
+      Granja Ceballos
+    </a>
+    <div class="flex items-center gap-5 sm:gap-8">
+      <a hx-get="/partial/welcome" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
+         class="text-sm sm:text-base font-medium text-teal-tree hover:text-baroque transition-colors whitespace-nowrap">
+        Welcome
+      </a>
+      <a onclick="event.preventDefault(); htmx.ajax('GET','/partial/welcome',{target:'#main-content-flow',swap:'innerHTML transition:true'}); setTimeout(()=>{const e=document.getElementById('productos');e?.scrollIntoView({behavior:'smooth'})},350);"
+         class="text-sm sm:text-base font-medium text-teal-tree hover:text-baroque transition-colors cursor-pointer">
+        Productos
+      </a>
+      <a onclick="event.preventDefault(); htmx.ajax('GET','/partial/welcome',{target:'#main-content-flow',swap:'innerHTML transition:true'}); setTimeout(()=>{const e=document.getElementById('contacto');e?.scrollIntoView({behavior:'smooth'})},350);"
+         class="text-sm sm:text-base font-medium text-teal-tree hover:text-baroque transition-colors cursor-pointer">
+        Contacto
+      </a>
+    </div>
+  </div>
+</nav>
+
+<div id="intro-screen" class="fixed inset-0 flex flex-col items-center justify-center z-30 transition-all duration-700">
+  <h1 class="text-display text-5xl sm:text-7xl text-baroque drop-shadow-lg mb-6 text-center px-4">
+    Granja Ceballos
+  </h1>
+  <p class="font-sans text-teal-tree text-lg sm:text-xl mb-10 text-center px-4 max-w-md">
+    Donde la tierra y el sol crean su mejor obra
+  </p>
+  <button
+    hx-get="/partial/welcome"
+    hx-target="#main-content-flow"
+    hx-swap="innerHTML transition:true"
+    onclick="
+      document.getElementById('fondo-animado').classList.add('blur-md', 'scale-105');
+      document.getElementById('intro-screen').classList.add('opacity-0', 'pointer-events-none');
+      document.getElementById('navbar').classList.remove('opacity-0', '-translate-y-full');
+    "
+    class="bg-[#DDAC23] text-[#1F200B] px-10 py-4 rounded-full text-lg sm:text-xl font-semibold hover:scale-105 active:scale-[0.98] transition-all duration-300 cursor-pointer"
+  >
+    Explorar
+  </button>
+</div>
+
+<div id="main-content-flow" class="w-full max-w-5xl mx-auto px-4 pb-24">
+  {% if partial_name %}
+    {% include partial_name %}
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block footer %}
+<footer class="fixed bottom-0 left-0 w-full z-30 glass-mesa border-t border-teal-tree/20">
+  <div class="text-center py-3 text-xs sm:text-sm text-teal-tree/70">
+    &copy; 2025 Granja Ceballos &mdash; Hecho a mano con tierra y sol
+  </div>
+</footer>
+{% endblock %}

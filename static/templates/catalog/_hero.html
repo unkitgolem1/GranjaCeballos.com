@@ -1,0 +1,23 @@
+<div id="hero-container" class="min-h-[70vh] flex items-center">
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-8 w-full items-center">
+
+    <div class="md:col-span-7 space-y-6">
+      <p class="font-sans text-xs uppercase tracking-[0.2em] text-[#90BDB5]">Granja Ceballos</p>
+        <h1 class="font-heading tracking-tight text-white text-4xl sm:text-5xl md:text-6xl leading-tight">
+        Huevos de libre pastoreo,<br>
+        <span class="text-baroque">frescos a tu puerta.</span>
+      </h1>
+      <p class="text-white/70 text-sm sm:text-base max-w-md leading-relaxed">
+        Cuidamos la tierra, el sol y nuestras gallinas en Yucat&aacute;n para llevar
+        el verdadero sabor del campo a tu cocina.
+      </p>
+      <button hx-get="/checkout" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
+              class="bg-[#DDAC23] text-[#1F200B] px-10 py-4 rounded-full text-base font-semibold hover:scale-105 active:scale-[0.98] transition-all duration-300 cta-arrow animate-pulse-glow">
+        Pedir mi cart&oacute;n
+      </button>
+    </div>
+
+    <div class="md:col-span-5"></div>
+
+  </div>
+</div>

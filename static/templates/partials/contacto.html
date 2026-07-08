@@ -1,0 +1,95 @@
+<div class="pt-20 space-y-8">
+
+  <div class="text-center space-y-2">
+    <h2 class="text-display text-3xl sm:text-4xl text-baroque">Contacto</h2>
+    <p class="text-teal-tree text-sm max-w-lg mx-auto">
+      Escr&iacute;benos, ll&aacute;manos o vis&iacute;tanos. La puerta del campo siempre est&aacute; abierta.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+    <div class="bg-[#1F200B] rounded-2xl p-5 text-center space-y-4">
+      <span class="text-4xl">💬</span>
+      <h3 class="text-display text-lg text-white">WhatsApp</h3>
+      <p class="text-white/60 text-sm">
+        La forma m&aacute;s r&aacute;pida de ordenar o consultar.
+      </p>
+      <a href="https://wa.me/52999XXXXXXX" target="_blank"
+         class="inline-block bg-[#DDAC23] text-[#1F200B] px-8 py-3 rounded-full text-sm font-semibold hover:scale-105 active:scale-[0.98] transition-all duration-300 animate-pulse-glow">
+        +52 999 XXX XXXX
+      </a>
+    </div>
+
+    <div class="bg-[#1F200B] rounded-2xl p-5 space-y-4">
+      <h3 class="text-display text-lg text-white">Env&iacute;anos un mensaje</h3>
+      <form class="space-y-3">
+        <input type="text" placeholder="Nombre"
+               class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#90BDB5] transition-all duration-300">
+        <input type="email" placeholder="Correo"
+               class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#90BDB5] transition-all duration-300">
+        <textarea rows="4" placeholder="Mensaje"
+                  class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#90BDB5] transition-all duration-300 resize-none"></textarea>
+        <button class="bg-[#DDAC23] text-[#1F200B] px-6 py-2 rounded-full text-sm font-semibold hover:scale-105 active:scale-[0.98] transition-all duration-300 w-full sm:w-auto">
+          Enviar
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  <div class="bg-[#1F200B]/60 rounded-2xl p-5 text-center space-y-4">
+    <h3 class="text-display text-lg text-white">¿Quieres ordenar ahora?</h3>
+    <div class="flex flex-wrap justify-center gap-3">
+      <button hx-get="/partial/productos" hx-target="#grid-interior" hx-swap="innerHTML transition:true"
+              class="bg-[#584D14] text-white px-6 py-2.5 rounded-full text-sm font-medium hover:scale-105 active:scale-[0.98] transition-all duration-300 cta-arrow">
+        🥚 1 cart&oacute;n &middot; $80
+      </button>
+      <button hx-get="/partial/productos" hx-target="#grid-interior" hx-swap="innerHTML transition:true"
+              class="bg-[#DDAC23] text-[#1F200B] px-6 py-2.5 rounded-full text-sm font-semibold hover:scale-105 active:scale-[0.98] transition-all duration-300 cta-arrow">
+        📅 Suscripci&oacute;n &middot; $500/sem
+      </button>
+      <button hx-get="/partial/productos" hx-target="#grid-interior" hx-swap="innerHTML transition:true"
+              class="bg-[#584D14] text-white px-6 py-2.5 rounded-full text-sm font-medium hover:scale-105 active:scale-[0.98] transition-all duration-300 cta-arrow">
+        📦 2+ cartones
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="bg-[#584D14] rounded-2xl p-5 space-y-3 text-sm">
+      <h3 class="text-display text-lg text-white">Informaci&oacute;n</h3>
+      <p class="text-white/70">
+        <span class="font-medium">Tel&eacute;fono:</span><br>
+        +52 999 XXX XXXX
+      </p>
+      <p class="text-white/70">
+        <span class="font-medium">Correo:</span><br>
+        hola@granjaceballos.com
+      </p>
+      <p class="text-white/70">
+        <span class="font-medium">Horario:</span><br>
+        S&aacute;bados y domingos de 8:00 a 14:00
+      </p>
+      <p class="text-white/70">
+        <span class="font-medium">Redes:</span><br>
+        Facebook &middot; Instagram &middot; @GranjaCeballos
+      </p>
+    </div>
+
+    <div class="bg-[#1F200B] rounded-2xl p-5 space-y-3">
+      <h3 class="text-display text-lg text-white">Ubicaci&oacute;n</h3>
+      <p class="text-white/60 text-sm">
+        Camino Real 457, Valle Verde, M&eacute;rida, Yucat&aacute;n.
+      </p>
+      <div class="w-full h-40 rounded-xl bg-black/30 flex items-center justify-center text-white/40 text-xs border border-white/10">
+        Mapa &mdash; Google Maps
+      </div>
+      <a href="https://maps.google.com/?q=Granja+Ceballos+Yucatan" target="_blank"
+         class="text-[#DDAC23] text-xs hover:underline inline-block">
+        Abrir en Google Maps →
+      </a>
+    </div>
+  </div>
+
+</div>

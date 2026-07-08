@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Granja Ceballos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="/static/css/output.css" rel="stylesheet">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  {% block head %}{% endblock %}
+</head>
+<body class="font-sans min-h-screen overflow-x-hidden bg-linear-to-b from-[#025270] to-primal-blue">
+  <div id="fondo-animado" class="fixed inset-0 w-full h-full -z-10 transition-all duration-1000 ease-in-out overflow-hidden">
+    <div class="absolute bottom-0 w-full h-[40vh] bg-linear-to-t from-white/15 via-[#DDAC23]/5 to-transparent pointer-events-none"></div>
+  </div>
+
+  <svg width="0" height="0" class="fixed pointer-events-none" aria-hidden="true">
+    <defs>
+      <filter id="fractal-noise">
+        <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+        <feColorMatrix type="saturate" values="0"/>
+      </filter>
+    </defs>
+  </svg>
+
+  {% block content %}{% endblock %}
+  {% block footer %}{% endblock %}
+  {% block scripts %}{% endblock %}
+</body>
+</html>

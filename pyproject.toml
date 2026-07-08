@@ -1,0 +1,16 @@
+[project]
+name = "granjaceballos-com"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.139.0",
+    "python-dotenv>=1.1.0",
+    "aiosqlite>=0.22.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primal-blue: #03738C;
+  --color-primal-mid: #025270;
+  --color-black-mesa: #1F200B;
+  --color-mesa-light: #D1D2C4;
+  --color-teal-tree: #90BDB5;
+  --color-mud-brown: #584D14;
+  --color-mud-light: #E3DEC3;
+  --color-terrapin: #80814E;
+  --color-baroque: #DDAC23;
+  --color-baroque-mid: #805D11;
+
+  --font-heading: 'Playfair Display', 'Georgia', serif;
+  --font-sans: 'Inter', 'Helvetica Neue', 'system-ui', sans-serif;
+
+  --spacing-phi: 1.618rem;
+  --spacing-phi-2: 2.618rem;
+
+
+}
+
+@utility glass-mesa {
+  @apply bg-black-mesa/85 backdrop-blur-sm border border-teal-tree/20 shadow-2xl text-teal-tree;
+}
+
+@utility glass-baroque {
+  @apply bg-baroque/70 backdrop-blur-sm border border-baroque/60 shadow-xl text-baroque;
+}
+
+@utility glass-mud {
+  @apply bg-mud-brown/70 backdrop-blur-sm border border-terrapin/50 text-baroque font-medium;
+}
+
+@utility glass-card {
+  @apply bg-primal-blue/80 backdrop-blur-sm border border-teal-tree/20 shadow-2xl text-teal-tree;
+}
+
+@utility text-display {
+  @apply font-heading uppercase tracking-tighter;
+}
+
+/* Solid cards (100% opacos, sin glass) */
+.card-mesa {
+  background-color: var(--color-black-mesa);
+  color: #FFFFFF;
+}
+.card-baroque {
+  background-color: var(--color-baroque);
+  color: #473202;
+}
+.card-mud {
+  background-color: var(--color-mud-brown);
+  color: #FFFFFF;
+}
+.card-primal {
+  background-color: var(--color-primal-blue);
+  color: #01293B;
+}
+
+.slide-it {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-it.htmx-swapping {
+  opacity: 0;
+  transform: translateY(15px) scale(0.98);
+}
+
+.blur-md {
+  filter: blur(8px);
+}
+
+.scale-105 {
+  transform: scale(1.05);
+}
+
+/* =============================================
+   GRID ÁUREO + PILLS + CUADROS
+   ============================================= */
+
+.grid-aurea {
+  display: grid;
+  grid-template-columns: 1fr 1.618fr;
+  gap: var(--spacing-phi);
+}
+
+@media (max-width: 640px) {
+  .grid-aurea {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pill-cta {
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+}
+
+.cuadro-phi {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* =============================================
+   ANIMACIONES CTA
+   ============================================= */
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 4px #DDAC23, 0 0 10px rgba(221, 172, 35, 0.3); }
+  50% { box-shadow: 0 0 12px #DDAC23, 0 0 24px rgba(221, 172, 35, 0.5); }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes stamp {
+  0% { transform: scale(0) rotate(-8deg); opacity: 0; }
+  70% { transform: scale(1.05) rotate(1deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+.animate-stamp {
+  animation: stamp 0.5s ease-out forwards;
+}
+
+.cta-arrow::after {
+  content: '→';
+  display: inline-block;
+  margin-left: 0.4em;
+  transition: transform 0.3s ease;
+}
+.cta-arrow:hover::after {
+  transform: translateX(5px);
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
