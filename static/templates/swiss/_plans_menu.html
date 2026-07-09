@@ -1,0 +1,72 @@
+<div id="productos" class="scroll-mt-24">
+  <div class="space-y-16 p-6">
+    <div class="border-b border-white/20 pb-4">
+      <span class="text-xs font-mono uppercase tracking-widest text-[#DDAC23]">01 / PRODUCCI&Oacute;N DISPONIBLE</span>
+      <h2 class="text-3xl font-black tracking-tighter text-white uppercase mt-1">L&iacute;nea de Consumo</h2>
+    </div>
+
+    <div class="flex flex-col">
+      <div class="flex justify-between items-baseline border-b border-white/20 pb-2">
+        <h3 class="text-xl font-black text-white uppercase tracking-tight">Cart&oacute;n Tradicional</h3>
+        <span class="text-lg font-mono font-bold text-white/80">$120 MXN</span>
+      </div>
+      <div class="py-4 max-w-[80%]">
+        <p class="text-sm text-white/60 leading-snug">
+          30 huevos de libre pastoreo seleccionados a mano esta ma&ntilde;ana.
+        </p>
+        <span class="text-xs font-mono text-white/40 block mt-1">+ $40 de env&iacute;o en M&eacute;rida (Fijo)</span>
+      </div>
+      <button hx-get="/checkout" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
+              class="w-full text-white text-xs font-bold uppercase tracking-widest py-3 border border-white/20 transition-colors active:bg-white/10">
+        Agregar al Pedido
+      </button>
+    </div>
+
+    <div class="flex flex-col p-5 border border-white/10 relative">
+      <span class="absolute -top-3 left-4 bg-[#DDAC23] text-[#1F200B] text-[9px] font-mono uppercase tracking-widest px-2 py-0.5">
+        M&aacute;s popular
+      </span>
+      <div class="flex justify-between items-baseline border-b border-white/20 pb-2 mt-2">
+        <h3 class="text-xl font-black text-white uppercase tracking-tight">Suscripci&oacute;n Semanal</h3>
+        <span class="text-lg font-mono font-bold text-[#DDAC23]">$500/sem</span>
+      </div>
+      <div class="py-4">
+        <p class="text-sm text-white/60 leading-snug">
+          Env&iacute;o gratis incluido + Precio de volumen garantizado.
+        </p>
+      </div>
+      <button class="w-full bg-[#DDAC23] text-[#1F200B] text-xs font-bold uppercase tracking-widest py-3 transition-transform active:scale-[0.99]">
+        Suscribirme al Sistema &rarr;
+      </button>
+    </div>
+
+    <div class="flex flex-col">
+      <div class="flex justify-between items-baseline border-b border-white/20 pb-2">
+        <h3 class="text-xl font-black text-white uppercase tracking-tight">Volumen Flexible</h3>
+        <span class="text-sm font-mono font-bold text-white/50">$80 c/u</span>
+      </div>
+      <div class="py-4 max-w-[80%]">
+        <p class="text-sm text-white/60 leading-snug">
+          Arma tu pedido a la medida. Ideal para familias grandes o compartidas.
+        </p>
+        <span class="text-xs font-mono text-[#DDAC23] mt-2 block">Env&iacute;o gratis a partir de 6 cartones</span>
+      </div>
+    </div>
+
+    <div class="flex flex-col border-t border-dashed border-white/20 pt-6">
+      <div class="flex justify-between items-baseline border-b border-white/20 pb-2">
+        <h3 class="text-xl font-black text-white uppercase tracking-tight">Cr&iacute;as de Ave</h3>
+        <span class="text-xs font-mono uppercase tracking-wider text-white/40">Bajo Cotizaci&oacute;n</span>
+      </div>
+      <div class="py-4">
+        <p class="text-sm text-white/60 leading-snug mb-4">
+          Polluelos de l&iacute;neas seleccionadas, criados bajo un estricto protocolo de bienestar animal y salud desde el primer d&iacute;a.
+        </p>
+        <a href="https://wa.me/52999XXXXXXX" target="_blank"
+           class="inline-flex items-center text-xs font-mono uppercase tracking-widest text-[#DDAC23] font-bold">
+          Cotizar por WhatsApp &rarr;
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
