@@ -1,13 +1,14 @@
 <div id="faq" class="scroll-mt-24">
+  <h3 class="font-sans text-xs uppercase tracking-[0.2em] text-[#90BDB5] text-center mb-8">Preguntas Frecuentes</h3>
 
-  <!-- MOBILE: Swiss FAQ (clean borders, left-aligned) -->
-  <div class="md:hidden">
-    <span class="text-xs font-mono uppercase tracking-widest text-[#DDAC23]">02 / TRANSPARENCIA</span>
-    <h2 class="text-3xl font-black tracking-tighter text-white uppercase mt-1 mb-8">Preguntas Frecuentes</h2>
+  <div class="bg-[#1F200B]/20 backdrop-blur-[40px] border border-white/10 rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+    <svg class="absolute inset-0 w-full h-full pointer-events-none mix-blend-overlay opacity-[0.03]" style="z-index: 0;">
+      <rect width="100%" height="100%" filter="url(#fractal-noise)"/>
+    </svg>
 
-    <div class="space-y-0">
-      <details class="py-4 group border-t border-white/20 first:border-t-0">
-        <summary class="text-white/80 text-sm font-medium cursor-pointer list-none flex justify-between items-center">
+    <div class="relative grid grid-cols-1 md:grid-cols-2 gap-x-8" style="z-index: 1;">
+      <details class="py-3 group border-b border-white/5">
+        <summary class="text-white/70 text-sm font-medium cursor-pointer list-none flex justify-between items-center">
           ¿Los huevos realmente son de libre pastoreo?
           <span class="transition-transform group-open:rotate-180 text-white/30 text-xs">▼</span>
         </summary>
@@ -16,8 +17,8 @@
           sol y espacio para expresar su comportamiento natural.
         </p>
       </details>
-      <details class="py-4 group border-t border-white/20">
-        <summary class="text-white/80 text-sm font-medium cursor-pointer list-none flex justify-between items-center">
+      <details class="py-3 group border-b border-white/5">
+        <summary class="text-white/70 text-sm font-medium cursor-pointer list-none flex justify-between items-center">
           ¿En qu&eacute; se diferencian del supermercado?
           <span class="transition-transform group-open:rotate-180 text-white/30 text-xs">▼</span>
         </summary>
@@ -27,8 +28,8 @@
           <span class="block">El resultado: un huevo con m&aacute;s color, m&aacute;s sabor y m&aacute;s conciencia.</span>
         </p>
       </details>
-      <details class="py-4 group border-t border-white/20">
-        <summary class="text-white/80 text-sm font-medium cursor-pointer list-none flex justify-between items-center">
+      <details class="py-3 group border-b border-white/5">
+        <summary class="text-white/70 text-sm font-medium cursor-pointer list-none flex justify-between items-center">
           ¿Realizan entregas?
           <span class="transition-transform group-open:rotate-180 text-white/30 text-xs">▼</span>
         </summary>
@@ -37,8 +38,8 @@
           El costo de env&iacute;o es de $40 y se elimina desde 4 cartones.
         </p>
       </details>
-      <details class="py-4 group border-t border-white/20">
-        <summary class="text-white/80 text-sm font-medium cursor-pointer list-none flex justify-between items-center">
+      <details class="py-3 group border-b border-white/5">
+        <summary class="text-white/70 text-sm font-medium cursor-pointer list-none flex justify-between items-center">
           ¿Venden al mayoreo?
           <span class="transition-transform group-open:rotate-180 text-white/30 text-xs">▼</span>
         </summary>
@@ -46,8 +47,8 @@
           S&iacute;, desde 6 cartones. Cotizaci&oacute;n personalizada v&iacute;a WhatsApp.
         </p>
       </details>
-      <details class="py-4 group border-t border-white/20">
-        <summary class="text-white/80 text-sm font-medium cursor-pointer list-none flex justify-between items-center">
+      <details class="py-3 group border-b border-white/5">
+        <summary class="text-white/70 text-sm font-medium cursor-pointer list-none flex justify-between items-center">
           ¿Puedo apartar con anticipaci&oacute;n?
           <span class="transition-transform group-open:rotate-180 text-white/30 text-xs">▼</span>
         </summary>
@@ -57,56 +58,4 @@
       </details>
     </div>
   </div>
-
-  <!-- DESKTOP: Glass card (md+) -->
-  <div class="hidden md:block">
-    <h3 class="font-sans text-xs uppercase tracking-[0.2em] text-[#90BDB5] text-center mb-8">Preguntas Frecuentes</h3>
-    <div class="bg-[#1F200B]/20 backdrop-blur-[40px] border border-white/10 rounded-3xl p-6 sm:p-8 relative overflow-hidden">
-      <svg class="absolute inset-0 w-full h-full pointer-events-none mix-blend-overlay opacity-[0.03]" style="z-index: 0;">
-        <rect width="100%" height="100%" filter="url(#fractal-noise)"/>
-      </svg>
-      <div class="relative grid grid-cols-1 md:grid-cols-2 gap-x-8" style="z-index: 1;">
-        <details class="py-3 group border-b border-white/5">
-          <summary class="text-white/70 text-sm font-medium cursor-pointer list-none flex justify-between items-center">
-            ¿Los huevos realmente son de libre pastoreo?
-            <span class="transition-transform group-open:rotate-180 text-white/30 text-xs">▼</span>
-          </summary>
-          <p class="text-white/60 text-sm mt-2">S&iacute;. Nuestras gallinas viven al aire libre, con acceso a pastura, sol y espacio para expresar su comportamiento natural.</p>
-        </details>
-        <details class="py-3 group border-b border-white/5">
-          <summary class="text-white/70 text-sm font-medium cursor-pointer list-none flex justify-between items-center">
-            ¿En qu&eacute; se diferencian del supermercado?
-            <span class="transition-transform group-open:rotate-180 text-white/30 text-xs">▼</span>
-          </summary>
-          <p class="text-white/60 text-sm mt-2 space-y-1">
-            <span class="block">No usamos los mismos m&eacute;todos de producci&oacute;n industrial.</span>
-            <span class="block">Nuestras gallinas viven en libre pastoreo, comen pastura natural y reciben atenci&oacute;n individual.</span>
-            <span class="block">El resultado: un huevo con m&aacute;s color, m&aacute;s sabor y m&aacute;s conciencia.</span>
-          </p>
-        </details>
-        <details class="py-3 group border-b border-white/5">
-          <summary class="text-white/70 text-sm font-medium cursor-pointer list-none flex justify-between items-center">
-            ¿Realizan entregas?
-            <span class="transition-transform group-open:rotate-180 text-white/30 text-xs">▼</span>
-          </summary>
-          <p class="text-white/60 text-sm mt-2">S&iacute;, entregamos en M&eacute;rida y alrededores. El costo de env&iacute;o es de $40 y se elimina desde 4 cartones.</p>
-        </details>
-        <details class="py-3 group border-b border-white/5">
-          <summary class="text-white/70 text-sm font-medium cursor-pointer list-none flex justify-between items-center">
-            ¿Venden al mayoreo?
-            <span class="transition-transform group-open:rotate-180 text-white/30 text-xs">▼</span>
-          </summary>
-          <p class="text-white/60 text-sm mt-2">S&iacute;, desde 6 cartones. Cotizaci&oacute;n personalizada v&iacute;a WhatsApp.</p>
-        </details>
-        <details class="py-3 group border-b border-white/5">
-          <summary class="text-white/70 text-sm font-medium cursor-pointer list-none flex justify-between items-center">
-            ¿Puedo apartar con anticipaci&oacute;n?
-            <span class="transition-transform group-open:rotate-180 text-white/30 text-xs">▼</span>
-          </summary>
-          <p class="text-white/60 text-sm mt-2">S&iacute;, con una semana de anticipaci&oacute;n. Escr&iacute;benos por WhatsApp.</p>
-        </details>
-      </div>
-    </div>
-  </div>
-
 </div>
