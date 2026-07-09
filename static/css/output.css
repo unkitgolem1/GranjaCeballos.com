@@ -67,7 +67,14 @@
     --color-teal-tree: #90BDB5;
     --color-mud-brown: #584D14;
     --color-baroque: #DDAC23;
+    --color-ceballos-sky: #98BDF2;
+    --color-ceballos-mustard: #D2A307;
+    --color-ceballos-earth: #5A2A05;
+    --color-ceballos-cinnamon: #91570D;
+    --color-ceballos-sun: #F9DE26;
+    --color-ceballos-hueso: #FDFBF7;
     --font-heading: 'Playfair Display', 'Georgia', serif;
+    --font-editorial: 'Playfair Display', 'Georgia', serif;
     --spacing-phi: 1.618rem;
   }
 }
@@ -364,14 +371,11 @@
   .max-w-6xl {
     max-width: var(--container-6xl);
   }
-  .max-w-\[80\%\] {
-    max-width: 80%;
-  }
   .max-w-\[85\%\] {
     max-width: 85%;
   }
-  .max-w-\[95\%\] {
-    max-width: 95%;
+  .max-w-\[90\%\] {
+    max-width: 90%;
   }
   .max-w-lg {
     max-width: var(--container-lg);
@@ -571,6 +575,10 @@
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: 1px;
   }
+  .border-b-2 {
+    border-bottom-style: var(--tw-border-style);
+    border-bottom-width: 2px;
+  }
   .border-l {
     border-left-style: var(--tw-border-style);
     border-left-width: 1px;
@@ -595,8 +603,29 @@
   .border-\[\#DDAC23\]\/40 {
     border-color: color-mix(in oklab, #DDAC23 40%, transparent);
   }
-  .border-\[\#DDAC23\]\/50 {
-    border-color: color-mix(in oklab, #DDAC23 50%, transparent);
+  .border-ceballos-earth {
+    border-color: var(--color-ceballos-earth);
+  }
+  .border-ceballos-earth\/30 {
+    border-color: color-mix(in srgb, #5A2A05 30%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      border-color: color-mix(in oklab, var(--color-ceballos-earth) 30%, transparent);
+    }
+  }
+  .border-ceballos-earth\/40 {
+    border-color: color-mix(in srgb, #5A2A05 40%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      border-color: color-mix(in oklab, var(--color-ceballos-earth) 40%, transparent);
+    }
+  }
+  .border-ceballos-mustard {
+    border-color: var(--color-ceballos-mustard);
+  }
+  .border-ceballos-mustard\/50 {
+    border-color: color-mix(in srgb, #D2A307 50%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      border-color: color-mix(in oklab, var(--color-ceballos-mustard) 50%, transparent);
+    }
   }
   .border-teal-tree\/20 {
     border-color: color-mix(in srgb, #90BDB5 20%, transparent);
@@ -614,12 +643,6 @@
     border-color: color-mix(in srgb, #fff 10%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       border-color: color-mix(in oklab, var(--color-white) 10%, transparent);
-    }
-  }
-  .border-white\/20 {
-    border-color: color-mix(in srgb, #fff 20%, transparent);
-    @supports (color: color-mix(in lab, red, red)) {
-      border-color: color-mix(in oklab, var(--color-white) 20%, transparent);
     }
   }
   .border-white\/40 {
@@ -667,23 +690,20 @@
       background-color: color-mix(in oklab, var(--color-black) 40%, transparent);
     }
   }
+  .bg-ceballos-earth {
+    background-color: var(--color-ceballos-earth);
+  }
+  .bg-ceballos-hueso {
+    background-color: var(--color-ceballos-hueso);
+  }
+  .bg-ceballos-sky {
+    background-color: var(--color-ceballos-sky);
+  }
+  .bg-ceballos-sun {
+    background-color: var(--color-ceballos-sun);
+  }
   .bg-transparent {
     background-color: transparent;
-  }
-  .bg-white {
-    background-color: var(--color-white);
-  }
-  .bg-white\/5 {
-    background-color: color-mix(in srgb, #fff 5%, transparent);
-    @supports (color: color-mix(in lab, red, red)) {
-      background-color: color-mix(in oklab, var(--color-white) 5%, transparent);
-    }
-  }
-  .bg-white\/10 {
-    background-color: color-mix(in srgb, #fff 10%, transparent);
-    @supports (color: color-mix(in lab, red, red)) {
-      background-color: color-mix(in oklab, var(--color-white) 10%, transparent);
-    }
   }
   .bg-linear-to-b {
     --tw-gradient-position: to bottom;
@@ -768,8 +788,8 @@
   .py-4 {
     padding-block: calc(var(--spacing) * 4);
   }
-  .py-6 {
-    padding-block: calc(var(--spacing) * 6);
+  .py-12 {
+    padding-block: calc(var(--spacing) * 12);
   }
   .py-16 {
     padding-block: calc(var(--spacing) * 16);
@@ -788,6 +808,9 @@
   }
   .pt-20 {
     padding-top: calc(var(--spacing) * 20);
+  }
+  .pb-0\.5 {
+    padding-bottom: calc(var(--spacing) * 0.5);
   }
   .pb-2 {
     padding-bottom: calc(var(--spacing) * 2);
@@ -818,6 +841,9 @@
     --tw-tracking: var(--tracking-tighter);
     letter-spacing: var(--tracking-tighter);
     text-transform: uppercase;
+  }
+  .font-editorial {
+    font-family: var(--font-editorial);
   }
   .font-heading {
     font-family: var(--font-heading);
@@ -946,9 +972,6 @@
   .text-\[\#DDAC23\] {
     color: #DDAC23;
   }
-  .text-\[\#DDAC23\]\/60 {
-    color: color-mix(in oklab, #DDAC23 60%, transparent);
-  }
   .text-baroque {
     color: var(--color-baroque);
   }
@@ -964,14 +987,59 @@
       color: color-mix(in oklab, var(--color-baroque) 60%, transparent);
     }
   }
-  .text-gray-200 {
-    color: var(--color-gray-200);
+  .text-ceballos-cinnamon {
+    color: var(--color-ceballos-cinnamon);
   }
-  .text-gray-400 {
-    color: var(--color-gray-400);
+  .text-ceballos-earth {
+    color: var(--color-ceballos-earth);
   }
-  .text-gray-950 {
-    color: var(--color-gray-950);
+  .text-ceballos-earth\/40 {
+    color: color-mix(in srgb, #5A2A05 40%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-ceballos-earth) 40%, transparent);
+    }
+  }
+  .text-ceballos-earth\/50 {
+    color: color-mix(in srgb, #5A2A05 50%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-ceballos-earth) 50%, transparent);
+    }
+  }
+  .text-ceballos-earth\/60 {
+    color: color-mix(in srgb, #5A2A05 60%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-ceballos-earth) 60%, transparent);
+    }
+  }
+  .text-ceballos-earth\/70 {
+    color: color-mix(in srgb, #5A2A05 70%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-ceballos-earth) 70%, transparent);
+    }
+  }
+  .text-ceballos-earth\/80 {
+    color: color-mix(in srgb, #5A2A05 80%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-ceballos-earth) 80%, transparent);
+    }
+  }
+  .text-ceballos-earth\/90 {
+    color: color-mix(in srgb, #5A2A05 90%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-ceballos-earth) 90%, transparent);
+    }
+  }
+  .text-ceballos-hueso {
+    color: var(--color-ceballos-hueso);
+  }
+  .text-ceballos-hueso\/90 {
+    color: color-mix(in srgb, #FDFBF7 90%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-ceballos-hueso) 90%, transparent);
+    }
+  }
+  .text-ceballos-mustard {
+    color: var(--color-ceballos-mustard);
   }
   .text-teal-tree {
     color: var(--color-teal-tree);
@@ -1043,6 +1111,12 @@
   }
   .opacity-0 {
     opacity: 0%;
+  }
+  .opacity-60 {
+    opacity: 60%;
+  }
+  .opacity-70 {
+    opacity: 70%;
   }
   .opacity-\[0\.03\] {
     opacity: 0.03;
@@ -1199,6 +1273,13 @@
       }
     }
   }
+  .hover\:text-ceballos-cinnamon {
+    &:hover {
+      @media (hover: hover) {
+        color: var(--color-ceballos-cinnamon);
+      }
+    }
+  }
   .hover\:text-white\/50 {
     &:hover {
       @media (hover: hover) {
@@ -1245,12 +1326,9 @@
       scale: 0.99;
     }
   }
-  .active\:bg-white\/20 {
+  .active\:bg-ceballos-cinnamon {
     &:active {
-      background-color: color-mix(in srgb, #fff 20%, transparent);
-      @supports (color: color-mix(in lab, red, red)) {
-        background-color: color-mix(in oklab, var(--color-white) 20%, transparent);
-      }
+      background-color: var(--color-ceballos-cinnamon);
     }
   }
   .sm\:w-auto {
