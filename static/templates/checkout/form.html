@@ -1,64 +1,65 @@
-<div id="checkout-container" class="pt-20 px-3 sm:px-0">
-  <div class="max-w-xl mx-auto glass-card rounded-2xl p-5 sm:p-8 space-y-6">
+<div id="checkout-container" class="pt-20">
+  <div class="max-w-xl mx-auto bg-[#1F200B]/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 space-y-6">
 
-    <div class="flex items-center justify-between border-b border-white/5 pb-4">
-      <h2 class="text-display text-xl sm:text-2xl text-white leading-none">Completa tu pedido</h2>
-      <a hx-get="/partial/welcome" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
-         class="text-white/30 hover:text-white/60 text-xs font-mono transition-colors">
-        &larr; Volver
-      </a>
-    </div>
+    <h2 class="text-display text-2xl text-white text-center">Completa tu pedido</h2>
 
     <div class="space-y-4">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <input type="text" placeholder="Nombre completo"
-               class="card-mesa rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-baroque/50 transition-all duration-300">
-        <input type="tel" placeholder="Tel&eacute;fono"
-               class="card-mesa rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-baroque/50 transition-all duration-300">
+               class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#90BDB5] transition-all duration-300">
+        <input type="tel" placeholder="Tel&eacute;fono de entrega"
+               class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#90BDB5] transition-all duration-300">
       </div>
+      <button class="text-[#90BDB5]/40 text-xs hover:text-[#90BDB5] transition-colors">
+        G Continuar r&aacute;pido con Google
+      </button>
     </div>
 
     <div class="space-y-3">
-      <input type="text" placeholder="Calle y n&uacute;mero"
-             class="w-full card-mesa rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-baroque/50 transition-all duration-300">
-      <div class="w-full h-36 rounded-xl card-mesa flex items-center justify-center text-white/30 text-xs border border-white/5">
-        <span class="flex items-center gap-2">📍 Selecciona en el mapa</span>
+      <input type="text" placeholder="Escribe tu calle y n&uacute;mero..."
+             class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#90BDB5] transition-all duration-300">
+      <div class="w-full h-40 rounded-2xl bg-black/40 flex items-center justify-center text-white/30 text-xs border border-white/5">
+        <span class="flex items-center gap-2">📍 Mapa &mdash; Google Maps</span>
       </div>
     </div>
 
-    <div class="space-y-2.5">
-      <p class="text-xs font-mono uppercase tracking-widest text-teal-tree/60">Elige tu plan</p>
-      <div class="card-mud rounded-xl px-4 py-3.5 sm:px-5 sm:py-4 flex items-center justify-between cursor-pointer transition-all duration-200 hover:brightness-110">
+    <div class="space-y-2">
+      <div class="bg-[#584D14] rounded-xl px-5 py-4 flex items-center justify-between cursor-pointer transition-all duration-300 hover:bg-[#584D14]/80">
         <div class="flex items-center gap-3">
-          <span class="w-4 h-4 rounded-full border-2 border-white/30 flex items-center justify-center">
+          <span class="w-4 h-4 rounded-full border-2 border-white/40 flex items-center justify-center">
             <span class="w-2 h-2 rounded-full bg-transparent"></span>
           </span>
           <div>
             <p class="text-sm text-white font-medium">1 Cart&oacute;n (30 huevos)</p>
-            <p class="text-xs text-white/40">+ $40 env&iacute;o</p>
+            <p class="text-xs text-white/50">+ $40 env&iacute;o</p>
           </div>
         </div>
-        <p class="text-base sm:text-lg font-bold text-white">$120 MXN</p>
+        <p class="text-lg font-bold text-white">$120 MXN</p>
       </div>
-      <div class="card-baroque rounded-xl px-4 py-3.5 sm:px-5 sm:py-4 flex items-center justify-between cursor-pointer transition-all duration-200 ring-2 ring-white/15 hover:brightness-110">
+      <div class="bg-[#DDAC23] rounded-xl px-5 py-4 flex items-center justify-between cursor-pointer transition-all duration-300 ring-2 ring-white/20 hover:bg-[#DDAC23]/90">
         <div class="flex items-center gap-3">
-          <span class="w-4 h-4 rounded-full border-2 border-black-mesa/50 flex items-center justify-center">
-            <span class="w-2 h-2 rounded-full bg-black-mesa"></span>
+          <span class="w-4 h-4 rounded-full border-2 border-[#1F200B]/60 flex items-center justify-center">
+            <span class="w-2 h-2 rounded-full bg-[#1F200B]"></span>
           </span>
           <div>
-            <p class="text-sm text-black-mesa font-semibold">Suscripci&oacute;n Semanal</p>
-            <p class="text-xs text-black-mesa/50">Env&iacute;o gratis &middot; Cancela cuando quieras</p>
+            <p class="text-sm text-[#1F200B] font-semibold">Suscripci&oacute;n Semanal</p>
+            <p class="text-xs text-[#1F200B]/60">Env&iacute;o gratis &middot; Cancela cuando quieras</p>
           </div>
         </div>
-        <p class="text-base sm:text-lg font-bold text-black-mesa">$500 MXN</p>
+        <p class="text-lg font-bold text-[#1F200B]">$500 MXN</p>
       </div>
     </div>
 
-    <button class="w-full bg-baroque text-black-mesa py-4 rounded-xl text-sm font-bold tracking-wider hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 animate-pulse-glow">
-      PAGAR CON MERCADO PAGO
+    <button class="w-full bg-[#DDAC23] text-[#1F200B] py-4 rounded-xl text-sm font-semibold tracking-wider hover:scale-[1.01] active:scale-[0.99] transition-all duration-300">
+      PAGAR DE FORMA SEGURA CON MERCADO PAGO
     </button>
 
-    <p class="text-center text-white/20 text-[10px] font-mono">Pago 100% seguro &mdash; No guardamos tus datos</p>
+    <div class="text-center">
+      <a hx-get="/partial/welcome" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
+         class="text-white/25 text-xs hover:text-white/50 transition-colors inline-block">
+        &larr; Volver
+      </a>
+    </div>
 
   </div>
 </div>
