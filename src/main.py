@@ -19,10 +19,7 @@ _jinja_env = Environment(
     autoescape=select_autoescape(),
 )
 
-PARTIALS = {
-    "welcome": "catalog/welcome.html",
-    "swiss": "swiss/welcome.html",
-}
+PARTIALS = {"welcome": "catalog/welcome.html"}
 
 
 def _render(template_name: str, context: dict) -> str:
