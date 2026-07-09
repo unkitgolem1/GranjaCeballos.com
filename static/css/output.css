@@ -48,7 +48,6 @@
     --radius-xl: 0.75rem;
     --radius-2xl: 1rem;
     --radius-3xl: 1.5rem;
-    --drop-shadow-lg: 0 4px 4px rgb(0 0 0 / 0.15);
     --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
     --blur-sm: 8px;
     --blur-md: 12px;
@@ -1296,30 +1295,34 @@
 @keyframes hollywood-zoom {
   0% {
     opacity: 0;
-    transform: scale(0.3);
-    filter: blur(12px);
+    transform: scale(0.05);
+    filter: blur(24px);
   }
-  40% {
-    opacity: 0.6;
-    transform: scale(1.08);
-    filter: blur(2px);
+  30% {
+    opacity: 0.7;
+    transform: scale(1.12);
+    filter: blur(4px);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(0.95);
+    filter: blur(0);
+  }
+  55% {
+    transform: scale(1.04);
   }
   65% {
-    opacity: 0.9;
-    transform: scale(0.96);
+    transform: scale(0.98);
+  }
+  75% {
+    transform: scale(1.01);
   }
   85% {
-    opacity: 1;
-    transform: scale(1.02);
-  }
-  100% {
-    opacity: 1;
     transform: scale(1);
-    filter: blur(0);
   }
 }
 .animate-hollywood-zoom {
-  animation: hollywood-zoom 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: hollywood-zoom 2.2s cubic-bezier(0.08, 0.9, 0.3, 1.1) forwards;
 }
 @keyframes gold-glow {
   0%, 100% {
@@ -1348,6 +1351,17 @@
 }
 .animate-hollywood-subtitle {
   animation: hollywood-subtitle 1.2s ease-out 0.8s both;
+}
+@keyframes hollywood-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+.animate-hollywood-float {
+  animation: hollywood-float 3s ease-in-out 2s infinite;
 }
 @keyframes hollywood-btn {
   0% {
