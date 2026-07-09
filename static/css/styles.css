@@ -12,19 +12,13 @@
   --color-baroque: #DDAC23;
   --color-baroque-mid: #805D11;
 
-  --color-ceballos-sky: #98BDF2;
-  --color-ceballos-mustard: #D2A307;
-  --color-ceballos-earth: #5A2A05;
-  --color-ceballos-cinnamon: #91570D;
-  --color-ceballos-sun: #F9DE26;
-  --color-ceballos-hueso: #FDFBF7;
-
   --font-heading: 'Playfair Display', 'Georgia', serif;
-  --font-editorial: 'Playfair Display', 'Georgia', serif;
   --font-sans: 'Inter', 'Helvetica Neue', 'system-ui', sans-serif;
 
   --spacing-phi: 1.618rem;
   --spacing-phi-2: 2.618rem;
+
+
 }
 
 @utility glass-mesa {
