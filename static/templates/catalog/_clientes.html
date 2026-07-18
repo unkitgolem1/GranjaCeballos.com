@@ -1,0 +1,30 @@
+<div id="clientes" class="scroll-mt-24 py-16">
+  <h3 class="font-sans text-xs uppercase tracking-[0.2em] text-[#90BDB5] text-center mb-8">Lo que dicen nuestros clientes</h3>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+    {% for cliente in clientes %}
+    <div class="bg-[#1F200B]/20 backdrop-blur-[40px] border border-white/10 rounded-xl p-3 relative overflow-hidden transition-all duration-300 hover:border-[#DDAC23]/20 h-fit">
+      <svg class="absolute inset-0 w-full h-full pointer-events-none mix-blend-overlay opacity-[0.03]" style="z-index: 0;">
+        <rect width="100%" height="100%" filter="url(#fractal-noise)"/>
+      </svg>
+
+      <div class="relative text-center space-y-1.5" style="z-index: 1;">
+        <div class="w-5 h-5 mx-auto rounded-full bg-[#DDAC23]/10 flex items-center justify-center overflow-hidden [&_svg]:w-full [&_svg]:h-full">
+          {{ cliente.icono_svg | safe }}
+        </div>
+        <p class="text-xs italic text-white/60 leading-relaxed">
+          &ldquo;{{ cliente.testimonio }}&rdquo;
+        </p>
+        <div>
+          <p class="text-sm text-white font-medium">{{ cliente.nombre }}</p>
+          <p class="text-xs text-white/40">{{ cliente.lugar }}</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if clientes %}
+  <p class="text-xs text-baroque/50 text-center mt-6">Ya somos más de {{ clientes | length }} familias satisfechas.</p>
+  {% endif %}
+</div>

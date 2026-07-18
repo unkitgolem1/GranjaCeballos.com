@@ -1,59 +1,181 @@
-<div id="checkout-container" class="pt-20">
+<div id="checkout-container" class="pt-20" x-data="{ suscripcion: false, metodo_pago: 'efectivo' }">
   <div class="max-w-xl mx-auto bg-[#1F200B]/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 space-y-6">
 
     <h2 class="text-display text-2xl text-white text-center">Completa tu pedido</h2>
 
-    <div class="space-y-4">
+    <form id="checkout-form" hx-post="/checkout" hx-target="#checkout-container" hx-swap="innerHTML" class="space-y-6">
+
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <input type="text" placeholder="Nombre completo"
-               class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#90BDB5] transition-all duration-300">
-        <input type="tel" placeholder="Tel&eacute;fono de entrega"
-               class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#90BDB5] transition-all duration-300">
+        <input type="text" name="nombre" required placeholder="Nombre completo"
+               class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
+        <input type="tel" name="telefono" required placeholder="Teléfono de entrega"
+               class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
       </div>
-      <button class="text-[#90BDB5]/40 text-xs hover:text-[#90BDB5] transition-colors">
-        G Continuar r&aacute;pido con Google
+
+      <div class="space-y-3">
+        <input type="text" name="direccion" required placeholder="Escribe tu calle y número..."
+               class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
+        <div class="w-full h-32 rounded-2xl bg-black/40 flex items-center justify-center text-white/30 text-xs border border-white/5">
+          <span class="flex items-center gap-2">📍 Mapa — Google Maps</span>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <p class="text-xs text-white/50 uppercase tracking-wider">Selecciona tu paquete</p>
+
+        <input type="hidden" name="paquete_id" id="selected-paquete" value="{{ paquete_id or '' }}">
+
+        {% for paquete in paquetes %}
+        <div class="plan-card cursor-pointer rounded-xl px-5 py-4 flex items-center justify-between transition-all duration-300 border border-transparent hover:border-[#DDAC23]/40 hover:bg-[#DDAC23]/5"
+             data-id="{{ paquete.id }}"
+             data-customizable="{% if paquete.es_customizable %}true{% else %}false{% endif %}"
+             onclick="selectPaquete(this)">
+          <div>
+            <p class="text-sm text-white font-medium">{{ paquete.nombre }}</p>
+            <p class="text-xs text-white/50">{{ paquete.descripcion[:80] }}{% if paquete.descripcion|length > 80 %}...{% endif %}</p>
+            <p class="text-[#90BDB5]/70 text-[10px] mt-1">🚚 Envío incluido</p>
+          </div>
+          <p class="text-lg font-bold text-white">{% if paquete.es_customizable %}Desde ${{ paquete.precio }} MXN{% else %}${{ paquete.precio * paquete.cantidad_fija }} MXN{% endif %}</p>
+        </div>
+        {% endfor %}
+
+      </div>
+
+      <div id="cantidad-wrapper" class="{% if not paquete_id %}hidden{% endif %}">
+        <div class="flex items-center gap-3">
+          <label class="text-white/50 text-xs">Cantidad de cartones:</label>
+          <div class="flex items-center bg-white/5 border border-white/10 rounded-lg overflow-hidden">
+            <button type="button"
+              class="px-3 py-1.5 text-sm text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all font-bold"
+              onclick="stepperCheckout(this, -1)">−</button>
+            <input type="number" id="cantidad-input" name="cantidad" min="1" value="{{ cantidad }}"
+                   class="w-14 bg-transparent border-x border-white/10 px-2 py-1.5 text-sm text-white text-center focus:outline-none no-spinner"
+                   oninput="var v=Math.max(1,parseInt(this.value)||1);this.value=v;updatePrice();">
+            <button type="button"
+              class="px-3 py-1.5 text-sm text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all font-bold"
+              onclick="stepperCheckout(this, 1)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <p class="text-xs text-white/50 uppercase tracking-wider">Tipo de pedido</p>
+
+        <div class="flex rounded-xl overflow-hidden border border-[#DDAC23]/30 p-0.5 bg-[#DDAC23]/5">
+          <button type="button" @click="suscripcion = false; updatePrice()"
+                  class="flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
+                  :class="suscripcion ? 'text-white/50' : 'bg-[#DDAC23] text-[#1F200B] shadow-lg shadow-[#DDAC23]/20'">
+            <span class="block leading-none">📦 Pedido único</span>
+            <span class="block text-[10px] mt-1 font-normal" :class="suscripcion ? 'text-white/30' : 'text-[#1F200B]/70'">Pago contra entrega</span>
+          </button>
+          <button type="button" @click="suscripcion = true; updatePrice()"
+                  class="flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
+                  :class="suscripcion ? 'bg-[#DDAC23] text-[#1F200B] shadow-lg shadow-[#DDAC23]/20' : 'text-white/50'">
+            <span class="block leading-none">🔄 Suscripción</span>
+            <span class="block text-[10px] mt-1 font-normal" :class="suscripcion ? 'text-[#1F200B]/70' : 'text-white/30'">Envío gratis siempre</span>
+          </button>
+        </div>
+
+        <div x-show="!suscripcion" x-transition.duration.300ms class="space-y-2">
+          <p class="text-xs text-white/50 uppercase tracking-wider">Fecha de entrega</p>
+          <input type="date" name="fecha_entrega" value="{{ hoy_iso }}" min="{{ hoy_iso }}"
+                 class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#DDAC23] transition-all [color-scheme:dark]">
+        </div>
+
+        <div x-show="suscripcion" x-transition.duration.300ms class="bg-[#90BDB5]/10 border border-[#90BDB5]/20 rounded-xl p-4 space-y-3">
+          <p class="text-sm text-[#90BDB5] font-semibold">✨ Beneficios de tu suscripción</p>
+          <div class="flex items-center gap-2.5 text-xs text-white/80">
+            <span class="text-lg">🚚</span>
+            <span>Envío gratis en todas tus entregas</span>
+          </div>
+          <div class="flex items-center gap-2.5 text-xs text-white/80">
+            <span class="text-lg">🔄</span>
+            <span>Cobros automáticos con confirmación antes de cada cargo</span>
+          </div>
+          <div class="flex items-center gap-2.5 text-xs text-white/80">
+            <span class="text-lg">📅</span>
+            <span>Tú eliges el día de entrega recurrente</span>
+          </div>
+          <div class="flex items-center gap-2.5 text-xs text-white/80">
+            <span class="text-lg">⏸️</span>
+            <span>Pausa o cancela cuando quieras</span>
+          </div>
+        </div>
+
+        <div x-show="suscripcion" x-transition.duration.300ms class="space-y-2">
+          <p class="text-xs text-white/50 uppercase tracking-wider">Día de entrega recurrente</p>
+          <div class="flex gap-2" id="dia-entrega-group">
+            {% set dias = [('L','1'), ('M','2'), ('M','3'), ('J','4'), ('V','5'), ('S','6'), ('D','7')] %}
+            {% for label, val in dias %}
+            <label class="flex-1 cursor-pointer">
+              <input type="radio" name="dia_entrega" value="{{ val }}" class="hidden peer" {% if loop.index == hoy %}checked{% endif %}>
+              <span class="block text-center py-2 px-1 rounded-lg text-xs font-medium border border-white/10 text-white/50 peer-checked:bg-[#DDAC23] peer-checked:text-[#1F200B] peer-checked:border-[#DDAC23] transition-all duration-300 hover:border-white/30">{{ label }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <p class="text-xs text-white/50 uppercase tracking-wider">Método de pago</p>
+        <div class="flex rounded-xl overflow-hidden border border-[#DDAC23]/30 p-0.5 bg-[#DDAC23]/5">
+          <button type="button" @click="metodo_pago = 'efectivo'"
+                  class="flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
+                  :class="metodo_pago === 'efectivo' ? 'bg-[#DDAC23] text-[#1F200B] shadow-lg shadow-[#DDAC23]/20' : 'text-white/50'">
+            <span class="block leading-none">💵 Efectivo</span>
+            <span class="block text-[10px] mt-1 font-normal" :class="metodo_pago === 'efectivo' ? 'text-[#1F200B]/70' : 'text-white/30'">Pago contra entrega</span>
+          </button>
+          <button type="button" @click="metodo_pago = 'tarjeta'"
+                  class="flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
+                  :class="metodo_pago === 'tarjeta' ? 'bg-[#DDAC23] text-[#1F200B] shadow-lg shadow-[#DDAC23]/20' : 'text-white/50'">
+            <span class="block leading-none">💳 Tarjeta</span>
+            <span class="block text-[10px] mt-1 font-normal" :class="metodo_pago === 'tarjeta' ? 'text-[#1F200B]/70' : 'text-white/30'">Pago en línea</span>
+          </button>
+        </div>
+
+        <div x-show="metodo_pago === 'efectivo'" x-transition.duration.300ms class="bg-[#584D14]/40 border border-[#DDAC23]/20 rounded-xl p-3">
+          <p class="text-xs text-white/70 leading-relaxed">
+            📞 Te llamaremos al número registrado para confirmar tu pedido.
+            <span class="text-[#DDAC23] font-medium">Si no contestas, el pedido se cancelará automáticamente.</span>
+          </p>
+        </div>
+
+        <div x-show="metodo_pago === 'tarjeta'" x-transition.duration.300ms class="bg-[#90BDB5]/10 border border-[#90BDB5]/20 rounded-xl p-3">
+          <p class="text-xs text-white/70 leading-relaxed">
+            🔒 Pago seguro con tarjeta. Próximamente podrás pagar directamente desde aquí.
+          </p>
+        </div>
+      </div>
+
+      <input type="hidden" name="es_suscripcion" id="es-suscripcion-input" :value="suscripcion">
+      <input type="hidden" name="metodo_pago" id="metodo-pago-input" :value="metodo_pago">
+
+      <div id="checkout-price-preview" class="text-center min-h-[3rem] flex flex-col items-center justify-center">
+        <p class="text-white/40 text-xs">Selecciona un paquete</p>
+      </div>
+
+      <div id="checkout-result"></div>
+
+      <style>
+        .no-spinner::-webkit-inner-spin-button,
+        .no-spinner::-webkit-outer-spin-button { appearance: none; }
+        .no-spinner { -moz-appearance: textfield; }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+        }
+        #submit-btn.active {
+          animation: float 2.5s ease-in-out infinite;
+        }
+      </style>
+
+      <button id="submit-btn" type="submit"
+              class="w-full bg-[#DDAC23] text-[#1F200B] py-5 rounded-xl transition-all duration-500 opacity-50 scale-90 cursor-not-allowed">
+        <span class="block text-base font-black tracking-tighter uppercase leading-none">Confirmar Pedido</span>
+        <span class="block text-[10px] font-mono font-bold tracking-widest text-black-mesa/50 mt-1 uppercase" x-text="metodo_pago === 'efectivo' ? 'Pago contra entrega · Te llamaremos' : 'Pago seguro en línea'"></span>
       </button>
-    </div>
 
-    <div class="space-y-3">
-      <input type="text" placeholder="Escribe tu calle y n&uacute;mero..."
-             class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#90BDB5] transition-all duration-300">
-      <div class="w-full h-40 rounded-2xl bg-black/40 flex items-center justify-center text-white/30 text-xs border border-white/5">
-        <span class="flex items-center gap-2">📍 Mapa &mdash; Google Maps</span>
-      </div>
-    </div>
-
-    <div class="space-y-2">
-      <div class="bg-[#584D14] rounded-xl px-5 py-4 flex items-center justify-between cursor-pointer transition-all duration-300 hover:bg-[#584D14]/80">
-        <div class="flex items-center gap-3">
-          <span class="w-4 h-4 rounded-full border-2 border-white/40 flex items-center justify-center">
-            <span class="w-2 h-2 rounded-full bg-transparent"></span>
-          </span>
-          <div>
-            <p class="text-sm text-white font-medium">1 Cart&oacute;n (30 huevos)</p>
-            <p class="text-xs text-white/50">+ $40 env&iacute;o</p>
-          </div>
-        </div>
-        <p class="text-lg font-bold text-white">$120 MXN</p>
-      </div>
-      <div class="bg-[#DDAC23] rounded-xl px-5 py-4 flex items-center justify-between cursor-pointer transition-all duration-300 ring-2 ring-white/20 hover:bg-[#DDAC23]/90">
-        <div class="flex items-center gap-3">
-          <span class="w-4 h-4 rounded-full border-2 border-[#1F200B]/60 flex items-center justify-center">
-            <span class="w-2 h-2 rounded-full bg-[#1F200B]"></span>
-          </span>
-          <div>
-            <p class="text-sm text-[#1F200B] font-semibold">Suscripci&oacute;n Semanal</p>
-            <p class="text-xs text-[#1F200B]/60">Env&iacute;o gratis &middot; Cancela cuando quieras</p>
-          </div>
-        </div>
-        <p class="text-lg font-bold text-[#1F200B]">$500 MXN</p>
-      </div>
-    </div>
-
-    <button class="w-full bg-[#DDAC23] text-[#1F200B] py-5 rounded-xl transition-all duration-200 active:scale-[0.98]">
-      <span class="block text-base font-black tracking-tighter uppercase leading-none">Pagar</span>
-      <span class="block text-[10px] font-mono font-bold tracking-widest text-black-mesa/50 mt-1 uppercase">Con Mercado Pago &middot; Pago seguro</span>
-    </button>
+    </form>
 
     <div class="text-center">
       <a hx-get="/partial/welcome" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
@@ -64,3 +186,56 @@
 
   </div>
 </div>
+
+<script>
+function selectPaquete(el) {
+  document.querySelectorAll('.plan-card').forEach(c => {
+    c.classList.remove('ring-2', 'ring-[#DDAC23]', 'bg-[#DDAC23]/10', 'scale-[1.02]');
+  });
+  el.classList.add('ring-2', 'ring-[#DDAC23]', 'bg-[#DDAC23]/10', 'scale-[1.02]');
+
+  document.getElementById('selected-paquete').value = el.dataset.id;
+
+  const qtyWrapper = document.getElementById('cantidad-wrapper');
+  const qtyInput = document.getElementById('cantidad-input');
+  if (el.dataset.customizable === 'true') {
+    qtyWrapper.classList.remove('hidden');
+  } else {
+    qtyWrapper.classList.add('hidden');
+    qtyInput.value = '1';
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.classList.remove('opacity-50', 'scale-90', 'cursor-not-allowed');
+  btn.classList.add('scale-100', 'shadow-lg', 'shadow-[#DDAC23]/30', 'hover:scale-[1.03]', 'hover:shadow-xl', 'hover:shadow-[#DDAC23]/40', 'active');
+
+  updatePrice();
+}
+
+function stepperCheckout(btn, delta) {
+  var input = document.getElementById('cantidad-input');
+  var val = parseInt(input.value) || 1;
+  val = Math.max(1, val + delta);
+  input.value = val;
+  updatePrice();
+}
+
+function updatePrice() {
+  const paqueteId = document.getElementById('selected-paquete').value;
+  if (!paqueteId) return;
+  const cantidad = document.getElementById('cantidad-input').value || '1';
+  const envioGratis = document.getElementById('es-suscripcion-input').value === 'true';
+  htmx.ajax('GET', '/api/paquetes/precio-html?paquete_id=' + paqueteId + '&cantidad=' + cantidad + '&envio_gratis=' + envioGratis, {
+    target: '#checkout-price-preview',
+    swap: 'innerHTML'
+  });
+}
+
+(function() {
+  var preselected = document.getElementById('selected-paquete').value;
+  if (preselected) {
+    var card = document.querySelector('.plan-card[data-id="' + preselected + '"]');
+    if (card) selectPaquete(card);
+  }
+})();
+</script>

@@ -215,3 +215,28 @@
 .animate-hollywood-btn {
   animation: hollywood-btn 1s cubic-bezier(0.34, 1.56, 0.64, 1) 1.8s both;
 }
+
+/* =============================================
+   PHOTO STAMP CYCLE — HERO POLAROID
+   ============================================= */
+
+@keyframes photo-stamp {
+  /* hidden — waiting to drop */
+  0%   { opacity: 0; transform: scale(0.88) rotate(-3deg) translateY(20px); }
+  /* fast stamp in with overshoot */
+  3%   { opacity: 1; transform: scale(1.03) rotate(4.5deg) translateY(0); }
+  /* micro bounce back */
+  6%   { transform: scale(0.97) rotate(3.5deg); }
+  /* settled */
+  8%   { transform: scale(1) rotate(4deg); }
+  /* hold visible */
+  30%  { opacity: 1; transform: scale(1) rotate(4deg); }
+  /* picked up — fade out + lift */
+  33%  { opacity: 0; transform: scale(0.93) rotate(2deg) translateY(-10px); }
+  /* hidden */
+  100% { opacity: 0; transform: scale(0.88) rotate(-3deg) translateY(20px); }
+}
+
+.photo-stamp-1 { animation: photo-stamp 12s infinite both; animation-delay: 0s; }
+.photo-stamp-2 { animation: photo-stamp 12s infinite both; animation-delay: 4s; }
+.photo-stamp-3 { animation: photo-stamp 12s infinite both; animation-delay: 8s; }

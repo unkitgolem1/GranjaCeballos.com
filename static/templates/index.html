@@ -9,15 +9,6 @@
       Granja Ceballos
     </a>
     <div class="flex items-center gap-5 sm:gap-8">
-      <a onclick="event.preventDefault(); htmx.ajax('GET','/partial/welcome',{target:'#main-content-flow',swap:'innerHTML transition:true'}); setTimeout(()=>{const e=document.getElementById('productos');e?.scrollIntoView({behavior:'smooth'})},350);"
-         class="text-sm sm:text-base font-medium text-teal-tree hover:text-baroque transition-colors cursor-pointer">
-        Productos
-      </a>
-      <a onclick="event.preventDefault(); htmx.ajax('GET','/partial/welcome',{target:'#main-content-flow',swap:'innerHTML transition:true'}); setTimeout(()=>{const e=document.getElementById('contacto');e?.scrollIntoView({behavior:'smooth'})},350);"
-         class="text-sm sm:text-base font-medium text-teal-tree hover:text-baroque transition-colors cursor-pointer">
-        Contacto
-      </a>
-    </div>
   </div>
 </nav>
 
