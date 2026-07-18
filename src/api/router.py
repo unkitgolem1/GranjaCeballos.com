@@ -1,13 +1,14 @@
+import asyncio
 import os
 from datetime import date
 from pathlib import Path
+from time import time
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import HTMLResponse, Response
+import httpx
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.templating import Jinja2Templates
-import weasyprint
-
 from src.application.schemas import (
     PedidoCreate,
     PedidoUpdateEstatus,
@@ -100,6 +101,11 @@ async def listar_pedidos(fecha: date, repo: PedidoRepoDep):
     return await repo.list_by_fecha(fecha)
 
 
+@router.get("/pedidos/clusters")
+async def detectar_clusters(fecha: date, repo: PedidoRepoDep):
+    return await repo.count_by_direccion_y_fecha(fecha)
+
+
 @router.get("/pedidos/{pedido_id}")
 async def obtener_pedido(pedido_id: UUID, repo: PedidoRepoDep):
     pedido = await repo.get_by_id(str(pedido_id))
@@ -116,11 +122,6 @@ async def actualizar_estatus(
     if pedido is None:
         raise HTTPException(status_code=404, detail="Pedido no encontrado")
     return pedido
-
-
-@router.get("/pedidos/clusters")
-async def detectar_clusters(fecha: date, repo: PedidoRepoDep):
-    return await repo.count_by_direccion_y_fecha(fecha)
 
 
 @router.get("/clientes")
@@ -141,6 +142,19 @@ async def crear_suscripcion(
 @router.get("/suscripciones")
 async def listar_suscripciones(repo: SuscripcionRepoDep):
     return await repo.list_vencidas()
+
+
+@router.api_route("/suscripciones/procesar", methods=["GET", "PATCH"])
+async def procesar_suscripciones_method_not_allowed():
+    raise HTTPException(status_code=405, detail="Method Not Allowed")
+
+
+@router.post("/suscripciones/procesar")
+async def procesar_suscripciones(
+    scheduler: SuscripcionSchedulerDep,
+):
+    generados = await scheduler.procesar_vencidas()
+    return {"pedidos_generados": generados}
 
 
 @router.get("/suscripciones/{suscripcion_id}")
@@ -213,8 +227,9 @@ async def descargar_ticket(
         "es_suscripcion": False,
     }
 
+    import weasyprint as _weasyprint
     html = _ticket_templates.get_template("checkout/_ticket_pdf.html").render(pedido=pedido)
-    pdf_bytes = weasyprint.HTML(string=html).write_pdf()
+    pdf_bytes = _weasyprint.HTML(string=html).write_pdf()
 
     return Response(
         content=pdf_bytes,
@@ -223,9 +238,55 @@ async def descargar_ticket(
     )
 
 
-@router.post("/suscripciones/procesar")
-async def procesar_suscripciones(
-    scheduler: SuscripcionSchedulerDep,
-):
-    generados = await scheduler.procesar_vencidas()
-    return {"pedidos_generados": generados}
+_ultima_consulta_nominatim: float = 0.0
+_sem_nominatim = asyncio.Semaphore(1)
+
+@router.get("/reverse-geocode")
+async def reverse_geocode(lat: float = Query(...), lng: float = Query(...)):
+    if not (-90 <= lat <= 90) or not (-180 <= lng <= 180):
+        return JSONResponse({"direccion": ""}, status_code=400)
+
+    async with _sem_nominatim:
+        global _ultima_consulta_nominatim
+        desde_ultima = time() - _ultima_consulta_nominatim
+        if desde_ultima < 1.0:
+            await asyncio.sleep(1.0 - desde_ultima)
+        _ultima_consulta_nominatim = time()
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            "https://nominatim.openstreetmap.org/reverse",
+            params={
+                "format": "json",
+                "lat": lat,
+                "lon": lng,
+                "addressdetails": 1,
+                "accept-language": "es",
+            },
+            headers={"User-Agent": "GranjaCeballos/1.0"},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        direccion = (data or {}).get("display_name", "")
+        return JSONResponse({"direccion": direccion})
+
+
+@router.get("/ubicacion-por-ip")
+async def ubicacion_por_ip(request: Request):
+    client_host = request.client.host if request.client else "127.0.0.1"
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            f"http://ip-api.com/json/{client_host}",
+            params={"fields": "lat,lon,city,regionName,country,status"},
+            timeout=5,
+        )
+        data = resp.json()
+        if data.get("status") != "success":
+            return JSONResponse({"lat": None, "lng": None, "ciudad": "", "region": ""})
+        return JSONResponse({
+            "lat": data["lat"],
+            "lng": data["lon"],
+            "ciudad": data.get("city", ""),
+            "region": data.get("regionName", ""),
+        })

@@ -1,0 +1,240 @@
+=== [1/4] Escaneo estático de seguridad con Bandit ===
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+[main]	INFO	running on Python 3.13.12
+Run started:2026-07-18 09:10:46.423235+00:00
+
+Test results:
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: ./src/infrastructure/repositories.py:30:18
+29	            row = await conn.fetchrow(
+30	                f"SELECT {_USUARIO_COLS} FROM usuarios WHERE telefono = $1", telefono
+31	            )
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: ./src/infrastructure/repositories.py:39:20
+38	            row = await conn.fetchrow(
+39	                f"""
+40	                INSERT INTO usuarios (nombre, telefono, email)
+41	                VALUES ($1, $2, $3)
+42	                ON CONFLICT (telefono) DO UPDATE
+43	                    SET nombre = EXCLUDED.nombre,
+44	                        email  = COALESCE(EXCLUDED.email, usuarios.email)
+45	                RETURNING {_USUARIO_COLS}
+46	                """,
+47	                nombre,
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: ./src/infrastructure/repositories.py:68:18
+67	            rows = await conn.fetch(
+68	                f"SELECT {_PAQUETE_COLS} FROM paquetes WHERE activo = true ORDER BY es_customizable ASC, precio DESC"
+69	            )
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: ./src/infrastructure/repositories.py:75:18
+74	            row = await conn.fetchrow(
+75	                f"SELECT {_PAQUETE_COLS} FROM paquetes WHERE id = $1", paquete_id
+76	            )
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: ./src/infrastructure/repositories.py:158:18
+157	            row = await conn.fetchrow(
+158	                f"SELECT {_PEDIDO_COLS} FROM pedidos WHERE id = $1", pedido_id
+159	            )
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: ./src/infrastructure/repositories.py:165:20
+164	            row = await conn.fetchrow(
+165	                f"""
+166	                SELECT {_PEDIDO_COLS} FROM pedidos p
+167	                JOIN usuarios u ON u.id = p.usuario_id
+168	                WHERE u.telefono = $1 AND p.estatus = 'pendiente'
+169	                LIMIT 1
+170	                """,
+171	                telefono,
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: ./src/infrastructure/repositories.py:178:18
+177	            rows = await conn.fetch(
+178	                f"SELECT {_PEDIDO_COLS} FROM pedidos WHERE fecha_entrega = $1 ORDER BY created_at DESC",
+179	                fecha,
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: ./src/infrastructure/repositories.py:188:20
+187	            row = await conn.fetchrow(
+188	                f"""
+189	                UPDATE pedidos
+190	                SET estatus = $1, updated_at = NOW()
+191	                WHERE id = $2
+192	                RETURNING {_PEDIDO_COLS}
+193	                """,
+194	                estatus,
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: ./src/infrastructure/repositories.py:225:20
+224	            row = await c.fetchrow(
+225	                f"""
+226	                INSERT INTO suscripciones
+227	                    (id, usuario_id, paquete_id, direccion, cantidad,
+228	                     metodo_pago, dia_entrega, fecha_inicio,
+229	                     proxima_generacion, activa, created_at, updated_at)
+230	                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+231	                RETURNING {_SUSCRIPCION_COLS}
+232	                """,
+233	                suscripcion.id,
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: ./src/infrastructure/repositories.py:255:18
+254	            row = await conn.fetchrow(
+255	                f"SELECT {_SUSCRIPCION_COLS} FROM suscripciones WHERE id = $1", suscripcion_id
+256	            )
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: ./src/infrastructure/repositories.py:262:18
+261	            rows = await conn.fetch(
+262	                f"SELECT {_SUSCRIPCION_COLS} FROM suscripciones WHERE usuario_id = $1 ORDER BY created_at DESC",
+263	                usuario_id,
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: ./src/infrastructure/repositories.py:270:20
+269	            rows = await conn.fetch(
+270	                f"""
+271	                SELECT {_SUSCRIPCION_COLS} FROM suscripciones
+272	                WHERE activa = true AND proxima_generacion <= CURRENT_DATE
+273	                ORDER BY proxima_generacion
+274	                """
+275	            )
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: ./src/infrastructure/repositories.py:283:20
+282	            row = await conn.fetchrow(
+283	                f"""
+284	                UPDATE suscripciones
+285	                SET dia_entrega = $1,
+286	                    proxima_generacion = $2,
+287	                    updated_at = NOW()
+288	                WHERE id = $3
+289	                RETURNING {_SUSCRIPCION_COLS}
+290	                """,
+291	                dia_entrega,
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: ./src/infrastructure/repositories.py:317:18
+316	            rows = await conn.fetch(
+317	                f"SELECT {_CLIENTE_COLS} FROM clientes WHERE activo = true ORDER BY nombre"
+318	            )
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 1549
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 0
+		Medium: 14
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 14
+		Medium: 0
+		High: 0
+Files skipped (0):
+[WARN] Bandit encontró vulnerabilidades (revisar log)
+=== [2/4] Limpiando puertos anteriores ===
+=== [3/5] Levantando servidor local en puerto 8001 ===
+Servidor PID: 108413
+000=== [4/5] Fuzzing destructivo con Schemathesis ===
+Schemathesis v4.23.0
+━━━━━━━━━━━━━━━━━━━━
+
+
+ ✅  Loaded specification from http://127.0.0.1:8001/openapi.json (in 0.90s)    
+
+     Base URL:         http://127.0.0.1:8001                                    
+     Specification:    Open API 3.1.0                                           
+     Operations:       29 selected / 29 total                                   
+
+
+ ✅  API capabilities:                                                          
+
+     Supports NULL byte in headers:                            ✘                
+     Accepts backslash and control characters in URL paths:    ✓                
+     Cache:                                                    3 requests       
+                                                               replayed, 1      
+                                                               stale            
+                                                               removed          
+
+ ⏭   Examples (in 0.18s)                                                        
+                                                                                
+     ⏭  29 skipped                                                              
+
+ ❌  Coverage (in 14.74s)                                                       
+                                                                                
+     ✅ 12 passed  ❌ 17 failed                                                 
+
+ ❌  Fuzzing (in 21.86s)                                                        
+                                                                                
+     ✅ 12 passed  ❌ 17 failed                                                 
+
+Apagando servidor PID 108413

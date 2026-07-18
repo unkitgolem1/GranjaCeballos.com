@@ -1,0 +1,74 @@
+{
+  "operation": "POST /api/suscripciones/procesar",
+  "method": "GET",
+  "path_template": "/api/suscripciones/procesar",
+  "fingerprint": "c0689f46",
+  "case_id": "T2zcEr",
+  "code_sample": "curl -X GET http://127.0.0.1:8001/api/suscripciones/procesar",
+  "sequence": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:8001/api/suscripciones/procesar",
+      "url_template": "http://127.0.0.1:8001/api/suscripciones/procesar",
+      "headers": {
+        "User-Agent": "schemathesis/4.23.0",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "X-Schemathesis-TestCaseId": "T2zcEr"
+      },
+      "response": {
+        "status_code": 422,
+        "headers": {
+          "date": "Sat, 18 Jul 2026 09:07:48 GMT",
+          "server": "uvicorn",
+          "content-length": "211",
+          "content-type": "application/json"
+        },
+        "body": "{\"detail\":[{\"type\":\"uuid_parsing\",\"loc\":[\"path\",\"suscripcion_id\"],\"msg\":\"Input should be a valid UUID, invalid character: found `p` at 1\",\"input\":\"procesar\",\"ctx\":{\"error\":\"invalid character: found `p` at 1\"}}]}"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "unsupported_method",
+          "status": "failure",
+          "message": "Unsupported methods\n\nUnsupported method GET returned 422, expected 405 Method Not Allowed\n\nReturn 405 for methods not listed in the OpenAPI spec"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 3.337499947519973e-05,
+          "mode": "negative"
+        },
+        "components": {},
+        "phase": {
+          "name": "coverage",
+          "data": {
+            "type": "CoveragePhaseData",
+            "description": "Unspecified HTTP method: GET",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "scenario": "unspecified_http_method"
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/api/suscripciones/procesar",
+      "path_parameters": {},
+      "query": {},
+      "case_headers": {},
+      "cookies": {},
+      "case_body": {
+        "encoding": "none"
+      },
+      "media_type": null,
+      "parent_index": null
+    }
+  ]
+}

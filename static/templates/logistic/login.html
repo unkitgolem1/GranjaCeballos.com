@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logística — Granja Ceballos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="/static/css/output.css" rel="stylesheet">
+</head>
+<body class="font-sans min-h-screen flex items-center justify-center bg-linear-to-b from-[#025270] to-primal-blue text-white">
+  <div class="fixed inset-0 w-full h-full -z-10 overflow-hidden">
+    <div class="absolute bottom-0 w-full h-[40vh] bg-linear-to-t from-white/15 via-[#DDAC23]/5 to-transparent pointer-events-none"></div>
+  </div>
+
+  <svg width="0" height="0" class="fixed pointer-events-none" aria-hidden="true">
+    <defs>
+      <filter id="fractal-noise-lg">
+        <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+        <feColorMatrix type="saturate" values="0"/>
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="relative w-full max-w-sm mx-4">
+    <div class="text-center mb-10">
+      <h1 class="font-heading text-3xl tracking-tight text-baroque">
+        Logística
+      </h1>
+      <p class="text-white/50 text-xs mt-2 uppercase tracking-[0.15em]">
+        Granja Ceballos
+      </p>
+    </div>
+
+    <form method="POST" action="/logistic/login"
+          class="bg-[#1F200B]/30 backdrop-blur-[40px] border border-white/5 rounded-2xl p-6 space-y-5">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div>
+        <label class="block text-xs text-white/50 uppercase tracking-[0.15em] mb-2">Usuario</label>
+        <input type="text" name="username" required autocomplete="username"
+               class="w-full bg-[#0F1006]/80 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-[#DDAC23]/50 transition-colors">
+      </div>
+      <div>
+        <label class="block text-xs text-white/50 uppercase tracking-[0.15em] mb-2">Contraseña</label>
+        <input type="password" name="password" required autocomplete="current-password"
+               class="w-full bg-[#0F1006]/80 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-[#DDAC23]/50 transition-colors">
+      </div>
+      {% if error %}
+      <p class="text-red-400 text-xs text-center">{{ error }}</p>
+      {% endif %}
+      <button type="submit"
+              class="w-full bg-[#DDAC23] text-[#1F200B] py-3 rounded-full text-sm font-semibold hover:scale-[1.02] active:scale-[0.98] transition-all duration-300">
+        Entrar
+      </button>
+    </form>
+  </div>
+</body>
+</html>

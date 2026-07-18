@@ -5,10 +5,14 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 
+_TELEFONO_RE = r"^\+?\d{7,20}$"
+_EMAIL_RE = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+
+
 class PedidoCreate(BaseModel):
-    telefono: str = Field(..., min_length=7, max_length=20)
+    telefono: str = Field(..., pattern=_TELEFONO_RE)
     nombre: str = Field(..., min_length=1, max_length=200)
-    email: Optional[str] = Field(default=None, max_length=255)
+    email: Optional[str] = Field(default=None, pattern=_EMAIL_RE, max_length=255)
     paquete_id: UUID = Field(...)
     direccion: str = Field(..., max_length=500)
     cantidad: int = Field(default=1, ge=1)
@@ -25,9 +29,9 @@ class PedidoUpdateEstatus(BaseModel):
 
 
 class SuscripcionCreate(BaseModel):
-    telefono: str = Field(..., min_length=7, max_length=20)
+    telefono: str = Field(..., pattern=_TELEFONO_RE)
     nombre: str = Field(..., min_length=1, max_length=200)
-    email: Optional[str] = Field(default=None, max_length=255)
+    email: Optional[str] = Field(default=None, pattern=_EMAIL_RE, max_length=255)
     paquete_id: UUID = Field(...)
     direccion: str = Field(..., max_length=500)
     cantidad: int = Field(default=1, ge=1)

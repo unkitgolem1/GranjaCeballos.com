@@ -1,0 +1,93 @@
+{
+  "operation": "PATCH /api/pedidos/{pedido_id}/estatus",
+  "method": "PATCH",
+  "path_template": "/api/pedidos/{pedido_id}/estatus",
+  "fingerprint": "b1cb7e5b",
+  "case_id": "rfVAuo",
+  "code_sample": "curl -X PATCH -H 'Content-Type: application/json' -d '{\"estatus\": \"pendiente\"}' http://127.0.0.1:8001/api/pedidos/e3e70682-c209-1cac-a29f-6fbed82c07cd/estatus",
+  "sequence": [
+    {
+      "method": "PATCH",
+      "url": "http://127.0.0.1:8001/api/pedidos/e3e70682-c209-1cac-a29f-6fbed82c07cd/estatus",
+      "url_template": "http://127.0.0.1:8001/api/pedidos/{pedido_id}/estatus",
+      "headers": {
+        "User-Agent": "schemathesis/4.23.0",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "X-Schemathesis-TestCaseId": "rfVAuo",
+        "Content-Type": "application/json",
+        "Content-Length": "24"
+      },
+      "response": {
+        "status_code": 404,
+        "headers": {
+          "date": "Sat, 18 Jul 2026 09:11:08 GMT",
+          "server": "uvicorn",
+          "content-length": "33",
+          "content-type": "application/json"
+        },
+        "body": "{\"detail\":\"Pedido no encontrado\"}"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "status_code_conformance",
+          "status": "failure",
+          "message": "Undocumented HTTP status code\n\nReceived: 404\nDocumented: 200, 422"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.37559027899987996,
+          "mode": "positive"
+        },
+        "components": {
+          "PATH": "positive",
+          "BODY": "positive"
+        },
+        "phase": {
+          "name": "coverage",
+          "data": {
+            "type": "CoveragePhaseData",
+            "description": "Valid object",
+            "location": null,
+            "parameter": "application/json",
+            "parameter_location": "BODY",
+            "scenario": "valid_object"
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [
+          [
+            "path",
+            "pedido_id"
+          ]
+        ],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {
+          "PATH": {
+            "pedido_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd"
+          }
+        }
+      },
+      "path": "/api/pedidos/{pedido_id}/estatus",
+      "path_parameters": {
+        "pedido_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd"
+      },
+      "query": {},
+      "case_headers": {},
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "estatus": "pendiente"
+        }
+      },
+      "media_type": "application/json",
+      "parent_index": null
+    }
+  ]
+}

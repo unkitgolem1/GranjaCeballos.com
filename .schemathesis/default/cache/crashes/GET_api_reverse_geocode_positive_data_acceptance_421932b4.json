@@ -1,0 +1,79 @@
+{
+  "operation": "GET /api/reverse-geocode",
+  "method": "GET",
+  "path_template": "/api/reverse-geocode",
+  "fingerprint": "421932b4",
+  "case_id": "6Fl2gv",
+  "code_sample": "curl -X GET 'http://127.0.0.1:8001/api/reverse-geocode?lat=1.240409270417104e%2B16&lng=0.0'",
+  "sequence": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:8001/api/reverse-geocode?lat=1.240409270417104e%2B16&lng=0.0",
+      "url_template": "http://127.0.0.1:8001/api/reverse-geocode",
+      "headers": {
+        "User-Agent": "schemathesis/4.23.0",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "X-Schemathesis-TestCaseId": "6Fl2gv"
+      },
+      "response": {
+        "status_code": 400,
+        "headers": {
+          "date": "Sat, 18 Jul 2026 09:11:11 GMT",
+          "server": "uvicorn",
+          "content-length": "16",
+          "content-type": "application/json"
+        },
+        "body": "{\"direccion\":\"\"}"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "positive_data_acceptance",
+          "status": "failure",
+          "message": "API rejected schema-compliant request\n\nValid data should have been accepted\nExpected: 2xx, 401, 403, 404, 409, 5xx"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.0026721180038293824,
+          "mode": "positive"
+        },
+        "components": {
+          "QUERY": "positive"
+        },
+        "phase": {
+          "name": "fuzzing",
+          "data": {
+            "type": "FuzzingPhaseData",
+            "description": "Positive test case",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "mutations": []
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/api/reverse-geocode",
+      "path_parameters": {},
+      "query": {
+        "lat": 1.240409270417104e+16,
+        "lng": 0.0
+      },
+      "case_headers": {},
+      "cookies": {},
+      "case_body": {
+        "encoding": "none"
+      },
+      "media_type": null,
+      "parent_index": null
+    }
+  ]
+}

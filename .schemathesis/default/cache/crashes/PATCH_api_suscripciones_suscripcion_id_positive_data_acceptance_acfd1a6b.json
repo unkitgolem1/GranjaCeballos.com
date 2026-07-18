@@ -1,0 +1,82 @@
+{
+  "operation": "PATCH /api/suscripciones/{suscripcion_id}",
+  "method": "PATCH",
+  "path_template": "/api/suscripciones/{suscripcion_id}",
+  "fingerprint": "acfd1a6b",
+  "case_id": "wYIRQD",
+  "code_sample": "curl -X PATCH -H 'Content-Type: application/json' -d '{}' http://127.0.0.1:8001/api/suscripciones/e3e70682-c209-1cac-a29f-6fbed82c07cd",
+  "sequence": [
+    {
+      "method": "PATCH",
+      "url": "http://127.0.0.1:8001/api/suscripciones/e3e70682-c209-1cac-a29f-6fbed82c07cd",
+      "url_template": "http://127.0.0.1:8001/api/suscripciones/{suscripcion_id}",
+      "headers": {
+        "User-Agent": "schemathesis/4.23.0",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "X-Schemathesis-TestCaseId": "wYIRQD",
+        "Content-Type": "application/json",
+        "Content-Length": "2"
+      },
+      "response": {
+        "status_code": 400,
+        "headers": {
+          "date": "Sat, 18 Jul 2026 09:11:13 GMT",
+          "server": "uvicorn",
+          "content-length": "39",
+          "content-type": "application/json"
+        },
+        "body": "{\"detail\":\"Sin campos para actualizar\"}"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "positive_data_acceptance",
+          "status": "failure",
+          "message": "API rejected schema-compliant request\n\nValid data should have been accepted\nExpected: 2xx, 401, 403, 404, 409, 5xx"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.022401009999157395,
+          "mode": "positive"
+        },
+        "components": {
+          "PATH": "positive",
+          "BODY": "positive"
+        },
+        "phase": {
+          "name": "fuzzing",
+          "data": {
+            "type": "FuzzingPhaseData",
+            "description": "Positive test case",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "mutations": []
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/api/suscripciones/{suscripcion_id}",
+      "path_parameters": {
+        "suscripcion_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd"
+      },
+      "query": {},
+      "case_headers": {},
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {}
+      },
+      "media_type": "application/json",
+      "parent_index": null
+    }
+  ]
+}

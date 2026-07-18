@@ -1,0 +1,93 @@
+{
+  "operation": "GET /api/paquetes/{paquete_id}/precio",
+  "method": "GET",
+  "path_template": "/api/paquetes/{paquete_id}/precio",
+  "fingerprint": "6fa73ded",
+  "case_id": "EanV73",
+  "code_sample": "curl -X GET 'http://127.0.0.1:8001/api/paquetes/e3e70682-c209-1cac-a29f-6fbed82c07cd/precio?cantidad=2'",
+  "sequence": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:8001/api/paquetes/e3e70682-c209-1cac-a29f-6fbed82c07cd/precio?cantidad=2",
+      "url_template": "http://127.0.0.1:8001/api/paquetes/{paquete_id}/precio",
+      "headers": {
+        "User-Agent": "schemathesis/4.23.0",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "X-Schemathesis-TestCaseId": "EanV73"
+      },
+      "response": {
+        "status_code": 404,
+        "headers": {
+          "date": "Sat, 18 Jul 2026 09:11:06 GMT",
+          "server": "uvicorn",
+          "content-length": "34",
+          "content-type": "application/json"
+        },
+        "body": "{\"detail\":\"Paquete no encontrado\"}"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "status_code_conformance",
+          "status": "failure",
+          "message": "Undocumented HTTP status code\n\nReceived: 404\nDocumented: 200, 422"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.00010566099808784202,
+          "mode": "positive"
+        },
+        "components": {
+          "PATH": "positive",
+          "QUERY": "positive"
+        },
+        "phase": {
+          "name": "coverage",
+          "data": {
+            "type": "CoveragePhaseData",
+            "description": "Near-boundary number",
+            "location": null,
+            "parameter": "cantidad",
+            "parameter_location": "QUERY",
+            "scenario": "near_boundary_number"
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [
+          [
+            "path",
+            "paquete_id"
+          ]
+        ],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {
+          "PATH": {
+            "paquete_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd"
+          },
+          "QUERY": {
+            "cantidad": 2
+          }
+        }
+      },
+      "path": "/api/paquetes/{paquete_id}/precio",
+      "path_parameters": {
+        "paquete_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd"
+      },
+      "query": {
+        "cantidad": "2"
+      },
+      "case_headers": {},
+      "cookies": {},
+      "case_body": {
+        "encoding": "none"
+      },
+      "media_type": null,
+      "parent_index": null
+    }
+  ]
+}

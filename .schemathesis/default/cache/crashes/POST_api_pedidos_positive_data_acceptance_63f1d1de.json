@@ -1,0 +1,86 @@
+{
+  "operation": "POST /api/pedidos",
+  "method": "POST",
+  "path_template": "/api/pedidos",
+  "fingerprint": "63f1d1de",
+  "case_id": "YDNBth",
+  "code_sample": "curl -X POST -H 'Content-Type: application/json' -d '{\"direccion\": \"\", \"fecha_usuario\": \"2000-01-01\", \"metodo_pago\": \"tarjeta\", \"nombre\": \"0\", \"paquete_id\": \"e3e70682-c209-1cac-a29f-6fbed82c07cd\", \"telefono\": \"0000000\"}' http://127.0.0.1:8001/api/pedidos",
+  "sequence": [
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:8001/api/pedidos",
+      "url_template": "http://127.0.0.1:8001/api/pedidos",
+      "headers": {
+        "User-Agent": "schemathesis/4.23.0",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "X-Schemathesis-TestCaseId": "YDNBth",
+        "Content-Type": "application/json",
+        "Content-Length": "166"
+      },
+      "response": {
+        "status_code": 400,
+        "headers": {
+          "date": "Sat, 18 Jul 2026 09:11:13 GMT",
+          "server": "uvicorn",
+          "content-length": "104",
+          "content-type": "application/json"
+        },
+        "body": "{\"detail\":\"Solo entregamos en Yucat\u00e1n. Aseg\u00farate de incluir tu ciudad o 'Yucat\u00e1n' en la direcci\u00f3n.\"}"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "positive_data_acceptance",
+          "status": "failure",
+          "message": "API rejected schema-compliant request\n\nValid data should have been accepted\nExpected: 2xx, 401, 403, 404, 409, 5xx"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.10616459800075972,
+          "mode": "positive"
+        },
+        "components": {
+          "BODY": "positive"
+        },
+        "phase": {
+          "name": "fuzzing",
+          "data": {
+            "type": "FuzzingPhaseData",
+            "description": "Positive test case",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "mutations": []
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/api/pedidos",
+      "path_parameters": {},
+      "query": {},
+      "case_headers": {},
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "direccion": "",
+          "fecha_usuario": "2000-01-01",
+          "metodo_pago": "tarjeta",
+          "nombre": "0",
+          "paquete_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd",
+          "telefono": "0000000"
+        }
+      },
+      "media_type": "application/json",
+      "parent_index": null
+    }
+  ]
+}

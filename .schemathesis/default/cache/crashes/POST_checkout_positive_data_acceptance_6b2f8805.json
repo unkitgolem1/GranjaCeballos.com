@@ -1,0 +1,85 @@
+{
+  "operation": "POST /checkout",
+  "method": "POST",
+  "path_template": "/checkout",
+  "fingerprint": "6b2f8805",
+  "case_id": "HitIhN",
+  "code_sample": "curl -X POST -H 'Content-Type: application/x-www-form-urlencoded' -d 'direccion=&nombre=&paquete_id=&telefono=&metodo_pago=efectivo' http://127.0.0.1:8001/checkout",
+  "sequence": [
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:8001/checkout",
+      "url_template": "http://127.0.0.1:8001/checkout",
+      "headers": {
+        "User-Agent": "schemathesis/4.23.0",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "X-Schemathesis-TestCaseId": "HitIhN",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Length": "61"
+      },
+      "response": {
+        "status_code": 422,
+        "headers": {
+          "date": "Sat, 18 Jul 2026 09:05:02 GMT",
+          "server": "uvicorn",
+          "content-length": "337",
+          "content-type": "application/json"
+        },
+        "body": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"nombre\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"body\",\"telefono\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"body\",\"paquete_id\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"body\",\"direccion\"],\"msg\":\"Field required\",\"input\":null}]}"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "positive_data_acceptance",
+          "status": "failure",
+          "message": "API rejected schema-compliant request\n\nValid data should have been accepted\nExpected: 2xx, 401, 403, 404, 409, 5xx"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 3.207299596397206e-05,
+          "mode": "positive"
+        },
+        "components": {
+          "BODY": "positive"
+        },
+        "phase": {
+          "name": "coverage",
+          "data": {
+            "type": "CoveragePhaseData",
+            "description": "Object with valid 'metodo_pago' value: Default value",
+            "location": null,
+            "parameter": "application/x-www-form-urlencoded",
+            "parameter_location": "BODY",
+            "scenario": "valid_object"
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/checkout",
+      "path_parameters": {},
+      "query": {},
+      "case_headers": {},
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "direccion": "",
+          "nombre": "",
+          "paquete_id": "",
+          "telefono": "",
+          "metodo_pago": "efectivo"
+        }
+      },
+      "media_type": "application/x-www-form-urlencoded",
+      "parent_index": null
+    }
+  ]
+}

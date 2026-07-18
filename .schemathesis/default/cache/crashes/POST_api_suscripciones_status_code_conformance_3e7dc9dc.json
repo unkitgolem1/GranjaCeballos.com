@@ -1,0 +1,92 @@
+{
+  "operation": "POST /api/suscripciones",
+  "method": "POST",
+  "path_template": "/api/suscripciones",
+  "fingerprint": "3e7dc9dc",
+  "case_id": "pk2Ajb",
+  "code_sample": "curl -X POST -H 'Content-Type: application/json' -d '{\"dia_entrega\": 1, \"direccion\": \"\", \"fecha_inicio\": 0, \"metodo_pago\": \"tarjeta\", \"nombre\": \"0\", \"paquete_id\": \"e3e70682-c209-1cac-a29f-6fbed82c07cd\", \"telefono\": \"0000000\"}' http://127.0.0.1:8001/api/suscripciones",
+  "sequence": [
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:8001/api/suscripciones",
+      "url_template": "http://127.0.0.1:8001/api/suscripciones",
+      "headers": {
+        "User-Agent": "schemathesis/4.23.0",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "X-Schemathesis-TestCaseId": "pk2Ajb",
+        "Content-Type": "application/json",
+        "Content-Length": "172"
+      },
+      "response": {
+        "status_code": 400,
+        "headers": {
+          "date": "Sat, 18 Jul 2026 09:11:09 GMT",
+          "server": "uvicorn",
+          "content-length": "104",
+          "content-type": "application/json"
+        },
+        "body": "{\"detail\":\"Solo entregamos en Yucat\u00e1n. Aseg\u00farate de incluir tu ciudad o 'Yucat\u00e1n' en la direcci\u00f3n.\"}"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "status_code_conformance",
+          "status": "failure",
+          "message": "Undocumented HTTP status code\n\nReceived: 400\nDocumented: 200, 422"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 0.0053185590004432015,
+          "mode": "negative"
+        },
+        "components": {
+          "BODY": "negative"
+        },
+        "phase": {
+          "name": "coverage",
+          "data": {
+            "type": "CoveragePhaseData",
+            "description": "fecha_inicio: Incorrect type",
+            "location": "/properties/fecha_inicio/type",
+            "parameter": "application/json",
+            "parameter_location": "BODY",
+            "scenario": "incorrect_type"
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [
+          [
+            "body",
+            "paquete_id"
+          ]
+        ],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {}
+      },
+      "path": "/api/suscripciones",
+      "path_parameters": {},
+      "query": {},
+      "case_headers": {},
+      "cookies": {},
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "dia_entrega": 1,
+          "direccion": "",
+          "fecha_inicio": 0,
+          "metodo_pago": "tarjeta",
+          "nombre": "0",
+          "paquete_id": "e3e70682-c209-1cac-a29f-6fbed82c07cd",
+          "telefono": "0000000"
+        }
+      },
+      "media_type": "application/json",
+      "parent_index": null
+    }
+  ]
+}
