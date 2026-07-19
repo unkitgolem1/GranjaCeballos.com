@@ -6,8 +6,8 @@ import asyncpg
 
 _USUARIO_COLS = "id, nombre, telefono, email, created_at"
 _PAQUETE_COLS = "id, nombre, descripcion, precio, costo_envio, cantidad_fija, es_suscripcion, es_customizable, precio_minimo, tiers, es_popular, badge, activo, created_at"
-_PEDIDO_COLS = "id, usuario_id, paquete_id, suscripcion_id, direccion, cantidad, total, metodo_pago, estatus, notas, fecha_usuario, fecha_entrega, created_at, updated_at"
-_SUSCRIPCION_COLS = "id, usuario_id, paquete_id, direccion, cantidad, metodo_pago, dia_entrega, fecha_inicio, proxima_generacion, activa, created_at, updated_at"
+_PEDIDO_COLS = "id, usuario_id, paquete_id, suscripcion_id, direccion, codigo_postal, cantidad, total, metodo_pago, estatus, notas, fecha_usuario, fecha_entrega, created_at, updated_at"
+_SUSCRIPCION_COLS = "id, usuario_id, paquete_id, direccion, codigo_postal, cantidad, metodo_pago, dia_entrega, fecha_inicio, proxima_generacion, activa, created_at, updated_at"
 _CLIENTE_COLS = "id, nombre, lugar, icono_svg, testimonio, activo, created_at"
 
 from src.domain.interfaces import (
@@ -87,10 +87,10 @@ class PostgresPedidoRepository(PedidoRepository):
                 """
                 INSERT INTO pedidos
                     (id, usuario_id, paquete_id, suscripcion_id,
-                     direccion, cantidad, total, metodo_pago, estatus,
+                     direccion, codigo_postal, cantidad, total, metodo_pago, estatus,
                      notas, fecha_usuario, fecha_entrega,
                      created_at, updated_at)
-                SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14
+                SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15
                 WHERE NOT EXISTS (
                     SELECT 1 FROM pedidos
                     WHERE usuario_id = $2 AND estatus = 'pendiente'
@@ -102,6 +102,7 @@ class PostgresPedidoRepository(PedidoRepository):
                 pedido.paquete_id,
                 pedido.suscripcion_id,
                 pedido.direccion,
+                pedido.codigo_postal,
                 pedido.cantidad,
                 pedido.total,
                 pedido.metodo_pago,
@@ -125,10 +126,10 @@ class PostgresPedidoRepository(PedidoRepository):
                 """
                 INSERT INTO pedidos
                     (id, usuario_id, paquete_id, suscripcion_id,
-                     direccion, cantidad, total, metodo_pago, estatus,
+                     direccion, codigo_postal, cantidad, total, metodo_pago, estatus,
                      notas, fecha_usuario, fecha_entrega,
                      created_at, updated_at)
-                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
                 RETURNING {_PEDIDO_COLS}
                 """,
                 pedido.id,
@@ -136,6 +137,7 @@ class PostgresPedidoRepository(PedidoRepository):
                 pedido.paquete_id,
                 pedido.suscripcion_id,
                 pedido.direccion,
+                pedido.codigo_postal,
                 pedido.cantidad,
                 pedido.total,
                 pedido.metodo_pago,
@@ -224,16 +226,17 @@ class PostgresSuscripcionRepository(SuscripcionRepository):
             row = await c.fetchrow(
                 f"""
                 INSERT INTO suscripciones
-                    (id, usuario_id, paquete_id, direccion, cantidad,
+                    (id, usuario_id, paquete_id, direccion, codigo_postal, cantidad,
                      metodo_pago, dia_entrega, fecha_inicio,
                      proxima_generacion, activa, created_at, updated_at)
-                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
                 RETURNING {_SUSCRIPCION_COLS}
                 """,
                 suscripcion.id,
                 suscripcion.usuario_id,
                 suscripcion.paquete_id,
                 suscripcion.direccion,
+                suscripcion.codigo_postal,
                 suscripcion.cantidad,
                 suscripcion.metodo_pago,
                 suscripcion.dia_entrega,

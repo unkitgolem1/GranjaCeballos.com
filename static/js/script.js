@@ -108,23 +108,13 @@ function calcularPrecio() {
   if (!card) return;
 
   const cantidad = parseInt(document.getElementById('cantidad-input').value || '1');
-  const esSuscripcion = document.getElementById('es-suscripcion-input').value === 'true';
-  const envioGratis = esSuscripcion;
+  const esSuscripcion = document.getElementById('es-suscripcion-input')?.value === 'true';
   const customizable = card.dataset.customizable === 'true';
 
   let precioUnitario, total;
   if (customizable) {
-    const tiers = JSON.parse(card.dataset.tiers || '[]');
-    const precioBase = parseFloat(card.dataset.precio);
-    const precioMinimo = parseFloat(card.dataset.precioMinimo || '0');
-    precioUnitario = precioBase;
-    for (const t of tiers.sort((a, b) => b.min_cantidad - a.min_cantidad)) {
-      if (cantidad >= t.min_cantidad) {
-        precioUnitario = parseFloat(t.precio_unitario);
-        break;
-      }
-    }
-    precioUnitario = Math.max(precioUnitario, precioMinimo);
+    var desc = Math.min(cantidad - 1, 8) * 5;
+    precioUnitario = Math.max(120 - desc, 80);
     total = precioUnitario * cantidad;
   } else {
     const cantidadFija = parseInt(card.dataset.cantidadFija || '1');
@@ -132,16 +122,19 @@ function calcularPrecio() {
     total = precioUnitario * cantidadFija;
   }
 
-  if (!envioGratis) {
+  if (!esSuscripcion) {
     const costoEnvio = parseFloat(card.dataset.costoEnvio || '0');
     total += costoEnvio;
   }
 
   const target = document.getElementById('checkout-price-preview');
   if (customizable && cantidad > 0) {
+    var ahorro = Math.max(120 - precioUnitario, 0);
     target.innerHTML =
       '<p class="text-sm text-white font-semibold">$' + total.toFixed(0) + ' MXN</p>' +
-      '<p class="text-xs text-white/40">$' + precioUnitario.toFixed(2) + ' por cartón</p>';
+      '<p class="text-xs text-white/40">$' + precioUnitario.toFixed(0) + ' por cartón</p>' +
+      (ahorro > 0 ? '<p class="text-xs text-[#90BDB5]">✨ Ahorras $' + (ahorro * cantidad) + ' MXN</p>' : '') +
+      '<p class="text-xs text-white/40">' + (esSuscripcion ? 'Envío gratis' : 'Incluye envío') + '</p>';
   } else {
     target.innerHTML =
       '<p class="text-sm text-white font-semibold">$' + total.toFixed(0) + ' MXN</p>' +

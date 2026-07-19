@@ -15,10 +15,22 @@
       <div class="space-y-3" id="direccion-wrapper">
         <input type="text" name="direccion" id="direccion-input" required placeholder="Escribe tu dirección (ej. C. 53a #298, Fco. de Montejo)"
                class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
-        <button type="button" id="ubicacion-btn" onclick="obtenerUbicacion()"
-                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#90BDB5]/10 border border-[#90BDB5]/20 text-[#90BDB5] text-xs font-medium hover:bg-[#90BDB5]/20 transition-all duration-300">
-          <span>📍</span> Usar mi ubicación
-        </button>
+        <div class="flex items-center gap-2">
+          <input type="text" name="codigo_postal" id="cp-input" placeholder="Código Postal"
+                 maxlength="5" inputmode="numeric" pattern="[0-9]{5}"
+                 autocomplete="postal-code"
+                 class="flex-1 bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
+          <button type="button" id="ubicacion-btn" onclick="obtenerUbicacion()"
+                  class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#90BDB5]/10 border border-[#90BDB5]/20 text-[#90BDB5] text-xs font-medium hover:bg-[#90BDB5]/20 transition-all duration-300 shrink-0">
+            <span>📍</span> Usar mi ubicación
+          </button>
+        </div>
+        <div id="cp-detect-card" class="hidden bg-[#584D14]/40 border border-[#DDAC23]/20 rounded-xl p-3">
+          <p class="text-xs text-white/70 leading-relaxed">
+            <span class="text-[#DDAC23] font-medium">📍 No pudimos encontrar tu código postal automáticamente.</span>
+            Escribe tu código postal de 5 dígitos para calcular el envío.
+          </p>
+        </div>
       </div>
 
       <div class="space-y-2">
@@ -27,7 +39,7 @@
         <input type="hidden" name="paquete_id" id="selected-paquete" value="{{ paquete_id or '' }}">
 
         {% for paquete in paquetes %}
-        <div class="plan-card cursor-pointer rounded-xl px-5 py-4 flex items-center justify-between transition-all duration-300 border border-transparent hover:border-[#DDAC23]/40 hover:bg-[#DDAC23]/5"
+        <div class="plan-card cursor-pointer rounded-xl px-5 py-4 flex items-center justify-between transition-all duration-300 border border-[#DDAC23]/20 bg-[#DDAC23]/5"
              data-id="{{ paquete.id }}"
              data-precio="{{ paquete.precio }}"
              data-costo-envio="{{ paquete.costo_envio }}"
@@ -82,7 +94,7 @@
                   class="flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
                   :class="suscripcion ? 'bg-[#DDAC23] text-[#1F200B] shadow-lg shadow-[#DDAC23]/20' : 'text-white/50'">
             <span class="block leading-none">🔄 Suscripción</span>
-            <span class="block text-[10px] mt-1 font-normal" :class="suscripcion ? 'text-[#1F200B]/70' : 'text-white/30'">Envío gratis siempre</span>
+            <span class="block text-[10px] mt-1 font-normal" :class="suscripcion ? 'text-[#1F200B]/70' : 'text-white/30'">Envío gratis</span>
           </button>
         </div>
 
@@ -193,3 +205,22 @@
 </div>
 
 <script src="/static/js/script.js"></script>
+<script>
+(function() {
+  var cpInput = document.getElementById('cp-input');
+  var cpCard = document.getElementById('cp-detect-card');
+  if (!cpInput) return;
+  fetch('/api/detectar-cp')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.codigo_postal) {
+        cpInput.value = data.codigo_postal;
+      } else {
+        cpCard.classList.remove('hidden');
+      }
+    })
+    .catch(function() {
+      cpCard.classList.remove('hidden');
+    });
+})();
+</script>

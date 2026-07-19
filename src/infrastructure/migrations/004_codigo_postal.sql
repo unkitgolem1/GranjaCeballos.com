@@ -1,0 +1,2 @@
+ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS codigo_postal VARCHAR(10);
+ALTER TABLE suscripciones ADD COLUMN IF NOT EXISTS codigo_postal VARCHAR(10);

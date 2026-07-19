@@ -16,12 +16,9 @@ from .schemas import PedidoCreate, SuscripcionCreate
 def _calcular_precio_unitario(paquete: Paquete, cantidad: int) -> Decimal:
     if not paquete.es_customizable:
         return paquete.precio
-    precio = paquete.precio
-    for tier in sorted(paquete.tiers, key=lambda t: t.min_cantidad, reverse=True):
-        if cantidad >= tier.min_cantidad:
-            precio = tier.precio_unitario
-            break
-    return max(precio, paquete.precio_minimo)
+    desc = Decimal(min(cantidad - 1, 8)) * Decimal("5")
+    unitario = paquete.precio - desc
+    return max(unitario, paquete.precio_minimo)
 
 
 def _calcular_total(paquete: Paquete, cantidad: int, envio_gratis: bool = False) -> Decimal:
@@ -38,6 +35,46 @@ def _calcular_fecha_entrega(deseada: date) -> date:
     if deseada == hoy and ahora.hour >= 12:
         return hoy + timedelta(days=1)
     return deseada
+
+
+MERIDA_CP = {
+    "97000","97003","97004","97005","97006","97007","97008","97009",
+    "97050","97060","97070","97080","97089","97090","97098","97099",
+    "97100","97104","97105","97106","97107","97108","97109",
+    "97110","97113","97114","97115","97116","97117","97118","97119",
+    "97120","97121","97123","97124","97125","97127","97128","97129",
+    "97130","97133","97134","97135","97136","97137","97138","97139",
+    "97140","97143","97144","97145","97146","97147","97148","97149",
+    "97150","97153","97154","97155","97156","97157","97158","97159",
+    "97160","97163","97164","97165","97166","97167","97168","97169",
+    "97170","97173","97174","97175","97176","97177","97178","97179",
+    "97180","97183","97184","97185","97186","97187","97188","97189",
+    "97190","97193","97194","97195","97196","97197","97198","97199",
+    "97200","97203","97204","97205","97206","97207","97208","97209",
+    "97210","97214","97215","97216","97217","97218","97219",
+    "97220","97223","97224","97225","97226","97227","97228","97229",
+    "97230","97234","97235","97236","97237","97238","97239",
+    "97240","97243","97244","97245","97246","97247","97248","97249",
+    "97250","97254","97255","97256","97257","97258","97259",
+    "97260","97263","97264","97265","97266","97267","97268","97269",
+    "97270","97273","97274","97275","97276","97277","97278","97279",
+    "97280","97284","97285","97286","97287","97288","97289",
+    "97290","97294","97295","97296","97297","97298","97299",
+    "97300","97302","97303","97304","97305","97306","97307","97308","97309","97310",
+    "97312","97313","97314","97315","97316","97317","97318",
+    "97320","97321","97322","97324","97325","97326","97327",
+}
+
+
+def _validar_cp_merida(codigo_postal: str | None) -> tuple[bool, str]:
+    if not codigo_postal:
+        return True, ""
+    cp = codigo_postal.strip()
+    if not cp.isdigit() or len(cp) != 5:
+        return False, "El código postal debe ser de 5 dígitos."
+    if cp not in MERIDA_CP:
+        return False, "Solo entregamos en Mérida. El código postal no corresponde a Mérida."
+    return True, ""
 
 
 def _validar_direccion_yucatan(direccion: str) -> bool:
@@ -105,6 +142,9 @@ class PedidoService:
                 "Solo entregamos en Yucatán. "
                 "Asegúrate de incluir tu ciudad o 'Yucatán' en la dirección."
             )
+        cp_ok, cp_msg = _validar_cp_merida(datos.codigo_postal)
+        if not cp_ok:
+            raise ValueError(cp_msg)
 
         usuario = await self._usuario_repo.get_or_create_by_phone(
             telefono=datos.telefono,
@@ -126,6 +166,7 @@ class PedidoService:
             usuario_id=usuario.id,
             paquete_id=paquete.id,
             direccion=datos.direccion,
+            codigo_postal=datos.codigo_postal,
             cantidad=cantidad,
             total=total,
             metodo_pago=datos.metodo_pago,
@@ -161,6 +202,9 @@ class SuscripcionService:
                 "Solo entregamos en Yucatán. "
                 "Asegúrate de incluir tu ciudad o 'Yucatán' en la dirección."
             )
+        cp_ok, cp_msg = _validar_cp_merida(datos.codigo_postal)
+        if not cp_ok:
+            raise ValueError(cp_msg)
 
         usuario = await self._usuario_repo.get_or_create_by_phone(
             telefono=datos.telefono,
@@ -184,6 +228,7 @@ class SuscripcionService:
             usuario_id=usuario.id,
             paquete_id=paquete.id,
             direccion=datos.direccion,
+            codigo_postal=datos.codigo_postal,
             cantidad=cantidad,
             metodo_pago=datos.metodo_pago,
             dia_entrega=dia_semana,
@@ -198,6 +243,7 @@ class SuscripcionService:
             paquete_id=paquete.id,
             suscripcion_id=creada.id,
             direccion=datos.direccion,
+            codigo_postal=datos.codigo_postal,
             cantidad=cantidad,
             total=total,
             metodo_pago=datos.metodo_pago,

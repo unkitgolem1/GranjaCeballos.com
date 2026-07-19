@@ -36,6 +36,12 @@
         <span>Dirección:</span>
         <span class="text-white font-medium">{{ pedido.direccion }}</span>
       </p>
+      {% if pedido.codigo_postal %}
+      <p class="text-white/70 text-xs flex justify-between">
+        <span>C.P.:</span>
+        <span class="text-white font-medium">{{ pedido.codigo_postal }}</span>
+      </p>
+      {% endif %}
       <p class="text-white/70 text-xs flex justify-between">
         <span>Pago:</span>
         <span class="text-white font-medium">{% if pedido.metodo_pago == 'efectivo' %}💵 Efectivo contra entrega{% else %}💳 Tarjeta{% endif %}</span>

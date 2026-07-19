@@ -42,6 +42,7 @@ class Pedido(BaseModel):
     paquete_id: UUID = Field(...)
     suscripcion_id: Optional[UUID] = Field(default=None)
     direccion: str = Field(..., max_length=500)
+    codigo_postal: Optional[str] = Field(default=None, max_length=10)
     cantidad: int = Field(default=1, ge=1)
     total: Decimal = Field(..., ge=0, decimal_places=2)
     metodo_pago: str = Field(
@@ -63,6 +64,7 @@ class Suscripcion(BaseModel):
     usuario_id: UUID = Field(...)
     paquete_id: UUID = Field(...)
     direccion: str = Field(..., max_length=500)
+    codigo_postal: Optional[str] = Field(default=None, max_length=10)
     cantidad: int = Field(default=1, ge=1)
     metodo_pago: str = Field(
         ..., pattern=r"^(tarjeta|efectivo)$"

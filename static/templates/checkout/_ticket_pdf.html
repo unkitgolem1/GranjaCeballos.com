@@ -109,6 +109,9 @@
     <div class="row"><span class="label">Nombre</span><span class="value">{{ pedido.usuario_nombre }}</span></div>
     <div class="row"><span class="label">Teléfono</span><span class="value">{{ pedido.telefono }}</span></div>
     <div class="row"><span class="label">Dirección</span><span class="value" style="font-size:10px">{{ pedido.direccion }}</span></div>
+    {% if pedido.codigo_postal %}
+    <div class="row"><span class="label">C.P.</span><span class="value">{{ pedido.codigo_postal }}</span></div>
+    {% endif %}
   </div>
 
   <div class="section">

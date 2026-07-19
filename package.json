@@ -2,7 +2,8 @@
   "name": "granjaceballos.com",
   "version": "1.0.0",
   "scripts": {
-    "dev": "tailwindcss -i ./static/css/styles.css -o ./static/css/output.css --watch"
+    "dev": "tailwindcss -i ./static/css/styles.css -o ./static/css/output.css --watch",
+    "build": "NODE_ENV=production tailwindcss -i ./static/css/styles.css -o ./static/css/output.css --minify"
   },
   "keywords": [],
   "author": "Daniel",

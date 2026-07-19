@@ -45,7 +45,7 @@
               <div class="flex items-center bg-white/5 border border-white/10 rounded-lg overflow-hidden">
                 <button type="button"
                   class="px-3 py-1.5 text-sm text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all font-bold"
-                  onclick="stepperQty(this, -1)">−</button>
+                  onclick="stepperPricing(this, -1)">−</button>
                 <input
                   type="number"
                   min="1"
@@ -53,21 +53,18 @@
                   class="w-14 bg-transparent border-x border-white/10 px-2 py-1.5 text-sm text-white text-center focus:outline-none no-spinner"
                   id="qty-{{ paquete.id }}"
                   name="cantidad-{{ paquete.id }}"
-                  oninput="var v=Math.max(1,parseInt(this.value)||1);this.value=v;this.setAttribute('hx-get','/api/paquetes/precio-html?paquete_id={{ paquete.id }}&cantidad='+v);htmx.trigger(this,'change');"
-                  hx-get="/api/paquetes/precio-html?paquete_id={{ paquete.id }}&cantidad=1"
-                  hx-trigger="change"
-                  hx-target="#price-{{ paquete.id }}"
-                  hx-swap="innerHTML"
+                  oninput="var v=Math.max(1,parseInt(this.value)||1);this.value=v;updatePricing('{{ paquete.id }}');"
                 >
                 <button type="button"
                   class="px-3 py-1.5 text-sm text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all font-bold"
-                  onclick="stepperQty(this, 1)">+</button>
+                  onclick="stepperPricing(this, 1)">+</button>
               </div>
             </div>
             <div id="price-{{ paquete.id }}">
-              <p class="text-baroque text-lg font-bold">${{ paquete.precio + (paquete.costo_envio or 0) }} MXN</p>
+              <p class="text-baroque text-lg font-bold">${{ paquete.precio }} MXN</p>
               <p class="text-white/50 text-xs">${{ paquete.precio }} por cartón</p>
               <p class="text-[#90BDB5]/70 text-xs mt-1">🚚 Envío incluido</p>
+              <p id="ahorro-{{ paquete.id }}" class="text-[#90BDB5] text-xs mt-1"></p>
             </div>
             <button
               id="btn-{{ paquete.id }}"
@@ -123,12 +120,39 @@
 }
 </style>
 <script>
-function stepperQty(btn, delta) {
+function pricear(precioBase, cantidad) {
+  var desc = Math.min(cantidad - 1, 8) * 5;
+  return Math.max(precioBase - desc, 80);
+}
+
+function updatePricing(id) {
+  var input = document.getElementById('qty-' + id);
+  var priceDiv = document.getElementById('price-' + id);
+  var ahorroDiv = document.getElementById('ahorro-' + id);
+  if (!input || !priceDiv) return;
+  var qty = parseInt(input.value) || 1;
+  var unitario = pricear(120, qty);
+  var total = unitario * qty;
+  priceDiv.innerHTML =
+    '<p class="text-baroque text-lg font-bold">$' + total + ' MXN</p>' +
+    '<p class="text-white/50 text-xs">$' + unitario + ' por cartón</p>' +
+    '<p class="text-[#90BDB5]/70 text-xs mt-1">🚚 Envío incluido</p>';
+  if (ahorroDiv) {
+    var ahorro = 120 - unitario;
+    if (ahorro > 0) {
+      ahorroDiv.innerHTML = '✨ Ahorras $' + (ahorro * qty) + ' MXN';
+    } else {
+      ahorroDiv.innerHTML = '';
+    }
+  }
+}
+
+function stepperPricing(btn, delta) {
   var input = btn.parentElement.querySelector('input[type=number]');
   var val = parseInt(input.value) || 1;
   val = Math.max(1, val + delta);
   input.value = val;
-  input.setAttribute('hx-get', '/api/paquetes/precio-html?paquete_id=' + input.name.replace('cantidad-', '') + '&cantidad=' + val);
-  htmx.trigger(input, 'change');
+  var id = input.id.replace('qty-', '');
+  updatePricing(id);
 }
 </script>

@@ -36,6 +36,7 @@
           src="https://ptxhwrzuefattcjiqfoq.supabase.co/storage/v1/object/sign/fotos/{{ filename }}?token={{ token }}"
           alt="Campo Granja Ceballos, Yucatán"
           class="w-full block"
+          {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
           style="aspect-ratio: 4/3; object-fit: cover; border-radius: 2px; background: #c8a97e;">
         <p class="text-center text-xs font-mono text-[#a09080] tracking-[0.2em] uppercase mt-4">
           {{ caption }}

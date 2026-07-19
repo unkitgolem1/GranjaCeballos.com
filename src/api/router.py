@@ -190,25 +190,27 @@ async def descargar_ticket(
 ):
     async with pool.acquire() as conn:
         row = await conn.fetchrow(
-            """SELECT p.id, p.usuario_id, p.paquete_id, p.direccion, p.cantidad,
-                      p.total, p.metodo_pago, p.fecha_entrega, u.nombre, u.telefono,
-                      paq.nombre as paquete_nombre
-               FROM pedidos p
-               JOIN usuarios u ON u.id = p.usuario_id
-               JOIN paquetes paq ON paq.id = p.paquete_id
-               WHERE p.id = $1""",
+            """SELECT p.id, p.usuario_id, p.paquete_id, p.direccion,
+                      p.codigo_postal, p.cantidad,
+                   p.total, p.metodo_pago, p.fecha_entrega, u.nombre, u.telefono,
+                   paq.nombre as paquete_nombre
+             FROM pedidos p
+             JOIN usuarios u ON u.id = p.usuario_id
+             JOIN paquetes paq ON paq.id = p.paquete_id
+             WHERE p.id = $1""",
             order_id,
         )
         if row is None:
             row = await conn.fetchrow(
-                """SELECT s.id, s.usuario_id, s.paquete_id, s.direccion, s.cantidad,
-                          0 as total, 'efectivo' as metodo_pago,
-                          s.proxima_generacion as fecha_entrega,
-                          u.nombre, u.telefono, paq.nombre as paquete_nombre
-                   FROM suscripciones s
-                   JOIN usuarios u ON u.id = s.usuario_id
-                   JOIN paquetes paq ON paq.id = s.paquete_id
-                   WHERE s.id = $1""",
+                """SELECT s.id, s.usuario_id, s.paquete_id, s.direccion,
+                          s.codigo_postal, s.cantidad,
+                      0 as total, 'efectivo' as metodo_pago,
+                      s.proxima_generacion as fecha_entrega,
+                      u.nombre, u.telefono, paq.nombre as paquete_nombre
+                 FROM suscripciones s
+                 JOIN usuarios u ON u.id = s.usuario_id
+                 JOIN paquetes paq ON paq.id = s.paquete_id
+                 WHERE s.id = $1""",
                 order_id,
             )
         if row is None:
@@ -223,6 +225,7 @@ async def descargar_ticket(
         "total": f"{row['total']:.0f}",
         "fecha_entrega": row["fecha_entrega"],
         "direccion": row["direccion"],
+        "codigo_postal": row.get("codigo_postal") or "",
         "metodo_pago": row["metodo_pago"],
         "es_suscripcion": False,
     }
@@ -270,6 +273,24 @@ async def reverse_geocode(lat: float = Query(...), lng: float = Query(...)):
         data = resp.json()
         direccion = (data or {}).get("display_name", "")
         return JSONResponse({"direccion": direccion})
+
+
+@router.get("/detectar-cp")
+async def detectar_cp(request: Request):
+    client_host = request.client.host if request.client else "127.0.0.1"
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.get(
+                f"http://ip-api.com/json/{client_host}",
+                params={"fields": "zip,status"},
+                timeout=5,
+            )
+            data = resp.json()
+            if data.get("status") == "success" and data.get("zip"):
+                return JSONResponse({"codigo_postal": data["zip"]})
+        except Exception:
+            pass
+    return JSONResponse({"codigo_postal": None})
 
 
 @router.get("/ubicacion-por-ip")

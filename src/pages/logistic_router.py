@@ -74,7 +74,7 @@ async def dashboard(
 
     ORDERS_SQL = """SELECT
                         p.id, p.usuario_id, p.paquete_id,
-                        p.direccion, p.cantidad, p.total,
+                        p.direccion, p.codigo_postal, p.cantidad, p.total,
                         p.metodo_pago, p.estatus,
                         p.fecha_usuario, p.fecha_entrega,
                         p.created_at, p.updated_at,

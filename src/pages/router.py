@@ -14,6 +14,7 @@ from fastapi.templating import Jinja2Templates
 
 from src.application.schemas import PedidoCreate, SuscripcionCreate
 from src.application.services import (
+    _calcular_precio_unitario,
     _calcular_total,
     PedidoService,
     SuscripcionService,
@@ -48,6 +49,13 @@ def _json_filter(obj):
 
 
 templates.env.filters["to_json"] = _json_filter
+
+
+def _precio_unitario_filter(paquete, cantidad=1):
+    return f"{_calcular_precio_unitario(paquete, cantidad):.0f}"
+
+
+templates.env.filters["precio_unitario"] = _precio_unitario_filter
 
 router = APIRouter()
 PARTIALS = {"welcome": "catalog/welcome.html"}
@@ -147,6 +155,7 @@ async def checkout_submit(
     telefono: str = Form(...),
     paquete_id: str = Form(...),
     direccion: str = Form(...),
+    codigo_postal: str = Form(default=""),
     cantidad: int = Form(default=1, ge=1),
     es_suscripcion: bool = Form(default=False),
     dia_entrega: int = Form(default=1, ge=1, le=7),
@@ -185,6 +194,7 @@ async def checkout_submit(
                 telefono=telefono,
                 paquete_id=UUID(paquete_id),
                 direccion=direccion,
+                codigo_postal=codigo_postal or None,
                 cantidad=cantidad,
                 metodo_pago=metodo_pago,
                 dia_entrega=dia_entrega,
@@ -202,6 +212,7 @@ async def checkout_submit(
                     "total": f"{total:.0f}",
                     "fecha_entrega": sub.proxima_generacion,
                     "direccion": sub.direccion,
+                    "codigo_postal": codigo_postal or "",
                     "telefono": telefono,
                     "metodo_pago": metodo_pago,
                 },
@@ -214,6 +225,7 @@ async def checkout_submit(
                 telefono=telefono,
                 paquete_id=UUID(paquete_id),
                 direccion=direccion,
+                codigo_postal=codigo_postal or None,
                 cantidad=cantidad,
                 metodo_pago=metodo_pago,
                 fecha_usuario=fecha_entrega,
@@ -230,6 +242,7 @@ async def checkout_submit(
                     "total": f"{total:.0f}",
                     "fecha_entrega": pedido.fecha_entrega,
                     "direccion": pedido.direccion,
+                    "codigo_postal": codigo_postal or "",
                     "telefono": telefono,
                     "metodo_pago": metodo_pago,
                 },
