@@ -83,11 +83,17 @@ def _paquete_from_cache(paquete_id: str) -> Paquete | None:
 
 
 @router.get("/", response_class=HTMLResponse)
-async def index(request: Request):
+async def index(
+    request: Request,
+    repo: PaqueteRepoDep,
+    cliente_repo: ClienteRepoDep,
+):
+    paquetes = await _get_paquetes_cached(repo)
+    clientes = await cliente_repo.list_active()
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={},
+        context={"paquetes": paquetes, "clientes": clientes},
     )
 
 
@@ -141,7 +147,6 @@ async def checkout_submit(
     telefono: str = Form(...),
     paquete_id: str = Form(...),
     direccion: str = Form(...),
-    codigo_postal: str = Form(...),
     cantidad: int = Form(default=1, ge=1),
     es_suscripcion: bool = Form(default=False),
     dia_entrega: int = Form(default=1, ge=1, le=7),
@@ -180,7 +185,6 @@ async def checkout_submit(
                 telefono=telefono,
                 paquete_id=UUID(paquete_id),
                 direccion=direccion,
-                codigo_postal=codigo_postal,
                 cantidad=cantidad,
                 metodo_pago=metodo_pago,
                 dia_entrega=dia_entrega,
@@ -210,7 +214,6 @@ async def checkout_submit(
                 telefono=telefono,
                 paquete_id=UUID(paquete_id),
                 direccion=direccion,
-                codigo_postal=codigo_postal,
                 cantidad=cantidad,
                 metodo_pago=metodo_pago,
                 fecha_usuario=fecha_entrega,

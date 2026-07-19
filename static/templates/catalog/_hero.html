@@ -17,7 +17,7 @@
       </button>
     </div>
 
-    <div class="relative w-full max-w-xs sm:max-w-sm mx-auto aspect-[4/3]">
+    <div class="flex justify-center items-center relative" style="min-height: 320px;">
 
       {% set fotos = [
         ('grano_028.webp', 'eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kOTBmYjY1MC1kYzU3LTQ1YTgtOTJhNS04NzRhYzM5Zjk2NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmb3Rvcy9ncmFub18wMjgud2VicCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQzMzI3MzgsImV4cCI6MTgxNTg2ODczOH0.ljtnqtHq_tgXnNqJjDqc3oV9mHQFkIMhQ5nZmtWVcnU', 'Yucatán, Campo'),
@@ -26,8 +26,8 @@
       ] %}
 
       {% for filename, token, caption in fotos %}
-      <div class="absolute inset-0 bg-[#faf8f5] photo-stamp-{{ loop.index }}"
-           style="padding: 8% 8% 35% 8%; border-radius: 2px;
+      <div class="w-[240px] sm:w-[300px] bg-[#faf8f5] absolute photo-stamp-{{ loop.index }}"
+           style="padding: 12px 12px 60px 12px; border-radius: 2px;
                   box-shadow:
                     0 2px 4px rgba(0,0,0,0.25),
                     0 8px 32px rgba(0,0,0,0.35),
@@ -35,9 +35,9 @@
         <img
           src="https://ptxhwrzuefattcjiqfoq.supabase.co/storage/v1/object/sign/fotos/{{ filename }}?token={{ token }}"
           alt="Campo Granja Ceballos, Yucatán"
-          class="w-full h-full block object-cover"
-          style="border-radius: 2px; background: #c8a97e;">
-        <p class="absolute bottom-[8%] left-0 right-0 text-center text-xs font-mono text-[#a09080] tracking-[0.2em] uppercase">
+          class="w-full block"
+          style="aspect-ratio: 4/3; object-fit: cover; border-radius: 2px; background: #c8a97e;">
+        <p class="text-center text-xs font-mono text-[#a09080] tracking-[0.2em] uppercase mt-4">
           {{ caption }}
         </p>
       </div>

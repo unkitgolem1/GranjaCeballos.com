@@ -1,4 +1,5 @@
 {
+  "buildCommand": "uv export --no-dev --format requirements-txt > requirements.txt",
   "outputDirectory": ".",
   "functions": {
     "api/index.py": {
@@ -11,7 +12,7 @@
   "crons": [
     {
       "path": "/api/suscripciones/procesar",
-      "schedule": "0 0 * * *"
+      "schedule": "0 */6 * * *"
     }
   ]
 }

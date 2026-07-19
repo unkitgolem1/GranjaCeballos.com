@@ -84,7 +84,7 @@ class PostgresPedidoRepository(PedidoRepository):
     async def create_si_no_pendiente(self, pedido: Pedido) -> Pedido:
         async with self._pool.acquire() as conn:
             row = await conn.fetchrow(
-                f"""
+                """
                 INSERT INTO pedidos
                     (id, usuario_id, paquete_id, suscripcion_id,
                      direccion, cantidad, total, metodo_pago, estatus,
@@ -122,7 +122,7 @@ class PostgresPedidoRepository(PedidoRepository):
     async def create(self, pedido: Pedido, conn: Optional[asyncpg.Connection] = None) -> Pedido:
         async def _do(c: asyncpg.Connection) -> Pedido:
             row = await c.fetchrow(
-                f"""
+                """
                 INSERT INTO pedidos
                     (id, usuario_id, paquete_id, suscripcion_id,
                      direccion, cantidad, total, metodo_pago, estatus,

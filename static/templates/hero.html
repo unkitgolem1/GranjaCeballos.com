@@ -4,37 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Granja Ceballos</title>
-
-  {# ── Critical CSS inline (primer paint inmediato) ── #}
-  <style>
-    *,:before,:after{box-sizing:border-box;margin:0;padding:0;border:0 solid}
-    html{-webkit-text-size-adjust:100%;line-height:1.5;font-family:Inter,Helvetica Neue,system-ui,sans-serif}
-    body{min-height:100vh;background:linear-gradient(to bottom,#025270,#03738c);color:#fff;overflow-x:hidden}
-    button{font:inherit;color:inherit;background:0 0;cursor:pointer}
-    :root{--color-primal-blue:#03738c;--color-black-mesa:#1f200b;--color-teal-tree:#90bdb5;--color-baroque:#ddac23;--font-heading:'Playfair Display',Georgia,serif;--font-sans:Inter,Helvetica Neue,system-ui,sans-serif}
-    .text-display{font-family:var(--font-heading);letter-spacing:-.05em;text-transform:uppercase}
-    .text-5xl{font-size:3rem;line-height:1}.text-baroque{color:#ddac23}.text-teal-tree{color:#90bdb5}
-    .animate-hollywood-zoom{animation:hollywood-zoom 2.2s cubic-bezier(.08,.9,.3,1.1) forwards}
-    @keyframes hollywood-zoom{0%{opacity:0;transform:scale(.05)}30%{opacity:.7;transform:scale(1.12)}45%{opacity:1;transform:scale(.95)}55%{transform:scale(1.04)}65%{transform:scale(.98)}75%{transform:scale(1.01)}85%{transform:scale(1)}}
-    @keyframes gold-glow{0%,100%{text-shadow:0 0 8px rgba(221,172,35,.3),0 0 30px rgba(221,172,35,.15),0 4px 20px rgba(0,0,0,.4)}50%{text-shadow:0 0 20px rgba(221,172,35,.6),0 0 60px rgba(221,172,35,.3),0 4px 20px rgba(0,0,0,.4)}}.animate-gold-glow{animation:gold-glow 3s ease-in-out 2s infinite}
-    @keyframes hollywood-subtitle{0%{opacity:0;transform:translateY(15px)}50%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}.animate-hollywood-subtitle{animation:hollywood-subtitle 1.2s ease-out .8s both}
-    @keyframes hollywood-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}.animate-hollywood-float{animation:hollywood-float 3s ease-in-out 2s infinite}
-    @keyframes hollywood-btn{0%{opacity:0;transform:scale(0) rotate(-8deg);box-shadow:0 0 0 transparent}50%{opacity:1;transform:scale(1.1) rotate(1deg)}70%{transform:scale(.95)}85%{transform:scale(1.03);box-shadow:0 0 30px rgba(221,172,35,.3)}100%{opacity:1;transform:scale(1);box-shadow:0 0 0 transparent}}.animate-hollywood-btn{animation:hollywood-btn 1s cubic-bezier(.34,1.56,.64,1) 1.8s both}
-    @media(min-width:40rem){.sm\:text-7xl{font-size:4.5rem;line-height:1}}
-  </style>
-
-  {# ── Full CSS (render-blocking, content correcto siempre) ── #}
-  <link href="/static/fonts/fonts.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link href="/static/css/output.css" rel="stylesheet">
-
-  <script src="/static/js/htmx.min.js" defer></script>
-  <script defer src="/static/js/alpine.min.js"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js"></script>
   {% block head %}{% endblock %}
 </head>
-<body class="font-sans min-h-screen overflow-x-hidden bg-linear-to-b from-primal-mid to-primal-blue text-white">
+<body class="font-sans min-h-screen overflow-x-hidden bg-linear-to-b from-[#025270] to-primal-blue">
   <div id="fondo-animado" class="fixed inset-0 w-full h-full -z-10 transition-all duration-1000 ease-in-out overflow-hidden">
     <div class="absolute bottom-0 w-full h-[40vh] bg-linear-to-t from-white/15 via-[#DDAC23]/5 to-transparent pointer-events-none"></div>
   </div>
+
+  <svg width="0" height="0" class="fixed pointer-events-none" aria-hidden="true">
+    <defs>
+      <filter id="fractal-noise">
+        <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+        <feColorMatrix type="saturate" values="0"/>
+      </filter>
+    </defs>
+  </svg>
 
   {% block content %}{% endblock %}
   {% block footer %}{% endblock %}
