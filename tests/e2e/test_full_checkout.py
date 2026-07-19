@@ -50,14 +50,12 @@ class TestFullCheckoutFlow:
         assert "Tradicional E2E" in resp.text
         assert "plan-card" in resp.text
         assert "csrf_token" not in resp.text
-        assert "calcularPrecio" in resp.text
+        assert "selectPaquete" in resp.text
 
     def test_pricing_data_in_html(self, client, mock_repos):
         resp = client.get("/checkout")
         assert resp.status_code == 200
-        assert "data-precio" in resp.text
-        assert "data-cantidad-fija" in resp.text
-        assert "data-costo-envio" in resp.text
+        assert "data-id" in resp.text
         assert "data-customizable" in resp.text
 
     def test_homepage_partial_shows_paquetes(self, client, mock_repos):

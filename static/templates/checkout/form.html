@@ -1,56 +1,4 @@
-<div id="checkout-container" class="pt-20" x-data="{
-  suscripcion: false,
-  metodo_pago: 'efectivo',
-  diaSel: '{{ hoy }}',
-  direccion: '',
-  cp: '',
-  ubicando: false,
-  ubicacionOk: false,
-  ubicacionError: '',
-  obtenerUbicacion() {
-    this.ubicando = true;
-    this.ubicacionOk = false;
-    this.ubicacionError = '';
-    const self = this;
-
-    function llenar(dir, cod) {
-      self.direccion = dir;
-      self.cp = cod || '';
-      self.ubicando = false;
-      self.ubicacionOk = true;
-      if (!cod) self.ubicacionError = '⚠️ No se detect\u00f3 tu c\u00f3digo postal. Escr\u00edbelo manualmente.';
-      setTimeout(function () { self.ubicacionOk = false; }, 3000);
-    }
-
-    function fallbackIP() {
-      fetch('/api/ubicacion-por-ip')
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          if (data && data.direccion) { llenar(data.direccion, data.cp); }
-          else { self.ubicando = false; self.ubicacionError = 'No se pudo obtener tu ubicaci\u00f3n.'; }
-        })
-        .catch(function () { self.ubicando = false; self.ubicacionError = 'No se pudo obtener tu ubicaci\u00f3n.'; });
-    }
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        function (pos) {
-          fetch('/api/reverse-geocode?lat=' + pos.coords.latitude + '&lng=' + pos.coords.longitude)
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-              if (data && data.direccion) { llenar(data.direccion, data.cp); }
-              else { fallbackIP(); }
-            })
-            .catch(function () { fallbackIP(); });
-        },
-        function () { fallbackIP(); },
-        { timeout: 5000, enableHighAccuracy: true }
-      );
-    } else {
-      fallbackIP();
-    }
-  }
-}" x-init="actualizarFechaEntrega(diaSel)">
+<div id="checkout-container" class="pt-20" x-data="{ suscripcion: false, metodo_pago: 'efectivo' }">
   <div class="max-w-xl mx-auto bg-[#1F200B]/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 space-y-6">
 
     <h2 class="text-display text-2xl text-white text-center">Completa tu pedido</h2>
@@ -64,22 +12,12 @@
                class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
       </div>
 
-      <div class="space-y-3" id="direccion-wrapper">
-        <input type="text" name="direccion" id="direccion-input" required placeholder="Escribe tu dirección (ej. C. 53a #298, Fco. de Montejo)"
-               class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300"
-               x-model="direccion">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <input type="text" name="codigo_postal" id="cp-input" required placeholder="Código postal (ej. 97100)"
-                 class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300"
-                 x-model="cp">
-          <button type="button" id="ubicacion-btn" @click="obtenerUbicacion"
-                  :disabled="ubicando"
-                  class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#90BDB5]/10 border border-[#90BDB5]/20 text-[#90BDB5] text-xs font-medium hover:bg-[#90BDB5]/20 transition-all duration-300 justify-center disabled:opacity-50">
-            <span x-text="ubicando ? '⌛' : (ubicacionOk ? '✅' : '📍')"></span>
-            <span x-text="ubicando ? 'Buscando ubicación…' : (ubicacionOk ? 'Dirección obtenida' : 'Usar mi ubicación')"></span>
-          </button>
+      <div class="space-y-3">
+        <input type="text" name="direccion" required placeholder="Escribe tu calle y número..."
+               class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
+        <div class="w-full h-32 rounded-2xl bg-black/40 flex items-center justify-center text-white/30 text-xs border border-white/5">
+          <span class="flex items-center gap-2">📍 Mapa — Google Maps</span>
         </div>
-        <p id="ubicacion-error" class="text-red-400 text-xs" x-show="ubicacionError" x-text="ubicacionError"></p>
       </div>
 
       <div class="space-y-2">
@@ -90,12 +28,7 @@
         {% for paquete in paquetes %}
         <div class="plan-card cursor-pointer rounded-xl px-5 py-4 flex items-center justify-between transition-all duration-300 border border-transparent hover:border-[#DDAC23]/40 hover:bg-[#DDAC23]/5"
              data-id="{{ paquete.id }}"
-             data-precio="{{ paquete.precio }}"
-             data-costo-envio="{{ paquete.costo_envio }}"
-             data-cantidad-fija="{{ paquete.cantidad_fija }}"
              data-customizable="{% if paquete.es_customizable %}true{% else %}false{% endif %}"
-             data-precio-minimo="{{ paquete.precio_minimo }}"
-             data-tiers='{{ paquete.tiers | to_json }}'
              onclick="selectPaquete(this)">
           <div>
             <p class="text-sm text-white font-medium">{{ paquete.nombre }}</p>
@@ -117,7 +50,7 @@
               onclick="stepperCheckout(this, -1)">−</button>
             <input type="number" id="cantidad-input" name="cantidad" min="1" value="{{ cantidad }}"
                    class="w-14 bg-transparent border-x border-white/10 px-2 py-1.5 text-sm text-white text-center focus:outline-none no-spinner"
-                   oninput="var v=Math.max(1,parseInt(this.value)||1);this.value=v;calcularPrecio();">
+                   oninput="var v=Math.max(1,parseInt(this.value)||1);this.value=v;updatePrice();">
             <button type="button"
               class="px-3 py-1.5 text-sm text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all font-bold"
               onclick="stepperCheckout(this, 1)">+</button>
@@ -125,26 +58,28 @@
         </div>
       </div>
 
-      <div id="checkout-price-preview" class="text-center min-h-[3rem] flex flex-col items-center justify-center">
-        <p class="text-white/40 text-xs">Selecciona un paquete</p>
-      </div>
-
       <div class="space-y-3">
         <p class="text-xs text-white/50 uppercase tracking-wider">Tipo de pedido</p>
 
         <div class="flex rounded-xl overflow-hidden border border-[#DDAC23]/30 p-0.5 bg-[#DDAC23]/5">
-          <button type="button" @click="suscripcion = false; calcularPrecio()"
+          <button type="button" @click="suscripcion = false; updatePrice()"
                   class="flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
                   :class="suscripcion ? 'text-white/50' : 'bg-[#DDAC23] text-[#1F200B] shadow-lg shadow-[#DDAC23]/20'">
             <span class="block leading-none">📦 Pedido único</span>
             <span class="block text-[10px] mt-1 font-normal" :class="suscripcion ? 'text-white/30' : 'text-[#1F200B]/70'">Pago contra entrega</span>
           </button>
-          <button type="button" @click="suscripcion = true; metodo_pago = 'tarjeta'; calcularPrecio()"
+          <button type="button" @click="suscripcion = true; updatePrice()"
                   class="flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
                   :class="suscripcion ? 'bg-[#DDAC23] text-[#1F200B] shadow-lg shadow-[#DDAC23]/20' : 'text-white/50'">
             <span class="block leading-none">🔄 Suscripción</span>
             <span class="block text-[10px] mt-1 font-normal" :class="suscripcion ? 'text-[#1F200B]/70' : 'text-white/30'">Envío gratis siempre</span>
           </button>
+        </div>
+
+        <div x-show="!suscripcion" x-transition.duration.300ms class="space-y-2">
+          <p class="text-xs text-white/50 uppercase tracking-wider">Fecha de entrega</p>
+          <input type="date" name="fecha_entrega" value="{{ hoy_iso }}" min="{{ hoy_iso }}"
+                 class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#DDAC23] transition-all [color-scheme:dark]">
         </div>
 
         <div x-show="suscripcion" x-transition.duration.300ms class="bg-[#90BDB5]/10 border border-[#90BDB5]/20 rounded-xl p-4 space-y-3">
@@ -167,20 +102,15 @@
           </div>
         </div>
 
-        <div class="space-y-2">
-          <p class="text-xs text-white/50 uppercase tracking-wider" x-text="suscripcion ? 'Día de entrega recurrente' : 'Elige tu día de entrega'"></p>
-          <input type="hidden" name="fecha_entrega" id="fecha-entrega-hidden" value="{{ hoy_iso }}">
-          <input type="hidden" name="dia_entrega" id="dia-entrega-hidden" value="{{ hoy }}">
+        <div x-show="suscripcion" x-transition.duration.300ms class="space-y-2">
+          <p class="text-xs text-white/50 uppercase tracking-wider">Día de entrega recurrente</p>
           <div class="flex gap-2" id="dia-entrega-group">
             {% set dias = [('L','1'), ('M','2'), ('M','3'), ('J','4'), ('V','5'), ('S','6'), ('D','7')] %}
             {% for label, val in dias %}
-            <button type="button"
-                    data-dia="{{ val }}"
-                    @click="diaSel = '{{ val }}'; actualizarFechaEntrega('{{ val }}')"
-                    class="flex-1 py-2 px-1 rounded-lg text-xs font-medium border transition-all duration-300"
-                    :class="diaSel === '{{ val }}' ? 'bg-[#DDAC23] text-[#1F200B] border-[#DDAC23]' : 'border-white/10 text-white/50 hover:border-white/30'">
-              {{ label }}
-            </button>
+            <label class="flex-1 cursor-pointer">
+              <input type="radio" name="dia_entrega" value="{{ val }}" class="hidden peer" {% if loop.index == hoy %}checked{% endif %}>
+              <span class="block text-center py-2 px-1 rounded-lg text-xs font-medium border border-white/10 text-white/50 peer-checked:bg-[#DDAC23] peer-checked:text-[#1F200B] peer-checked:border-[#DDAC23] transition-all duration-300 hover:border-white/30">{{ label }}</span>
+            </label>
             {% endfor %}
           </div>
         </div>
@@ -189,11 +119,11 @@
       <div class="space-y-2">
         <p class="text-xs text-white/50 uppercase tracking-wider">Método de pago</p>
         <div class="flex rounded-xl overflow-hidden border border-[#DDAC23]/30 p-0.5 bg-[#DDAC23]/5">
-          <button type="button" @click="if (!suscripcion) metodo_pago = 'efectivo'"
+          <button type="button" @click="metodo_pago = 'efectivo'"
                   class="flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
-                  :class="suscripcion ? 'opacity-30 cursor-not-allowed' : (metodo_pago === 'efectivo' ? 'bg-[#DDAC23] text-[#1F200B] shadow-lg shadow-[#DDAC23]/20' : 'text-white/50')">
+                  :class="metodo_pago === 'efectivo' ? 'bg-[#DDAC23] text-[#1F200B] shadow-lg shadow-[#DDAC23]/20' : 'text-white/50'">
             <span class="block leading-none">💵 Efectivo</span>
-            <span class="block text-[10px] mt-1 font-normal" :class="suscripcion ? 'text-white/20' : (metodo_pago === 'efectivo' ? 'text-[#1F200B]/70' : 'text-white/30')">Pago contra entrega</span>
+            <span class="block text-[10px] mt-1 font-normal" :class="metodo_pago === 'efectivo' ? 'text-[#1F200B]/70' : 'text-white/30'">Pago contra entrega</span>
           </button>
           <button type="button" @click="metodo_pago = 'tarjeta'"
                   class="flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
@@ -219,6 +149,10 @@
 
       <input type="hidden" name="es_suscripcion" id="es-suscripcion-input" :value="suscripcion">
       <input type="hidden" name="metodo_pago" id="metodo-pago-input" :value="metodo_pago">
+
+      <div id="checkout-price-preview" class="text-center min-h-[3rem] flex flex-col items-center justify-center">
+        <p class="text-white/40 text-xs">Selecciona un paquete</p>
+      </div>
 
       <div id="checkout-result"></div>
 
@@ -253,4 +187,55 @@
   </div>
 </div>
 
-<script src="/static/js/script.js"></script>
+<script>
+function selectPaquete(el) {
+  document.querySelectorAll('.plan-card').forEach(c => {
+    c.classList.remove('ring-2', 'ring-[#DDAC23]', 'bg-[#DDAC23]/10', 'scale-[1.02]');
+  });
+  el.classList.add('ring-2', 'ring-[#DDAC23]', 'bg-[#DDAC23]/10', 'scale-[1.02]');
+
+  document.getElementById('selected-paquete').value = el.dataset.id;
+
+  const qtyWrapper = document.getElementById('cantidad-wrapper');
+  const qtyInput = document.getElementById('cantidad-input');
+  if (el.dataset.customizable === 'true') {
+    qtyWrapper.classList.remove('hidden');
+  } else {
+    qtyWrapper.classList.add('hidden');
+    qtyInput.value = '1';
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.classList.remove('opacity-50', 'scale-90', 'cursor-not-allowed');
+  btn.classList.add('scale-100', 'shadow-lg', 'shadow-[#DDAC23]/30', 'hover:scale-[1.03]', 'hover:shadow-xl', 'hover:shadow-[#DDAC23]/40', 'active');
+
+  updatePrice();
+}
+
+function stepperCheckout(btn, delta) {
+  var input = document.getElementById('cantidad-input');
+  var val = parseInt(input.value) || 1;
+  val = Math.max(1, val + delta);
+  input.value = val;
+  updatePrice();
+}
+
+function updatePrice() {
+  const paqueteId = document.getElementById('selected-paquete').value;
+  if (!paqueteId) return;
+  const cantidad = document.getElementById('cantidad-input').value || '1';
+  const envioGratis = document.getElementById('es-suscripcion-input').value === 'true';
+  htmx.ajax('GET', '/api/paquetes/precio-html?paquete_id=' + paqueteId + '&cantidad=' + cantidad + '&envio_gratis=' + envioGratis, {
+    target: '#checkout-price-preview',
+    swap: 'innerHTML'
+  });
+}
+
+(function() {
+  var preselected = document.getElementById('selected-paquete').value;
+  if (preselected) {
+    var card = document.querySelector('.plan-card[data-id="' + preselected + '"]');
+    if (card) selectPaquete(card);
+  }
+})();
+</script>

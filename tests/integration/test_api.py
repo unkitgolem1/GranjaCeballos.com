@@ -46,7 +46,7 @@ class TestCheckoutPage:
 
     def test_checkout_renders_pricing_js(self, client):
         resp = client.get("/checkout")
-        assert "calcularPrecio" in resp.text
+        assert "selectPaquete" in resp.text
 
 
 class TestCheckoutSubmit:

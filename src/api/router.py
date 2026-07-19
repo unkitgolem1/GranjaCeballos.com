@@ -4,9 +4,8 @@ from datetime import date
 from pathlib import Path
 from uuid import UUID
 
-import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from fastapi.responses import HTMLResponse, JSONResponse, Response
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 from src.application.schemas import (
     PedidoCreate,
@@ -243,43 +242,4 @@ async def descargar_ticket(
     )
 
 
-@router.get("/reverse-geocode")
-async def reverse_geocode(lat: float, lng: float):
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(
-            "https://nominatim.openstreetmap.org/reverse",
-            params={"lat": lat, "lon": lng, "format": "json", "addressdetails": 1},
-            headers={"User-Agent": "GranjaCeballos/1.0"},
-            timeout=5,
-        )
-        data = resp.json()
-        if "error" in data:
-            return JSONResponse({"direccion": None, "cp": None})
-        addr = data.get("address", {})
-        parts = [p for p in [addr.get("city"), addr.get("state")] if p]
-        return JSONResponse({
-            "direccion": ", ".join(parts) if parts else data.get("display_name", ""),
-            "cp": addr.get("postcode", "") or "",
-        })
 
-
-@router.get("/ubicacion-por-ip")
-async def ubicacion_por_ip(request: Request):
-    forwarded = request.headers.get("X-Forwarded-For", "")
-    client_host = forwarded.split(",")[0].strip() or (request.client.host if request.client else "127.0.0.1")
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(
-            f"http://ip-api.com/json/{client_host}",
-            params={"fields": "lat,lon,city,regionName,country,status,zip"},
-            timeout=5,
-        )
-        data = resp.json()
-        if data.get("status") != "success":
-            return JSONResponse({"lat": None, "lng": None, "direccion": None, "cp": None})
-        parts = [p for p in [data.get("city"), data.get("regionName")] if p]
-        return JSONResponse({
-            "lat": data["lat"],
-            "lng": data["lon"],
-            "direccion": ", ".join(parts),
-            "cp": data.get("zip"),
-        })
