@@ -41,6 +41,24 @@
   @apply font-heading uppercase tracking-tighter;
 }
 
+@utility card-apple {
+  @apply bg-black-mesa/30 rounded-2xl p-6 border border-white/5;
+}
+
+@utility card-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+#main-content-flow {
+  filter: blur(8px);
+  opacity: 0;
+  transition: filter 0.6s ease-out, opacity 0.6s ease-out;
+}
+#main-content-flow.loaded {
+  filter: blur(0);
+  opacity: 1;
+}
+
 /* Solid cards (100% opacos, sin glass) */
 .card-mesa {
   background-color: var(--color-black-mesa);

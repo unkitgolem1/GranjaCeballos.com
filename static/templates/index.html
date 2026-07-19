@@ -26,6 +26,7 @@
     hx-swap="innerHTML transition:true"
     hx-on::before-request="document.getElementById('loading-spinner').classList.remove('opacity-0', 'pointer-events-none')"
     hx-on::after-request="
+      document.getElementById('main-content-flow').classList.add('loaded');
       document.getElementById('loading-spinner').classList.add('opacity-0', 'pointer-events-none');
       if (!event.detail.successful) document.getElementById('load-error').classList.remove('hidden');
     "
@@ -33,6 +34,7 @@
       document.getElementById('fondo-animado').classList.add('blur-md', 'scale-105');
       document.getElementById('intro-screen').classList.add('opacity-0', 'pointer-events-none');
       document.getElementById('navbar').classList.remove('opacity-0', '-translate-y-full');
+      document.getElementById('footer').classList.remove('opacity-0', 'translate-y-4');
       document.getElementById('loading-spinner').classList.remove('opacity-0', 'pointer-events-none');
       document.getElementById('load-error').classList.add('hidden');
       if (typeof htmx === 'undefined') { window.location.href = '/partial/welcome'; return false; }
@@ -55,7 +57,7 @@
   </button>
 </div>
 
-<div id="main-content-flow" class="w-full max-w-5xl mx-auto px-4 pb-24">
+<div id="main-content-flow" class="w-full mx-auto px-4 pb-4">
   {% if partial_name %}
     {% include partial_name %}
   {% endif %}
@@ -64,7 +66,7 @@
 {% endblock %}
 
 {% block footer %}
-<footer class="fixed bottom-0 left-0 w-full z-30 glass-mesa border-t border-teal-tree/20">
+<footer id="footer" class="fixed bottom-0 left-0 w-full z-30 glass-mesa border-t border-teal-tree/20 opacity-0 translate-y-4 transition-all duration-700">
   <div class="text-center py-3 text-xs sm:text-sm text-teal-tree/70">
     &copy; 2025 Granja Ceballos &mdash; Hecho a mano con tierra y sol
   </div>
