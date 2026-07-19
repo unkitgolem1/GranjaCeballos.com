@@ -1,4 +1,56 @@
-<div id="checkout-container" class="pt-20" x-data="{ suscripcion: false, metodo_pago: 'efectivo', diaSel: '{{ hoy }}' }" x-init="actualizarFechaEntrega(diaSel)">
+<div id="checkout-container" class="pt-20" x-data="{
+  suscripcion: false,
+  metodo_pago: 'efectivo',
+  diaSel: '{{ hoy }}',
+  direccion: '',
+  cp: '',
+  ubicando: false,
+  ubicacionOk: false,
+  ubicacionError: '',
+  obtenerUbicacion() {
+    this.ubicando = true;
+    this.ubicacionOk = false;
+    this.ubicacionError = '';
+    const self = this;
+
+    function llenar(dir, cod) {
+      self.direccion = dir;
+      self.cp = cod || '';
+      self.ubicando = false;
+      self.ubicacionOk = true;
+      if (!cod) self.ubicacionError = '⚠️ No se detect\u00f3 tu c\u00f3digo postal. Escr\u00edbelo manualmente.';
+      setTimeout(function () { self.ubicacionOk = false; }, 3000);
+    }
+
+    function fallbackIP() {
+      fetch('/api/ubicacion-por-ip')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data && data.direccion) { llenar(data.direccion, data.cp); }
+          else { self.ubicando = false; self.ubicacionError = 'No se pudo obtener tu ubicaci\u00f3n.'; }
+        })
+        .catch(function () { self.ubicando = false; self.ubicacionError = 'No se pudo obtener tu ubicaci\u00f3n.'; });
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          fetch('/api/reverse-geocode?lat=' + pos.coords.latitude + '&lng=' + pos.coords.longitude)
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              if (data && data.direccion) { llenar(data.direccion, data.cp); }
+              else { fallbackIP(); }
+            })
+            .catch(function () { fallbackIP(); });
+        },
+        function () { fallbackIP(); },
+        { timeout: 5000, enableHighAccuracy: true }
+      );
+    } else {
+      fallbackIP();
+    }
+  }
+}" x-init="actualizarFechaEntrega(diaSel)">
   <div class="max-w-xl mx-auto bg-[#1F200B]/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 space-y-6">
 
     <h2 class="text-display text-2xl text-white text-center">Completa tu pedido</h2>
@@ -14,16 +66,20 @@
 
       <div class="space-y-3" id="direccion-wrapper">
         <input type="text" name="direccion" id="direccion-input" required placeholder="Escribe tu dirección (ej. C. 53a #298, Fco. de Montejo)"
-               class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
+               class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300"
+               x-model="direccion">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input type="text" name="codigo_postal" id="cp-input" required placeholder="Código postal (ej. 97100)"
-                 class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
-          <button type="button" id="ubicacion-btn" onclick="obtenerUbicacion()"
-                  class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#90BDB5]/10 border border-[#90BDB5]/20 text-[#90BDB5] text-xs font-medium hover:bg-[#90BDB5]/20 transition-all duration-300 justify-center">
-            <span>📍</span> Usar mi ubicación
+                 class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300"
+                 x-model="cp">
+          <button type="button" id="ubicacion-btn" @click="obtenerUbicacion"
+                  :disabled="ubicando"
+                  class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#90BDB5]/10 border border-[#90BDB5]/20 text-[#90BDB5] text-xs font-medium hover:bg-[#90BDB5]/20 transition-all duration-300 justify-center disabled:opacity-50">
+            <span x-text="ubicando ? '⌛' : (ubicacionOk ? '✅' : '📍')"></span>
+            <span x-text="ubicando ? 'Buscando ubicación…' : (ubicacionOk ? 'Dirección obtenida' : 'Usar mi ubicación')"></span>
           </button>
         </div>
-        <p id="ubicacion-error" class="text-red-400 text-xs hidden">No se pudo obtener tu ubicación. Intenta de nuevo o escribe los datos manualmente.</p>
+        <p id="ubicacion-error" class="text-red-400 text-xs" x-show="ubicacionError" x-text="ubicacionError"></p>
       </div>
 
       <div class="space-y-2">
