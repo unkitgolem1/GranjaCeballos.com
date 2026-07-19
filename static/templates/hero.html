@@ -36,13 +36,12 @@
   <link rel="preload" href="/static/fonts/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgA.woff2" as="font" type="font/woff2" crossorigin>
 
-  {# ── Full CSS asíncrono (no bloquea render) ── #}
+  {# ── @font-face first (render-blocking pero pequeño ~3KB gzip) ── #}
+  <link rel="stylesheet" href="/static/fonts/fonts.css">
+
+  {# ── Tailwind utility CSS asíncrono ── #}
   <link rel="preload" href="/static/css/output.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <link rel="preload" href="/static/fonts/fonts.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript>
-    <link rel="stylesheet" href="/static/css/output.css">
-    <link rel="stylesheet" href="/static/fonts/fonts.css">
-  </noscript>
+  <noscript><link rel="stylesheet" href="/static/css/output.css"></noscript>
 
   <script src="/static/js/htmx.min.js" defer></script>
   <script defer src="/static/js/alpine.min.js"></script>
