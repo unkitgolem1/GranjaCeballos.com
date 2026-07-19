@@ -60,6 +60,7 @@ class TestCheckoutSubmit:
             "nombre": "Test",
             "telefono": "9991234567",
             "direccion": "Mérida, Yucatán",
+            "codigo_postal": "97100",
             "metodo_pago": "efectivo",
             "dia_entrega": "1",
             "es_suscripcion": "0",
@@ -83,14 +84,4 @@ class TestApiEndpoints:
         resp = client.get("/api/clientes")
         assert resp.status_code == 200
 
-    def test_reverse_geocode_invalid_bounds(self, client):
-        resp = client.get("/api/reverse-geocode", params={"lat": 200, "lng": -89.62})
-        assert resp.status_code in (400, 422)
 
-    def test_reverse_geocode_missing_param(self, client):
-        resp = client.get("/api/reverse-geocode")
-        assert resp.status_code == 422
-
-    def test_reverse_geocode_valid(self, client):
-        resp = client.get("/api/reverse-geocode", params={"lat": 20.97, "lng": -89.62})
-        assert resp.status_code in (200, 502, 400)

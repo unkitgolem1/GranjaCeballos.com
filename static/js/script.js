@@ -2,71 +2,39 @@
    Granja Ceballos — Checkout JS
    ────────────────────────────────────────────── */
 
-/* ---- Ubicación (Geolocation + fallback IP) ---- */
-
-function llenarDireccionDesdeCoords(lat, lng, btn, input) {
-  input.value = `${lat}, ${lng}`;
-  fetch(`/api/reverse-geocode?lat=${lat}&lng=${lng}`)
-    .then((r) => r.json())
-    .then((data) => {
-      if (data && data.direccion) input.value = data.direccion;
-      done();
-    })
-    .catch(done);
-  function done() {
-    btn.innerHTML = '✅ Dirección obtenida';
-    setTimeout(() => {
-      btn.innerHTML = '📍 Usar mi ubicación';
-      btn.disabled = false;
-    }, 2000);
-  }
-}
+/* ---- Ubicación (solo por IP, vía backend) ---- */
 
 function obtenerUbicacion() {
   const btn = document.getElementById('ubicacion-btn');
   const input = document.getElementById('direccion-input');
-  if (!btn || !input) return;
+  const cpInput = document.getElementById('cp-input');
+  const errEl = document.getElementById('ubicacion-error');
+  if (!btn || !input || !cpInput) return;
 
   btn.disabled = true;
-  btn.innerHTML = '⌛ Obteniendo ubicación…';
+  btn.innerHTML = '⌛ Buscando ubicación…';
+  if (errEl) errEl.classList.add('hidden');
 
-  function porCoords(lat, lng) {
-    llenarDireccionDesdeCoords(lat, lng, btn, input);
-  }
-
-  function porIpCliente() {
-    btn.innerHTML = '⌛ Buscando por IP…';
-    Promise.any([
-      fetch('https://ipapi.co/json/').then(r => r.json()),
-      fetch('https://ip-api.com/json/?fields=lat,lon,status').then(r => r.json()),
-    ]).then(data => {
-      const lat = data.latitude ?? data.lat;
-      const lng = data.longitude ?? data.lon;
-      if (lat && lng) {
-        porCoords(lat, lng);
+  fetch('/api/ubicacion-por-ip')
+    .then(r => r.json())
+    .then(data => {
+      if (data && data.direccion && data.cp) {
+        input.value = data.direccion;
+        cpInput.value = data.cp;
+        btn.innerHTML = '✅ Dirección obtenida';
+        setTimeout(() => {
+          btn.innerHTML = '📍 Usar mi ubicación';
+          btn.disabled = false;
+        }, 3000);
       } else {
-        throw new Error('no coords');
+        throw new Error('no address');
       }
-    }).catch(function () {
+    })
+    .catch(function () {
       btn.innerHTML = '📍 Usar mi ubicación';
       btn.disabled = false;
+      if (errEl) errEl.classList.remove('hidden');
     });
-  }
-
-  if (!navigator.geolocation) {
-    porIpCliente();
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    function (pos) {
-      porCoords(pos.coords.latitude, pos.coords.longitude);
-    },
-    function () {
-      porIpCliente();
-    },
-    { timeout: 6000 }
-  );
 }
 
 /* ---- Paquete selector ---- */

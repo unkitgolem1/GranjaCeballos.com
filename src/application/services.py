@@ -40,51 +40,14 @@ def _calcular_fecha_entrega(deseada: date) -> date:
     return deseada
 
 
-def _validar_direccion_yucatan(direccion: str) -> bool:
-    """Check that the address is in Yucatán."""
-    direccion_lower = direccion.lower()
+_CP_YUCATAN_MIN = 97000
+_CP_YUCATAN_MAX = 97999
 
-    _palabras_yucatan = [
-        "yucatán", "yucatan",
-        "mérida", "merida",
-        "progreso", "valladolid", "tizimín", "tizimin",
-        "motul", "umán", "uman", "kanasín", "kanasin", "oxkutzcab",
-        "tekax", "izamal", "peto", "ticul", "espita", "baca",
-        "conkal", "chicxulub", "hocabá", "hocaba", "acanceh",
-        "sotuta", "dzemul", "hunucmá", "hunucma", "celestún", "celestun",
-        "dzilam", "temax", "telchac", "sinaanche", "dzidzantún", "dzidzantun",
-        "xoclán", "xoclan", "chablekal", "caucel", "dzityá", "dzitya",
-        "nolo", "susulá", "susula", "tixcacal", "kennedy",
-    ]
 
-    _no_yucatan = [
-        "cdmx", "ciudad de méxico", "ciudad de mexico",
-        "nuevo león", "nuevo leon", "monterrey",
-        "jalisco", "guadalajara",
-        "baja california", "tijuana",
-        "chihuahua", "sonora",
-        "veracruz", "puebla", "guanajuato",
-        "quintana roo", "cancún", "cancun", "chetumal",
-        "campeche", "tabasco", "chiapas",
-        "oaxaca", "guerrero", "michoacán", "michoacan",
-        "sinaloa", "tamaulipas", "coahuila",
-        "estado de méxico", "estado de mexico", "edomex",
-    ]
-
-    tiene_yucatan = False
-    for palabra in _palabras_yucatan:
-        if palabra in direccion_lower:
-            tiene_yucatan = True
-            break
-
-    if not tiene_yucatan:
+def _validar_codigo_postal(cp: str) -> bool:
+    if not cp.isdigit() or len(cp) != 5:
         return False
-
-    for palabra in _no_yucatan:
-        if palabra in direccion_lower:
-            return False
-
-    return True
+    return _CP_YUCATAN_MIN <= int(cp) <= _CP_YUCATAN_MAX
 
 
 class PedidoService:
@@ -100,11 +63,8 @@ class PedidoService:
         self._pedido_repo = pedido_repo
 
     async def crear(self, datos: PedidoCreate, paquete: Optional[Paquete] = None) -> Pedido:
-        if not _validar_direccion_yucatan(datos.direccion):
-            raise ValueError(
-                "Solo entregamos en Yucatán. "
-                "Asegúrate de incluir tu ciudad o 'Yucatán' en la dirección."
-            )
+        if not _validar_codigo_postal(datos.codigo_postal):
+            raise ValueError("Solo entregamos en Yucatán. Código postal no válido.")
 
         usuario = await self._usuario_repo.get_or_create_by_phone(
             telefono=datos.telefono,
@@ -156,11 +116,8 @@ class SuscripcionService:
             raise ValueError(
                 "Las suscripciones solo están disponibles con pago con tarjeta."
             )
-        if not _validar_direccion_yucatan(datos.direccion):
-            raise ValueError(
-                "Solo entregamos en Yucatán. "
-                "Asegúrate de incluir tu ciudad o 'Yucatán' en la dirección."
-            )
+        if not _validar_codigo_postal(datos.codigo_postal):
+            raise ValueError("Solo entregamos en Yucatán. Código postal no válido.")
 
         usuario = await self._usuario_repo.get_or_create_by_phone(
             telefono=datos.telefono,

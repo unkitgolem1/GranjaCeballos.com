@@ -7,7 +7,7 @@
       size: 80mm 200mm;
       margin: 0;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; }
     body {
       font-family: 'Courier New', monospace;
       background: #1F200B;
@@ -16,6 +16,7 @@
       font-size: 11px;
       line-height: 1.4;
     }
+    table { width: 100%; border-collapse: collapse; }
     .header {
       text-align: center;
       border-bottom: 1px dashed #DDAC23;
@@ -26,7 +27,6 @@
       font-size: 16px;
       color: #DDAC23;
       letter-spacing: 2px;
-      text-transform: uppercase;
     }
     .header p {
       color: #90BDB5;
@@ -38,7 +38,6 @@
       font-size: 10px;
       color: #DDAC23;
       margin-bottom: 12px;
-      word-break: break-all;
     }
     .section {
       border-bottom: 1px dashed rgba(255,255,255,0.15);
@@ -47,17 +46,13 @@
     .section-title {
       color: #90BDB5;
       font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
-    .row {
-      display: flex;
-      justify-content: space-between;
+    .row td {
       padding: 2px 0;
     }
-    .row .label { color: rgba(255,255,255,0.5); }
-    .row .value { color: #fff; font-weight: bold; }
+    .row .lbl { color: rgba(255,255,255,0.5); width: 40%; }
+    .row .val { color: #fff; font-weight: bold; text-align: right; }
     .total {
       font-size: 16px;
       color: #DDAC23;
@@ -70,7 +65,6 @@
       padding: 10px;
       background: rgba(221,172,35,0.08);
       border: 1px solid rgba(221,172,35,0.2);
-      border-radius: 8px;
       margin: 12px 0;
       font-size: 10px;
       color: #DDAC23;
@@ -82,11 +76,9 @@
       color: rgba(255,255,255,0.3);
     }
     .badge {
-      display: inline-block;
       background: rgba(221,172,35,0.15);
       color: #DDAC23;
       padding: 2px 8px;
-      border-radius: 4px;
       font-size: 9px;
       margin-top: 4px;
     }
@@ -101,22 +93,26 @@
   <div class="ticket-id">#{{ pedido.id }}</div>
 
   {% if pedido.es_suscripcion %}
-  <div class="payment-note">🔄 Suscripción activa</div>
+  <div class="payment-note">Suscripci&oacute;n activa</div>
   {% endif %}
 
   <div class="section">
     <div class="section-title">Cliente</div>
-    <div class="row"><span class="label">Nombre</span><span class="value">{{ pedido.usuario_nombre }}</span></div>
-    <div class="row"><span class="label">Teléfono</span><span class="value">{{ pedido.telefono }}</span></div>
-    <div class="row"><span class="label">Dirección</span><span class="value" style="font-size:10px">{{ pedido.direccion }}</span></div>
+    <table>
+      <tr class="row"><td class="lbl">Nombre</td><td class="val">{{ pedido.usuario_nombre }}</td></tr>
+      <tr class="row"><td class="lbl">Tel&eacute;fono</td><td class="val">{{ pedido.telefono }}</td></tr>
+      <tr class="row"><td class="lbl">Direcci&oacute;n</td><td class="val" style="font-size:10px">{{ pedido.direccion }}</td></tr>
+    </table>
   </div>
 
   <div class="section">
     <div class="section-title">Pedido</div>
-    <div class="row"><span class="label">Paquete</span><span class="value">{{ pedido.paquete_nombre }}</span></div>
-    <div class="row"><span class="label">Cantidad</span><span class="value">{{ pedido.cantidad }} cartón(es)</span></div>
-    <div class="row"><span class="label">Entrega</span><span class="value">{{ pedido.fecha_entrega.strftime('%d/%m/%Y') if pedido.fecha_entrega else 'Por confirmar' }}</span></div>
-    <div class="row"><span class="label">Pago</span><span class="value">{% if pedido.metodo_pago == 'efectivo' %}Efectivo{% else %}Tarjeta{% endif %}</span></div>
+    <table>
+      <tr class="row"><td class="lbl">Paquete</td><td class="val">{{ pedido.paquete_nombre }}</td></tr>
+      <tr class="row"><td class="lbl">Cantidad</td><td class="val">{{ pedido.cantidad }} cart&oacute;n(es)</td></tr>
+      <tr class="row"><td class="lbl">Entrega</td><td class="val">{{ pedido.fecha_entrega.strftime('%d/%m/%Y') if pedido.fecha_entrega else 'Por confirmar' }}</td></tr>
+      <tr class="row"><td class="lbl">Pago</td><td class="val">{% if pedido.metodo_pago == 'efectivo' %}Efectivo{% else %}Tarjeta{% endif %}</td></tr>
+    </table>
   </div>
 
   <div class="total">
@@ -125,8 +121,7 @@
 
   {% if pedido.metodo_pago == 'efectivo' %}
   <div class="payment-note">
-    📞 Te llamaremos para confirmar<br>
-    <span style="font-size:9px;color:rgba(255,255,255,0.5)">Si no contestas, el pedido se cancela</span>
+    Te llamaremos para confirmar
   </div>
   {% endif %}
 

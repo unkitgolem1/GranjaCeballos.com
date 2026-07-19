@@ -1,5 +1,5 @@
 {
-  "buildCommand": "uv export --no-dev --format requirements-txt > requirements.txt",
+  "buildCommand": "npx tailwindcss -i ./static/css/styles.css -o ./static/css/output.css --minify && uv export --no-dev --format requirements-txt > requirements.txt",
   "outputDirectory": ".",
   "functions": {
     "api/index.py": {

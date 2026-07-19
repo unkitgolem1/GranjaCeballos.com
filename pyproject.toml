@@ -11,7 +11,7 @@ dependencies = [
     "itsdangerous>=2.2.0",
     "python-dotenv>=1.1.0",
     "slowapi>=0.1.10",
-    "weasyprint>=69.0",
+    "xhtml2pdf>=0.2.16",
 ]
 
 [project.optional-dependencies]

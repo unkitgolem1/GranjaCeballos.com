@@ -8,7 +8,7 @@ from src.application.services import (
     _calcular_fecha_entrega,
     _calcular_precio_unitario,
     _calcular_total,
-    _validar_direccion_yucatan,
+    _validar_codigo_postal,
     PedidoService,
     SuscripcionService,
 )
@@ -130,37 +130,16 @@ class _MockDatetime:
         return getattr(dt, name)
 
 
-# ── _validar_direccion_yucatan ───────────────────────────────────────────
+# ── _validar_codigo_postal ──────────────────────────────────────────────
 
-class TestValidarDireccionYucatan:
-    @pytest.mark.parametrize("direccion", [
-        "Mérida, Yucatán",
-        "Calle 53 #298, Mérida, Yuc.",
-        "Progreso, Yucatán",
-        "Valladolid",
-        "calle 20 x 30, kanasín",
-        "c. 41 #200, hunucmá",
-        "Calle Yucatán 123, Mérida",  # "yucat" as part of street name
-    ])
-    def test_valid_addresses(self, direccion):
-        assert _validar_direccion_yucatan(direccion) is True
+class TestValidarCodigoPostal:
+    @pytest.mark.parametrize("cp", ["97100", "97000", "97999", "97302"])
+    def test_valid_cp(self, cp):
+        assert _validar_codigo_postal(cp) is True
 
-    @pytest.mark.parametrize("direccion", [
-        "Calle 53 #298, CDMX",
-        "Avenida Siempre Viva 742, Cancún",
-        "Monterrey, Nuevo León",
-        "Guadalajara, Jalisco",
-        "Calle 10 #20, Chetumal",
-    ])
-    def test_invalid_addresses(self, direccion):
-        assert _validar_direccion_yucatan(direccion) is False
-
-    def test_yucatan_rejected_if_other_state_mentioned(self):
-        # Contains "Mérida" but also "Campeche" → should be rejected
-        assert _validar_direccion_yucatan("Mérida, pero en realidad es Campeche") is False
-
-    def test_empty_address(self):
-        assert _validar_direccion_yucatan("") is False
+    @pytest.mark.parametrize("cp", ["00000", "98000", "99999", "12345", "abcde", "9710", "971001"])
+    def test_invalid_cp(self, cp):
+        assert _validar_codigo_postal(cp) is False
 
 
 # ── PedidoService ────────────────────────────────────────────────────────
@@ -176,6 +155,7 @@ class TestPedidoService:
             nombre="Juan",
             paquete_id=paquete_tradicional.id,
             direccion="Mérida, Yucatán",
+            codigo_postal="97100",
             metodo_pago="efectivo",
             fecha_usuario=date.today(),
         )
@@ -191,22 +171,24 @@ class TestPedidoService:
             nombre="Juan",
             paquete_id=paquete_tradicional.id,
             direccion="Mérida, Yucatán",
+            codigo_postal="97100",
             metodo_pago="efectivo",
             fecha_usuario=date.today(),
         )
         pedido = await service.crear(datos, paquete=paquete_tradicional)
         assert pedido.estatus == "pendiente"
 
-    async def test_crear_fuera_de_yucatan(self, service, paquete_tradicional):
+    async def test_crear_cp_fuera_de_yucatan_rejected(self, service, paquete_tradicional):
         datos = PedidoCreate(
             telefono="9991234567",
             nombre="Juan",
             paquete_id=paquete_tradicional.id,
-            direccion="Cancún, Quintana Roo",
+            direccion="Cualquier dirección",
+            codigo_postal="00000",
             metodo_pago="efectivo",
             fecha_usuario=date.today(),
         )
-        with pytest.raises(ValueError, match="Yucatán"):
+        with pytest.raises(ValueError, match="Código postal no válido"):
             await service.crear(datos)
 
     async def test_crear_paquete_inactivo(self, usuario_repo, pedido_repo):
@@ -217,6 +199,7 @@ class TestPedidoService:
             nombre="Juan",
             paquete_id=uuid4(),
             direccion="Mérida, Yucatán",
+            codigo_postal="97100",
             metodo_pago="efectivo",
             fecha_usuario=date.today(),
         )
@@ -231,6 +214,7 @@ class TestPedidoService:
             nombre="Juan",
             paquete_id=uuid4(),
             direccion="Mérida, Yucatán",
+            codigo_postal="97100",
             metodo_pago="efectivo",
             fecha_usuario=date.today(),
         )
@@ -243,6 +227,7 @@ class TestPedidoService:
             nombre="Juan",
             paquete_id=paquete_customizable.id,
             direccion="Mérida, Yucatán",
+            codigo_postal="97100",
             cantidad=5,
             metodo_pago="efectivo",
             fecha_usuario=date.today(),
@@ -256,6 +241,7 @@ class TestPedidoService:
             nombre="Juan",
             paquete_id=paquete_tradicional.id,
             direccion="Mérida, Yucatán",
+            codigo_postal="97100",
             cantidad=99,
             metodo_pago="efectivo",
             fecha_usuario=date.today(),
@@ -277,6 +263,7 @@ class TestSuscripcionService:
             nombre="Juan",
             paquete_id=paquete_tradicional.id,
             direccion="Mérida, Yucatán",
+            codigo_postal="97100",
             metodo_pago="tarjeta",
             dia_entrega=1,
             fecha_inicio=date.today(),
@@ -291,6 +278,7 @@ class TestSuscripcionService:
             nombre="Juan",
             paquete_id=paquete_tradicional.id,
             direccion="Mérida, Yucatán",
+            codigo_postal="97100",
             metodo_pago="efectivo",
             dia_entrega=1,
             fecha_inicio=date.today(),
@@ -304,6 +292,7 @@ class TestSuscripcionService:
             nombre="Juan",
             paquete_id=paquete_tradicional.id,
             direccion="Mérida, Yucatán",
+            codigo_postal="97100",
             metodo_pago="tarjeta",
             dia_entrega=1,
             fecha_inicio=date.today(),
@@ -323,6 +312,7 @@ class TestSuscripcionService:
             nombre="Juan",
             paquete_id=paquete_tradicional.id,
             direccion="Mérida, Yucatán",
+            codigo_postal="97100",
             metodo_pago="tarjeta",
             dia_entrega=dia_deseado,
             fecha_inicio=hoy,

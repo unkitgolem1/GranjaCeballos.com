@@ -15,10 +15,15 @@
       <div class="space-y-3" id="direccion-wrapper">
         <input type="text" name="direccion" id="direccion-input" required placeholder="Escribe tu dirección (ej. C. 53a #298, Fco. de Montejo)"
                class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
-        <button type="button" id="ubicacion-btn" onclick="obtenerUbicacion()"
-                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#90BDB5]/10 border border-[#90BDB5]/20 text-[#90BDB5] text-xs font-medium hover:bg-[#90BDB5]/20 transition-all duration-300">
-          <span>📍</span> Usar mi ubicación
-        </button>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <input type="text" name="codigo_postal" id="cp-input" required placeholder="Código postal (ej. 97100)"
+                 class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
+          <button type="button" id="ubicacion-btn" onclick="obtenerUbicacion()"
+                  class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#90BDB5]/10 border border-[#90BDB5]/20 text-[#90BDB5] text-xs font-medium hover:bg-[#90BDB5]/20 transition-all duration-300 justify-center">
+            <span>📍</span> Usar mi ubicación
+          </button>
+        </div>
+        <p id="ubicacion-error" class="text-red-400 text-xs hidden">No se pudo obtener tu ubicación. Intenta de nuevo o escribe los datos manualmente.</p>
       </div>
 
       <div class="space-y-2">
