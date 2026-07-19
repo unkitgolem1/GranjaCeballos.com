@@ -12,7 +12,7 @@
   "crons": [
     {
       "path": "/api/suscripciones/procesar",
-      "schedule": "0 * * * *"
+      "schedule": "0 * * *"
     }
   ]
 }
