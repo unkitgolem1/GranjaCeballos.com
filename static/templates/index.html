@@ -24,15 +24,34 @@
     hx-get="/partial/welcome"
     hx-target="#main-content-flow"
     hx-swap="innerHTML transition:true"
+    hx-on::before-request="document.getElementById('loading-spinner').classList.remove('opacity-0', 'pointer-events-none')"
+    hx-on::after-request="
+      document.getElementById('loading-spinner').classList.add('opacity-0', 'pointer-events-none');
+      if (!event.detail.successful) document.getElementById('load-error').classList.remove('hidden');
+    "
     onclick="
       document.getElementById('fondo-animado').classList.add('blur-md', 'scale-105');
       document.getElementById('intro-screen').classList.add('opacity-0', 'pointer-events-none');
       document.getElementById('navbar').classList.remove('opacity-0', '-translate-y-full');
+      document.getElementById('loading-spinner').classList.remove('opacity-0', 'pointer-events-none');
+      document.getElementById('load-error').classList.add('hidden');
       if (typeof htmx === 'undefined') { window.location.href = '/partial/welcome'; return false; }
     "
     class="bg-[#DDAC23] text-[#1F200B] px-10 py-4 rounded-full text-lg sm:text-xl font-semibold hover:scale-105 active:scale-[0.98] transition-all duration-300 cursor-pointer animate-hollywood-btn"
   >
     Explorar
+  </button>
+</div>
+
+<div id="loading-spinner" class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/40 transition-opacity duration-300">
+  <div class="w-10 h-10 border-4 border-[#DDAC23]/30 border-t-[#DDAC23] rounded-full animate-spin"></div>
+</div>
+
+<div id="load-error" class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/60">
+  <p class="text-white/70 text-sm mb-4">No se pudo cargar el contenido</p>
+  <button onclick="window.location.reload()"
+          class="bg-[#DDAC23] text-[#1F200B] px-6 py-2.5 rounded-full text-sm font-semibold hover:scale-105 transition-all duration-300 cursor-pointer">
+    Reintentar
   </button>
 </div>
 
