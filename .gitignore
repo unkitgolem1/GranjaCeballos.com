@@ -15,5 +15,4 @@ wheels/
 # Node / npm
 node_modules/
 
-# Generated for Vercel build
-requirements.txt
+# Generated for Vercel build (committed for deployment)
