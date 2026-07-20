@@ -20,7 +20,7 @@
                  maxlength="5" inputmode="numeric" pattern="[0-9]{5}"
                  autocomplete="postal-code"
                  class="flex-1 bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
-          <button type="button" id="ubicacion-btn" onclick="obtenerUbicacion()"
+          <button type="button" id="ubicacion-btn" onclick="get_location()"
                   class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#90BDB5]/10 border border-[#90BDB5]/20 text-[#90BDB5] text-xs font-medium hover:bg-[#90BDB5]/20 transition-all duration-300 shrink-0">
             <span>📍</span> Usar mi ubicación
           </button>
@@ -205,22 +205,4 @@
 </div>
 
 <script src="/static/js/script.js"></script>
-<script>
-(function() {
-  var cpInput = document.getElementById('cp-input');
-  var cpCard = document.getElementById('cp-detect-card');
-  if (!cpInput) return;
-  fetch('/api/detectar-cp')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.codigo_postal) {
-        cpInput.value = data.codigo_postal;
-      } else {
-        cpCard.classList.remove('hidden');
-      }
-    })
-    .catch(function() {
-      cpCard.classList.remove('hidden');
-    });
-})();
-</script>
+<script src="/static/js/getLocation.js"></script>

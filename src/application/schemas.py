@@ -5,7 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 
-_TELEFONO_RE = r"^\+?\d{7,20}$"
+_TELEFONO_RE = r"^(\+52\s?1?\s?)?\d{10}$"
 _EMAIL_RE = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 
 

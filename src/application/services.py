@@ -137,11 +137,6 @@ class PedidoService:
         self._pedido_repo = pedido_repo
 
     async def crear(self, datos: PedidoCreate, paquete: Optional[Paquete] = None) -> Pedido:
-        if not _validar_direccion_yucatan(datos.direccion):
-            raise ValueError(
-                "Solo entregamos en Yucatán. "
-                "Asegúrate de incluir tu ciudad o 'Yucatán' en la dirección."
-            )
         cp_ok, cp_msg = _validar_cp_merida(datos.codigo_postal)
         if not cp_ok:
             raise ValueError(cp_msg)
@@ -196,11 +191,6 @@ class SuscripcionService:
         if datos.metodo_pago != "tarjeta":
             raise ValueError(
                 "Las suscripciones solo están disponibles con pago con tarjeta."
-            )
-        if not _validar_direccion_yucatan(datos.direccion):
-            raise ValueError(
-                "Solo entregamos en Yucatán. "
-                "Asegúrate de incluir tu ciudad o 'Yucatán' en la dirección."
             )
         cp_ok, cp_msg = _validar_cp_merida(datos.codigo_postal)
         if not cp_ok:

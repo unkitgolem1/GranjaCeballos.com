@@ -270,9 +270,10 @@ async def reverse_geocode(lat: float = Query(...), lng: float = Query(...)):
             timeout=10,
         )
         resp.raise_for_status()
-        data = resp.json()
-        direccion = (data or {}).get("display_name", "")
-        return JSONResponse({"direccion": direccion})
+        data = resp.json() or {}
+        direccion = data.get("display_name", "")
+        cp = (data.get("address") or {}).get("postcode", "")
+        return JSONResponse({"direccion": direccion, "codigo_postal": cp})
 
 
 @router.get("/detectar-cp")

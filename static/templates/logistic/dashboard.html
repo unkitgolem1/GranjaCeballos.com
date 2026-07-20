@@ -44,9 +44,9 @@
 
       <!-- Section filters -->
       <div class="flex flex-wrap gap-4">
-        <a href="/logistic{% if estatus_filter %}?estatus={{ estatus_filter }}{% endif %}"
+        <a href="/logistic?seccion=todo{% if estatus_filter %}&estatus={{ estatus_filter }}{% endif %}"
            class="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-300 border
-                  {% if not seccion %}bg-white/10 text-white border-white/20{% else %}bg-white/[0.03] text-white/40 border-white/5 hover:border-white/10{% endif %}">
+                  {% if seccion == 'todo' %}bg-white/10 text-white border-white/20{% else %}bg-white/[0.03] text-white/40 border-white/5 hover:border-white/10{% endif %}">
           Todo
         </a>
         <a href="/logistic?seccion=hoy{% if estatus_filter %}&estatus={{ estatus_filter }}{% endif %}"
@@ -128,6 +128,32 @@
       {% endfor %}
     {% endmacro %}
 
+    {% if seccion == "todo" %}
+    <div class="overflow-x-auto mb-12">
+      <h2 class="text-white/40 text-xs uppercase tracking-[0.2em] mb-4">
+        <span class="text-white/50">Todo</span>
+      </h2>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-white/30 text-xs uppercase tracking-[0.1em] border-b border-white/5">
+            <th class="text-left py-3 pr-4">Acción</th>
+            <th class="text-left py-3 pr-4">Estatus</th>
+            <th class="text-left py-3 pr-4">Cant.</th>
+            <th class="text-left py-3 pr-4">Fecha</th>
+            <th class="text-left py-3 pr-4">Cliente</th>
+            <th class="text-left py-3 pr-4">Paquete</th>
+            <th class="text-left py-3 pr-4">Total</th>
+            <th class="text-left py-3 pr-4">Dirección</th>
+            <th class="text-left py-3 pr-4">Pago</th>
+            <th class="text-left py-3"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ order_rows(todo_pedidos) }}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
     {% if seccion != "pasado" %}
     <div class="overflow-x-auto mb-12">
       <h2 class="text-white/40 text-xs uppercase tracking-[0.2em] mb-4">
@@ -182,6 +208,7 @@
         </tbody>
       </table>
     </div>
+    {% endif %}
     {% endif %}
     {% endif %}
   </main>

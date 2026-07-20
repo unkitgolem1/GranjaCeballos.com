@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logística — Granja Ceballos</title>
+  <link href="/static/fonts/fonts.css" rel="stylesheet">
+  <link href="/static/css/output.css" rel="stylesheet">
+</head>
+<body class="font-sans min-h-screen bg-linear-to-b from-[#025270] to-primal-blue text-white flex items-center justify-center">
+
+  <form method="POST" action="/logistic/login"
+        class="w-full max-w-sm mx-4 bg-white/5 rounded-2xl p-8 space-y-6 border border-white/10">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <h1 class="text-display text-xl font-heading text-center">
+      <span class="text-baroque">Logística</span>
+    </h1>
+
+    {% if error %}
+    <p class="text-red-400 text-xs text-center">{{ error }}</p>
+    {% endif %}
+
+    <input type="text" name="username" required placeholder="Usuario"
+           class="w-full bg-transparent border-b border-white/20 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-colors">
+
+    <input type="password" name="password" required placeholder="Contraseña"
+           class="w-full bg-transparent border-b border-white/20 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-colors">
+
+    <button type="submit"
+            class="w-full py-3 rounded-xl bg-[#DDAC23] text-[#1F200B] text-sm font-semibold hover:bg-[#DDAC23]/90 transition-colors">
+      Entrar
+    </button>
+  </form>
+
+</body>
+</html>

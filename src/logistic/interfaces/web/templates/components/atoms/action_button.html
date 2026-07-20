@@ -1,0 +1,23 @@
+{% macro accept_btn(pedido_id, csrf_token) %}
+<form method="POST" action="/logistic/pedidos/{{ pedido_id }}/estatus" style="display:inline">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <input type="hidden" name="estatus" value="aceptado">
+  <button class="px-3 py-1.5 bg-emerald-600/20 text-emerald-400 rounded-lg text-xs font-medium hover:bg-emerald-600/30 transition-colors">✔</button>
+</form>
+{% endmacro %}
+
+{% macro reject_btn(pedido_id, csrf_token) %}
+<form method="POST" action="/logistic/pedidos/{{ pedido_id }}/estatus" style="display:inline">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <input type="hidden" name="estatus" value="rechazado">
+  <button class="px-3 py-1.5 bg-red-600/20 text-red-400 rounded-lg text-xs font-medium hover:bg-red-600/30 transition-colors">✘</button>
+</form>
+{% endmacro %}
+
+{% macro deliver_btn(pedido_id, csrf_token) %}
+<form method="POST" action="/logistic/pedidos/{{ pedido_id }}/estatus" style="display:inline">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <input type="hidden" name="estatus" value="entregado">
+  <button class="px-3 py-1.5 bg-blue-600/20 text-blue-400 rounded-lg text-xs font-medium hover:bg-blue-600/30 transition-colors">Entregar</button>
+</form>
+{% endmacro %}

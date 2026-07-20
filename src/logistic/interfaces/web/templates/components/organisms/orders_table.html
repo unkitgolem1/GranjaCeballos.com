@@ -1,0 +1,37 @@
+{% from "components/molecules/order_row.html" import order_row %}
+
+{% macro orders_table(pedidos, csrf_token, titulo, subtitulo) %}
+<div class="overflow-x-auto mb-12">
+  {% if titulo %}
+  <h2 class="text-white/40 text-xs uppercase tracking-[0.2em] mb-4">
+    <span class="{% if subtitulo %}text-baroque font-semibold{% else %}text-white/50{% endif %}">{{ titulo }}</span>
+    {% if subtitulo %}<span class="text-white/30 text-xs ml-1">— {{ subtitulo }}</span>{% endif %}
+  </h2>
+  {% endif %}
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="text-white/30 text-xs uppercase tracking-[0.1em] border-b border-white/5">
+        <th class="text-left py-3 pr-4">Acción</th>
+        <th class="text-left py-3 pr-4">Estatus</th>
+        <th class="text-left py-3 pr-4">Cant.</th>
+        <th class="text-left py-3 pr-4">Fecha</th>
+        <th class="text-left py-3 pr-4">Cliente</th>
+        <th class="text-left py-3 pr-4">Paquete</th>
+        <th class="text-left py-3 pr-4">Total</th>
+        <th class="text-left py-3 pr-4">Dirección</th>
+        <th class="text-left py-3 pr-4">Pago</th>
+        <th class="text-left py-3"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in pedidos %}
+      {{ order_row(p, csrf_token) }}
+      {% else %}
+      <tr>
+        <td colspan="10" class="py-16 text-center text-white/20 text-sm">No hay pedidos</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endmacro %}

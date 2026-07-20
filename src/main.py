@@ -18,7 +18,7 @@ from src.api import router as api_router
 from src.infrastructure.database import create_pool
 from src.infrastructure.limiter import limiter
 from src.pages import router as pages_router
-from src.pages.logistic_router import router as logistic_router
+from src.logistic.interfaces.web.router import router as logistic_router
 
 load_dotenv()
 

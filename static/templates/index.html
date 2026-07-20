@@ -2,17 +2,7 @@
 
 {% block content %}
 
-<nav id="navbar" class="fixed top-0 left-0 w-full z-40 glass-mesa transition-all duration-700 opacity-0 -translate-y-full">
-  <div class="flex items-center justify-between px-4 sm:px-8 py-2 max-w-6xl mx-auto">
-    <a hx-get="/partial/welcome" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
-       class="text-display text-base sm:text-lg text-baroque hover:text-baroque/80 transition-colors whitespace-nowrap">
-      Granja Ceballos
-    </a>
-    <div class="flex items-center gap-5 sm:gap-8">
-  </div>
-</nav>
-
-<div id="intro-screen" class="fixed inset-0 flex flex-col items-center justify-center z-30 transition-all duration-700">
+<header id="intro-screen" class="fixed inset-0 flex flex-col items-center justify-center z-30 transition-all duration-700">
   <h1 class="text-display text-5xl sm:text-7xl text-baroque mb-6 text-center px-4 animate-hollywood-zoom animate-gold-glow">
     Granja Ceballos
   </h1>
@@ -25,20 +15,30 @@
     hx-swap="innerHTML transition:true"
     onclick="
       document.getElementById('fondo-animado').classList.add('blur-md', 'scale-105');
-      document.getElementById('intro-screen').classList.add('opacity-0', 'pointer-events-none');
+      this.closest('header').classList.add('opacity-0', 'pointer-events-none');
       document.getElementById('navbar').classList.remove('opacity-0', '-translate-y-full');
     "
     class="bg-[#DDAC23] text-[#1F200B] px-10 py-4 rounded-full text-lg sm:text-xl font-semibold hover:scale-105 active:scale-[0.98] transition-all duration-300 cursor-pointer animate-hollywood-btn"
+    aria-label="Explorar el catálogo"
   >
     Explorar
   </button>
-</div>
+</header>
 
-<div id="main-content-flow" class="w-full max-w-5xl mx-auto px-4 pb-24">
+<nav id="navbar" class="fixed top-0 left-0 w-full z-40 glass-mesa transition-all duration-700 opacity-0 -translate-y-full" aria-label="Navegación principal">
+  <div class="flex items-center justify-between px-4 sm:px-8 py-2 max-w-6xl mx-auto">
+    <a hx-get="/partial/welcome" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
+       class="text-display text-base sm:text-lg text-baroque hover:text-baroque/80 transition-colors whitespace-nowrap">
+      Granja Ceballos
+    </a>
+  </div>
+</nav>
+
+<main id="main-content-flow" class="w-full max-w-5xl mx-auto px-4 pb-24">
   {% if partial_name %}
     {% include partial_name %}
   {% endif %}
-</div>
+</main>
 
 {% endblock %}
 

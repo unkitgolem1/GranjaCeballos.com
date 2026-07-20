@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Logística — Granja Ceballos{% endblock %}</title>
+  <link href="/static/fonts/fonts.css" rel="stylesheet">
+  <link href="/static/css/output.css" rel="stylesheet">
+  <script defer src="/static/js/htmx.min.js"></script>
+  <style>
+    .estatus-pendiente { color: #fbbf24; }
+    .estatus-aceptado { color: #34d399; }
+    .estatus-entregado { color: #60a5fa; }
+    .estatus-cancelado { color: #f87171; }
+    .estatus-rechazado { color: #f87171; }
+    .nav-link { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.05em; transition: all 0.3s; }
+    .nav-link.active { color: #DDAC23; border-bottom: 2px solid #DDAC23; padding-bottom: 0.25rem; }
+    .nav-link:not(.active) { color: rgba(255,255,255,0.4); }
+    .nav-link:not(.active):hover { color: rgba(255,255,255,0.7); }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="font-sans min-h-screen bg-linear-to-b from-[#025270] to-primal-blue text-white">
+
+  <div class="fixed inset-0 w-full h-full -z-10 overflow-hidden">
+    <div class="absolute bottom-0 w-full h-[40vh] bg-linear-to-t from-white/15 via-[#DDAC23]/5 to-transparent pointer-events-none"></div>
+  </div>
+
+  {% include "nav.html" %}
+
+  <main id="logistic-content" class="max-w-7xl mx-auto px-4 py-8">
+    {% block content %}{% endblock %}
+  </main>
+
+</body>
+</html>

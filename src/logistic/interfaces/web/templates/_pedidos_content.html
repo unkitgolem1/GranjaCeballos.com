@@ -1,0 +1,54 @@
+<div class="bg-white/5 rounded-2xl p-5 space-y-5 mb-8">
+
+  <div class="flex flex-wrap gap-4">
+    <a hx-get="/logistic/partial/pedidos?seccion=todo{% if estatus_filter %}&estatus={{ estatus_filter }}{% endif %}"
+       hx-target="#logistic-content" hx-swap="innerHTML transition:true"
+       href="/logistic?seccion=todo{% if estatus_filter %}&estatus={{ estatus_filter }}{% endif %}"
+       class="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-300 border
+              {% if seccion == 'todo' %}bg-white/10 text-white border-white/20{% else %}bg-white/[0.03] text-white/40 border-white/5 hover:border-white/10{% endif %}">
+      Todo
+    </a>
+    <a hx-get="/logistic/partial/pedidos?seccion=hoy{% if estatus_filter %}&estatus={{ estatus_filter }}{% endif %}"
+       hx-target="#logistic-content" hx-swap="innerHTML transition:true"
+       href="/logistic?seccion=hoy{% if estatus_filter %}&estatus={{ estatus_filter }}{% endif %}"
+       class="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-300 border
+              {% if seccion == 'hoy' %}bg-emerald-600/25 text-emerald-300 border-emerald-500/30{% else %}bg-white/[0.03] text-white/40 border-white/5 hover:border-emerald-500/20{% endif %}">
+      ● Hoy
+    </a>
+    <a hx-get="/logistic/partial/pedidos?seccion=pasado{% if estatus_filter %}&estatus={{ estatus_filter }}{% endif %}"
+       hx-target="#logistic-content" hx-swap="innerHTML transition:true"
+       href="/logistic?seccion=pasado{% if estatus_filter %}&estatus={{ estatus_filter }}{% endif %}"
+       class="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-300 border
+              {% if seccion == 'pasado' %}bg-amber-600/25 text-amber-300 border-amber-500/30{% else %}bg-white/[0.03] text-white/40 border-white/5 hover:border-amber-500/20{% endif %}">
+      ○ Pasado
+    </a>
+  </div>
+
+  <hr class="border-white/10">
+
+  <div class="flex flex-wrap gap-4">
+    {% for st, label in [('pendiente','Pendientes'),('aceptado','Aceptados'),('entregado','Entregados')] %}
+    <a hx-get="/logistic/partial/pedidos?estatus={{ st }}{% if seccion %}&seccion={{ seccion }}{% endif %}"
+       hx-target="#logistic-content" hx-swap="innerHTML transition:true"
+       href="/logistic?estatus={{ st }}{% if seccion %}&seccion={{ seccion }}{% endif %}"
+       class="px-3 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-medium transition-all duration-300
+              {% if estatus_filter == st %}bg-[#DDAC23] text-[#1F200B]{% else %}bg-white/5 text-white/50 hover:bg-white/10{% endif %}">
+      {{ label }}
+    </a>
+    {% endfor %}
+  </div>
+
+</div>
+
+{% from "components/organisms/orders_table.html" import orders_table %}
+
+{% if seccion == "todo" %}
+  {{ orders_table(todo_pedidos, csrf_token, "Todo") }}
+{% else %}
+  {% if seccion != "pasado" %}
+    {{ orders_table(today_pedidos, csrf_token, "Hoy", hoy) }}
+  {% endif %}
+  {% if seccion != "hoy" and past_pedidos %}
+    {{ orders_table(past_pedidos, csrf_token, "Pasado") }}
+  {% endif %}
+{% endif %}
