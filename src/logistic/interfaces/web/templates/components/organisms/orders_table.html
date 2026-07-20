@@ -1,37 +1,32 @@
 {% from "components/molecules/order_row.html" import order_row %}
 
-{% macro orders_table(pedidos, csrf_token, titulo, subtitulo) %}
-<div class="overflow-x-auto mb-12">
+{% macro orders_table(pedidos, csrf_token, titulo, subtitulo=none, seccion="todo", estatus_filter="pendiente") %}
+<div class="mb-12">
   {% if titulo %}
-  <h2 class="text-white/40 text-xs uppercase tracking-[0.2em] mb-4">
-    <span class="{% if subtitulo %}text-baroque font-semibold{% else %}text-white/50{% endif %}">{{ titulo }}</span>
-    {% if subtitulo %}<span class="text-white/30 text-xs ml-1">— {{ subtitulo }}</span>{% endif %}
+  <h2 class="text-white/60 text-xs uppercase tracking-[0.2em] mb-4">
+    <span class="{% if subtitulo %}text-baroque font-semibold{% else %}text-white/70{% endif %}">{{ titulo }}</span>
+    {% if subtitulo %}<span class="text-white/50 text-xs ml-1">— {{ subtitulo }}</span>{% endif %}
   </h2>
   {% endif %}
-  <table class="w-full text-sm">
-    <thead>
-      <tr class="text-white/30 text-xs uppercase tracking-[0.1em] border-b border-white/5">
-        <th class="text-left py-3 pr-4">Acción</th>
-        <th class="text-left py-3 pr-4">Estatus</th>
-        <th class="text-left py-3 pr-4">Cant.</th>
-        <th class="text-left py-3 pr-4">Fecha</th>
-        <th class="text-left py-3 pr-4">Cliente</th>
-        <th class="text-left py-3 pr-4">Paquete</th>
-        <th class="text-left py-3 pr-4">Total</th>
-        <th class="text-left py-3 pr-4">Dirección</th>
-        <th class="text-left py-3 pr-4">Pago</th>
-        <th class="text-left py-3"></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for p in pedidos %}
-      {{ order_row(p, csrf_token) }}
-      {% else %}
-      <tr>
-        <td colspan="10" class="py-16 text-center text-white/20 text-sm">No hay pedidos</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+
+  {# Desktop grid header #}
+  <div class="hidden md:grid grid-cols-[80px_85px_45px_110px_minmax(130px,1fr)_120px_80px_minmax(160px,1fr)_70px_120px] gap-2 text-white/50 text-xs uppercase tracking-[0.1em] bg-white/[0.04] rounded-lg py-2 px-3 mb-1">
+    <span>Acción</span>
+    <span>Estatus</span>
+    <span class="text-center">Cant.</span>
+    <span>Fecha</span>
+    <span>Cliente</span>
+    <span>Paquete</span>
+    <span>Total</span>
+    <span>Dirección</span>
+    <span>Pago</span>
+    <span class="text-right">Teléfono</span>
+  </div>
+
+  {% for p in pedidos %}
+  {{ order_row(p, csrf_token, seccion, estatus_filter) }}
+  {% else %}
+  <p class="py-16 text-center text-white/30 text-sm">No hay pedidos</p>
+  {% endfor %}
 </div>
 {% endmacro %}

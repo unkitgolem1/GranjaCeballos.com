@@ -17,3 +17,7 @@ node_modules/
 
 # Generated for Vercel build
 requirements.txt
+
+# Load test — NO SUBIR A REPO
+scripts/checkout_load_server.py
+scripts/LOAD_TEST_REPORT.md

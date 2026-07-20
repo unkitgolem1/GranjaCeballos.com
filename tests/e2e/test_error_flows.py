@@ -33,10 +33,6 @@ def mock_checkout():
     app.dependency_overrides[get_paquete_repo] = lambda: paquete_repo
     app.dependency_overrides[get_cliente_repo] = lambda: MockClienteRepository()
 
-    import importlib
-    _mod = importlib.import_module("src.pages.router")
-    _mod._PAQUETES_CACHE["all"] = [paquete]
-
     return paquete
 
 
@@ -69,7 +65,12 @@ class TestCheckoutPOST:
 
     def test_cantidad_zero_returns_422(self, client, mock_checkout):
         paquete = mock_checkout
+        get_resp = client.get(f"/checkout?paquete_id={paquete.id}")
+        import re
+        m = re.search(r'name="csrf_token" value="([^"]+)"', get_resp.text)
+        csrf = m.group(1) if m else ""
         resp = client.post("/checkout", data={
+            "csrf_token": csrf,
             "paquete_id": str(paquete.id),
             "nombre": "Juan",
             "telefono": "9991234567",
@@ -84,7 +85,12 @@ class TestCheckoutPOST:
         assert resp.status_code == 422
 
     def test_invalid_paquete_id_returns_200_with_error(self, client, mock_checkout):
+        get_resp = client.get("/checkout")
+        import re
+        m = re.search(r'name="csrf_token" value="([^"]+)"', get_resp.text)
+        csrf = m.group(1) if m else ""
         resp = client.post("/checkout", data={
+            "csrf_token": csrf,
             "paquete_id": "not-a-uuid",
             "nombre": "Juan",
             "telefono": "9991234567",

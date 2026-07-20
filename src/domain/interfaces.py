@@ -1,6 +1,10 @@
 from abc import ABC, abstractmethod
 from datetime import date
+from decimal import Decimal
 from typing import Optional
+from uuid import UUID
+
+from typing_extensions import TypedDict
 
 from .models import Cliente, Paquete, Pedido, Suscripcion, Usuario
 
@@ -23,12 +27,40 @@ class PaqueteRepository(ABC):
     async def get_by_id(self, paquete_id: str) -> Optional[Paquete]: ...
 
 
+class CheckoutResult(TypedDict):
+    usuario_id: UUID
+    usuario_nombre: str
+    pedido_id: Optional[UUID]
+    pedido_total: Optional[Decimal]
+    cp_valido: bool
+
+
 class PedidoRepository(ABC):
     @abstractmethod
     async def create(self, pedido: Pedido) -> Pedido: ...
 
     @abstractmethod
     async def create_si_no_pendiente(self, pedido: Pedido) -> Pedido: ...
+
+    @abstractmethod
+    async def create_checkout_atomic(
+        self,
+        *,
+        codigo_postal: str,
+        nombre: str,
+        telefono: str,
+        email: str | None,
+        pedido_id: UUID,
+        paquete_id: UUID,
+        direccion: str,
+        estado: str,
+        ciudad: str,
+        colonia: str,
+        cantidad: int,
+        total: Decimal,
+        metodo_pago: str,
+        fecha_entrega: date,
+    ) -> CheckoutResult: ...
 
     @abstractmethod
     async def get_by_id(self, pedido_id: str) -> Optional[Pedido]: ...
@@ -68,6 +100,14 @@ class SuscripcionRepository(ABC):
 
     @abstractmethod
     async def avanzar_proxima(self, suscripcion_id: str) -> None: ...
+
+
+class SepomexRepository(ABC):
+    @abstractmethod
+    async def consultar(self, cp: str) -> dict | None: ...
+
+    @abstractmethod
+    async def existe(self, cp: str) -> bool: ...
 
 
 class ClienteRepository(ABC):

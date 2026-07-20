@@ -11,7 +11,9 @@
         Cuidamos la tierra, el sol y nuestras gallinas en Yucat&aacute;n para llevar
         el verdadero sabor del campo a tu cocina.
       </p>
-      <button hx-get="/checkout" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
+      {% set paquete_custom = paquetes | selectattr('es_customizable') | first %}
+      <button hx-get="/checkout?paquete_id={{ paquete_custom.id if paquete_custom else '' }}"
+              hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
               class="bg-[#DDAC23] text-[#1F200B] px-10 py-4 rounded-full text-base font-semibold hover:scale-105 active:scale-[0.98] transition-all duration-300 cta-arrow animate-pulse-glow">
         Pedir mi cart&oacute;n
       </button>

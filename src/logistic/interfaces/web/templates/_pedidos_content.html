@@ -43,12 +43,12 @@
 {% from "components/organisms/orders_table.html" import orders_table %}
 
 {% if seccion == "todo" %}
-  {{ orders_table(todo_pedidos, csrf_token, "Todo") }}
+  {{ orders_table(todo_pedidos, csrf_token, "Todo", seccion=seccion, estatus_filter=estatus_filter) }}
 {% else %}
   {% if seccion != "pasado" %}
-    {{ orders_table(today_pedidos, csrf_token, "Hoy", hoy) }}
+    {{ orders_table(today_pedidos, csrf_token, "Hoy", hoy, seccion=seccion, estatus_filter=estatus_filter) }}
   {% endif %}
   {% if seccion != "hoy" and past_pedidos %}
-    {{ orders_table(past_pedidos, csrf_token, "Pasado") }}
+    {{ orders_table(past_pedidos, csrf_token, "Pasado", seccion=seccion, estatus_filter=estatus_filter) }}
   {% endif %}
 {% endif %}

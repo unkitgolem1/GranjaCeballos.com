@@ -234,10 +234,9 @@ def _reset():
     pool, _ = _make_mock_pool()
     app.state.db_pool = pool
 
-    import importlib
-    _pages_router_mod = importlib.import_module("src.pages.router")
-    _pages_router_mod._PAQUETES_CACHE = {}
-    _pages_router_mod._PAQUETES_CACHE_TS = 0.0
+    from src.infrastructure.cache import MemoryCache
+    app.state.cache = MemoryCache(default_ttl=60)
+
     yield
     app.dependency_overrides.clear()
     if _saved_pool is not None:

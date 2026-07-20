@@ -1,23 +1,35 @@
-{% macro accept_btn(pedido_id, csrf_token) %}
-<form method="POST" action="/logistic/pedidos/{{ pedido_id }}/estatus" style="display:inline">
+{% macro accept_btn(pedido_id, csrf_token, seccion="todo", estatus_filter="pendiente") %}
+<form hx-post="/logistic/pedidos/{{ pedido_id }}/estatus"
+      hx-target="#logistic-content" hx-swap="innerHTML"
+      style="display:inline">
   <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   <input type="hidden" name="estatus" value="aceptado">
+  <input type="hidden" name="seccion" value="{{ seccion }}">
+  <input type="hidden" name="estatus_filter" value="{{ estatus_filter }}">
   <button class="px-3 py-1.5 bg-emerald-600/20 text-emerald-400 rounded-lg text-xs font-medium hover:bg-emerald-600/30 transition-colors">✔</button>
 </form>
 {% endmacro %}
 
-{% macro reject_btn(pedido_id, csrf_token) %}
-<form method="POST" action="/logistic/pedidos/{{ pedido_id }}/estatus" style="display:inline">
+{% macro reject_btn(pedido_id, csrf_token, seccion="todo", estatus_filter="pendiente") %}
+<form hx-post="/logistic/pedidos/{{ pedido_id }}/estatus"
+      hx-target="#logistic-content" hx-swap="innerHTML"
+      style="display:inline">
   <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   <input type="hidden" name="estatus" value="rechazado">
+  <input type="hidden" name="seccion" value="{{ seccion }}">
+  <input type="hidden" name="estatus_filter" value="{{ estatus_filter }}">
   <button class="px-3 py-1.5 bg-red-600/20 text-red-400 rounded-lg text-xs font-medium hover:bg-red-600/30 transition-colors">✘</button>
 </form>
 {% endmacro %}
 
-{% macro deliver_btn(pedido_id, csrf_token) %}
-<form method="POST" action="/logistic/pedidos/{{ pedido_id }}/estatus" style="display:inline">
+{% macro deliver_btn(pedido_id, csrf_token, seccion="todo", estatus_filter="pendiente") %}
+<form hx-post="/logistic/pedidos/{{ pedido_id }}/estatus"
+      hx-target="#logistic-content" hx-swap="innerHTML"
+      style="display:inline">
   <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   <input type="hidden" name="estatus" value="entregado">
-  <button class="px-3 py-1.5 bg-blue-600/20 text-blue-400 rounded-lg text-xs font-medium hover:bg-blue-600/30 transition-colors">Entregar</button>
+  <input type="hidden" name="seccion" value="{{ seccion }}">
+  <input type="hidden" name="estatus_filter" value="{{ estatus_filter }}">
+  <button class="btn-deliver px-4 py-2 rounded-lg text-xs font-semibold tracking-wide bg-emerald-600/25 text-emerald-300 hover:bg-emerald-600/40 transition-all">Entregar</button>
 </form>
 {% endmacro %}

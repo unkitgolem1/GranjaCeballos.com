@@ -67,7 +67,7 @@
               <p id="ahorro-{{ paquete.id }}" class="text-[#90BDB5] text-xs mt-1"></p>
             </div>
             <button
-              id="btn-{{ paquete.id }}"
+              id="btn-customizable"
               hx-get="/checkout?paquete_id={{ paquete.id }}&cantidad=1"
               hx-target="#main-content-flow"
               hx-swap="innerHTML transition:true"
@@ -82,7 +82,9 @@
             <span class="text-white/50">${{ paquete.precio }} por cartón</span>
             <span class="text-[#90BDB5]/70">🚚 Envío incluido</span>
           </div>
-          <button hx-get="/checkout?paquete_id={{ paquete.id }}"
+          {% set btn_id = 'btn-1carton' if '1 Cartón' in paquete.nombre else 'btn-4cartones' %}
+          <button id="{{ btn_id }}"
+                  hx-get="/checkout?paquete_id={{ paquete.id }}"
                   hx-target="#main-content-flow"
                   hx-swap="innerHTML transition:true"
                   class="mt-2 w-full border border-[#DDAC23] text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all rounded-full px-6 py-3 text-sm font-medium">

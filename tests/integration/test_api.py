@@ -10,7 +10,7 @@ from src.infrastructure.limiter import limiter
 
 @pytest.fixture(autouse=True)
 def _app_setup():
-    """Override rate limiter to disable it for tests + mock DB pool."""
+    """Override rate limiter to disable it for tests + mock DB pool + mock cache."""
     limiter.enabled = False
 
     mock_pool = MagicMock()
@@ -20,6 +20,10 @@ def _app_setup():
     ctx_mgr.__aexit__ = AsyncMock(return_value=None)
     mock_pool.acquire.return_value = ctx_mgr
     app.state.db_pool = mock_pool
+
+    from src.infrastructure.cache import MemoryCache
+    app.state.cache = MemoryCache(default_ttl=60)
+
     app.dependency_overrides.clear()
     yield
     app.dependency_overrides.clear()
@@ -55,7 +59,11 @@ class TestCheckoutSubmit:
         assert resp.status_code == 422
 
     def test_post_checkout_valid_submission(self, client):
+        get_resp = client.get("/checkout")
+        m = re.search(r'name="csrf_token" value="([^"]+)"', get_resp.text)
+        assert m is not None, "CSRF token not found in checkout form"
         resp = client.post("/checkout", data={
+            "csrf_token": m.group(1),
             "paquete_id": "00000000-0000-0000-0000-000000000001",
             "nombre": "Test",
             "telefono": "9991234567",

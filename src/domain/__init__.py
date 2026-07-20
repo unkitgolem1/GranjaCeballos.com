@@ -1,5 +1,6 @@
 from .models import Cliente, CustomTier, Paquete, Pedido, Suscripcion, Usuario
 from .interfaces import (
+    CheckoutResult,
     ClienteRepository,
     PaqueteRepository,
     PedidoRepository,
@@ -8,6 +9,7 @@ from .interfaces import (
 )
 
 __all__ = [
+    "CheckoutResult",
     "Cliente",
     "CustomTier",
     "Paquete",

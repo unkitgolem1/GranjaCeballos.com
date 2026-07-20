@@ -20,12 +20,16 @@ _TEMPLATES_DIR = Path(__file__).resolve().parent.parent.parent / "static" / "tem
 _ticket_templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
 from src.application.services import _calcular_precio_unitario, _calcular_total
 
+from src.infrastructure.limiter import limiter
+from src.infrastructure.sepomex_repository import PostgresSepomexRepository
+
 from .dependencies import (
     ClienteRepoDep,
     PaqueteRepoDep,
     PedidoRepoDep,
     PedidoServiceDep,
     PoolDep,
+    SepomexRepoDep,
     SuscripcionRepoDep,
     SuscripcionSchedulerDep,
     SuscripcionServiceDep,
@@ -244,11 +248,8 @@ async def descargar_ticket(
 _ultima_consulta_nominatim: float = 0.0
 _sem_nominatim = asyncio.Semaphore(1)
 
-@router.get("/reverse-geocode")
-async def reverse_geocode(lat: float = Query(...), lng: float = Query(...)):
-    if not (-90 <= lat <= 90) or not (-180 <= lng <= 180):
-        return JSONResponse({"direccion": ""}, status_code=400)
 
+async def _consultar_nominatim(lat: float, lng: float) -> dict:
     async with _sem_nominatim:
         global _ultima_consulta_nominatim
         desde_ultima = time() - _ultima_consulta_nominatim
@@ -271,9 +272,101 @@ async def reverse_geocode(lat: float = Query(...), lng: float = Query(...)):
         )
         resp.raise_for_status()
         data = resp.json() or {}
-        direccion = data.get("display_name", "")
-        cp = (data.get("address") or {}).get("postcode", "")
-        return JSONResponse({"direccion": direccion, "codigo_postal": cp})
+        address = data.get("address") or {}
+        return {
+            "direccion": data.get("display_name", ""),
+            "codigo_postal": address.get("postcode", ""),
+            "estado": address.get("state", ""),
+            "ciudad": address.get("city", "") or address.get("town", "") or address.get("municipality", ""),
+            "suburb": address.get("suburb", "") or address.get("neighbourhood", "") or address.get("hamlet", ""),
+        }
+
+
+async def _rellenar_cp(resultado: dict, repo: PostgresSepomexRepository) -> None:
+    if resultado.get("codigo_postal"):
+        return
+    suburb = (resultado.get("suburb") or "").strip()
+    if not suburb:
+        return
+    cp = await repo.buscar_cp_por_colonia(suburb)
+    if cp:
+        resultado["codigo_postal"] = cp
+
+
+@router.get("/reverse-geocode")
+async def reverse_geocode(lat: float = Query(...), lng: float = Query(...)):
+    if not (-90 <= lat <= 90) or not (-180 <= lng <= 180):
+        return JSONResponse({"direccion": ""}, status_code=400)
+    resultado = await _consultar_nominatim(lat, lng)
+    return JSONResponse(resultado)
+
+
+@router.get("/localizar-ip")
+@limiter.limit("6/minute")
+async def localizar_ip(request: Request, repo: SepomexRepoDep):
+    forwarded = request.headers.get("X-Forwarded-For")
+    client_host = (forwarded.split(",")[0].strip()
+                   if forwarded
+                   else (request.client.host if request.client else "127.0.0.1"))
+
+    ip_api_params = {"fields": "lat,lon,zip,status,city,regionName"}
+    ip_api_url = f"http://ip-api.com/json/{client_host}"
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(ip_api_url, params=ip_api_params, timeout=5)
+        data = resp.json()
+        if data.get("status") != "success":
+            if client_host in ("127.0.0.1", "::1", "localhost") or client_host.startswith(("192.168.", "10.", "172.16.")):
+                resp = await client.get("http://ip-api.com/json", params=ip_api_params, timeout=5)
+                data = resp.json()
+        if data.get("status") != "success":
+            return JSONResponse(
+                {"direccion": "", "codigo_postal": ""},
+                headers={"Cache-Control": "public, max-age=300"},
+            )
+
+        lat, lon = data["lat"], data["lon"]
+        zip_detectado = data.get("zip", "")
+
+    resultado = await _consultar_nominatim(lat, lon)
+
+    if not resultado["codigo_postal"] and zip_detectado:
+        resultado["codigo_postal"] = zip_detectado
+
+    await _rellenar_cp(resultado, repo)
+
+    return JSONResponse(
+        resultado,
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
+
+
+@router.get("/colonias/merida")
+async def colonias_merida(repo: SepomexRepoDep):
+    rows = await repo.listar_colonias_merida()
+    data = [{"colonia": r["colonia"], "codigo_postal": r["codigo_postal"]} for r in rows]
+    return JSONResponse(
+        {"colonias": data},
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )
+
+
+@router.get("/cp/{codigo_postal}")
+async def consultar_cp(codigo_postal: str, repo: SepomexRepoDep):
+    if not codigo_postal.isdigit() or len(codigo_postal) != 5:
+        raise HTTPException(status_code=400, detail="CP debe ser 5 dígitos")
+    resultado = await repo.consultar(codigo_postal)
+    if resultado is None or resultado.get("municipio") != "Mérida":
+        return JSONResponse(
+            {"encontrado": False, "codigo_postal": codigo_postal},
+            status_code=404,
+            headers={"Cache-Control": "public, max-age=31536000, immutable"},
+        )
+    resultado["encontrado"] = True
+    return JSONResponse(
+        resultado,
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )
 
 
 @router.get("/detectar-cp")

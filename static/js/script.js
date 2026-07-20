@@ -5,6 +5,8 @@
 /* ---- Paquete selector ---- */
 
 function selectPaquete(el) {
+  const yaSeleccionado = el.classList.contains('ring-2');
+
   document.querySelectorAll('.plan-card').forEach((c) => {
     c.classList.remove('ring-2', 'ring-[#DDAC23]', 'bg-[#DDAC23]/10', 'scale-[1.02]');
   });
@@ -25,7 +27,7 @@ function selectPaquete(el) {
   btn.classList.remove('opacity-50', 'scale-90', 'cursor-not-allowed');
   btn.classList.add('scale-100', 'shadow-lg', 'shadow-[#DDAC23]/30', 'hover:scale-[1.03]', 'hover:shadow-xl', 'hover:shadow-[#DDAC23]/40', 'active');
 
-  calcularPrecio();
+  if (!yaSeleccionado) calcularPrecio();
 }
 
 /* ---- Precio (frontend) ---- */
@@ -112,12 +114,6 @@ function actualizarFechaEntrega(dia) {
 window.actualizarFechaEntrega = actualizarFechaEntrega;
 window.calcularPrecio = calcularPrecio;
 
-/* ---- Init ---- */
-
-document.addEventListener('DOMContentLoaded', function () {
-  const preselected = document.getElementById('selected-paquete').value;
-  if (preselected) {
-    const card = document.querySelector('.plan-card[data-id="' + preselected + '"]');
-    if (card) selectPaquete(card);
-  }
-});
+/* ---- Init ----
+ * (vacio — la preseleccion se hace via SSR en form.html)
+ */

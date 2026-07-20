@@ -14,6 +14,7 @@ class TestPedidoCreate:
             nombre="Juan",
             paquete_id=UUID(int=1),
             direccion="Mérida, Yucatán",
+            codigo_postal="97000",
             metodo_pago="efectivo",
             fecha_usuario=date.today(),
         )
@@ -29,6 +30,7 @@ class TestPedidoCreate:
             paquete_id=UUID(int=1),
             direccion="Calle 53 #298, Mérida",
             cantidad=3,
+            codigo_postal="97000",
             metodo_pago="tarjeta",
             fecha_usuario=date.today(),
         )
@@ -41,7 +43,8 @@ class TestPedidoCreate:
                 nombre="Juan",
                 paquete_id=UUID(int=1),
                 direccion="Mérida",
-                metodo_pago="efectivo",
+                codigo_postal="97000",
+            metodo_pago="efectivo",
                 fecha_usuario=date.today(),
             )
 
@@ -53,7 +56,8 @@ class TestPedidoCreate:
                 email="not-an-email",
                 paquete_id=UUID(int=1),
                 direccion="Mérida",
-                metodo_pago="efectivo",
+                codigo_postal="97000",
+            metodo_pago="efectivo",
                 fecha_usuario=date.today(),
             )
 
@@ -75,7 +79,8 @@ class TestPedidoCreate:
                 nombre="",
                 paquete_id=UUID(int=1),
                 direccion="Mérida",
-                metodo_pago="efectivo",
+                codigo_postal="97000",
+            metodo_pago="efectivo",
                 fecha_usuario=date.today(),
             )
 
@@ -86,7 +91,8 @@ class TestPedidoCreate:
                 nombre="Juan",
                 paquete_id=UUID(int=1),
                 direccion="Mérida",
-                metodo_pago="efectivo",
+                codigo_postal="97000",
+            metodo_pago="efectivo",
                 cantidad=0,
                 fecha_usuario=date.today(),
             )
@@ -97,6 +103,7 @@ class TestPedidoCreate:
             nombre="Juan",
             paquete_id=UUID(int=1),
             direccion="Mérida",
+            codigo_postal="97000",
             metodo_pago="efectivo",
             notas="Llamar antes de entregar",
             fecha_usuario=date.today(),
@@ -111,6 +118,7 @@ class TestSuscripcionCreate:
             nombre="Juan",
             paquete_id=UUID(int=1),
             direccion="Mérida, Yucatán",
+            codigo_postal="97000",
             metodo_pago="tarjeta",
             dia_entrega=1,
             fecha_inicio=date.today(),
@@ -124,7 +132,8 @@ class TestSuscripcionCreate:
                 nombre="Juan",
                 paquete_id=UUID(int=1),
                 direccion="Mérida",
-                metodo_pago="tarjeta",
+                codigo_postal="97000",
+            metodo_pago="tarjeta",
                 dia_entrega=0,
                 fecha_inicio=date.today(),
             )
@@ -134,7 +143,8 @@ class TestSuscripcionCreate:
                 nombre="Juan",
                 paquete_id=UUID(int=1),
                 direccion="Mérida",
-                metodo_pago="tarjeta",
+                codigo_postal="97000",
+            metodo_pago="tarjeta",
                 dia_entrega=8,
                 fecha_inicio=date.today(),
             )

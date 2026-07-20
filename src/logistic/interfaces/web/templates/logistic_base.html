@@ -8,11 +8,68 @@
   <link href="/static/css/output.css" rel="stylesheet">
   <script defer src="/static/js/htmx.min.js"></script>
   <style>
-    .estatus-pendiente { color: #fbbf24; }
-    .estatus-aceptado { color: #34d399; }
-    .estatus-entregado { color: #60a5fa; }
-    .estatus-cancelado { color: #f87171; }
-    .estatus-rechazado { color: #f87171; }
+    .estatus-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    .estatus-pendiente {
+      color: #fcd34d;
+      background: rgba(252,211,77,0.1);
+      text-shadow: 0 0 8px rgba(252,211,77,0.25);
+    }
+    .estatus-aceptado {
+      color: #6ee7b7;
+      background: rgba(110,231,183,0.1);
+      text-shadow: 0 0 8px rgba(110,231,183,0.25);
+    }
+    .estatus-entregado {
+      color: #93c5fd;
+      background: rgba(147,197,253,0.1);
+      text-shadow: 0 0 8px rgba(147,197,253,0.25);
+    }
+    .estatus-cancelado {
+      color: #fca5a5;
+      background: rgba(252,165,165,0.1);
+      text-shadow: 0 0 8px rgba(252,165,165,0.25);
+    }
+    .estatus-rechazado {
+      color: #fca5a5;
+      background: rgba(252,165,165,0.1);
+      text-shadow: 0 0 8px rgba(252,165,165,0.25);
+    }
+    @keyframes float-glow {
+      0%, 100% { transform: translateY(0px); box-shadow: 0 0 8px rgba(110,231,183,0.15); }
+      50% { transform: translateY(-3px); box-shadow: 0 0 20px rgba(110,231,183,0.3), 0 0 40px rgba(110,231,183,0.1); }
+    }
+    .btn-deliver {
+      animation: float-glow 3s ease-in-out infinite;
+    }
+
+    /* Status row colors */
+    .order-row.estatus-row-aceptado,
+    .order-row-mobile.estatus-row-aceptado {
+      background: rgba(16,185,129,0.12) !important;
+      border-left: 3px solid rgba(16,185,129,0.3) !important;
+    }
+    .order-row.estatus-row-rechazado,
+    .order-row-mobile.estatus-row-rechazado {
+      background: rgba(239,68,68,0.12) !important;
+      border-left: 3px solid rgba(239,68,68,0.3) !important;
+    }
+    .order-row.estatus-row-entregado,
+    .order-row-mobile.estatus-row-entregado {
+      background: rgba(59,130,246,0.12) !important;
+      border-left: 3px solid rgba(59,130,246,0.3) !important;
+    }
+    .order-row.estatus-row-cancelado,
+    .order-row-mobile.estatus-row-cancelado {
+      background: rgba(239,68,68,0.06) !important;
+    }
+
     .nav-link { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.05em; transition: all 0.3s; }
     .nav-link.active { color: #DDAC23; border-bottom: 2px solid #DDAC23; padding-bottom: 0.25rem; }
     .nav-link:not(.active) { color: rgba(255,255,255,0.4); }

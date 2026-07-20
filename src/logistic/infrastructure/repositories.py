@@ -28,7 +28,7 @@ class PostgresPedidoQueryRepo(PedidoQueryRepository):
 
     async def listar_pedidos(
         self, estatus: str, fecha_desde: Optional[str] = None,
-        fecha_hasta: Optional[str] = None, orden: str = "DESC", limite: int = 25
+        fecha_hasta: Optional[str] = None, orden: str = "ASC", limite: int = 25
     ) -> list[LogisticPedido]:
         async with self._pool.acquire() as conn:
             sql = _ORDERS_SQL
@@ -42,9 +42,8 @@ class PostgresPedidoQueryRepo(PedidoQueryRepository):
                 sql += f" AND p.fecha_entrega < ${n}"
                 params.append(fecha_hasta)
 
-            dir_sql = "ASC" if orden.upper() == "ASC" else "DESC"
             n = len(params) + 1
-            sql += f" ORDER BY p.created_at {dir_sql} LIMIT ${n}"
+            sql += f" ORDER BY CASE WHEN p.estatus = 'pendiente' THEN 0 ELSE 1 END, p.fecha_entrega ASC LIMIT ${n}"
             params.append(limite)
 
             rows = await conn.fetch(sql, *params)
@@ -89,17 +88,22 @@ class PostgresClienteQueryRepo(ClienteQueryRepository):
         async with self._pool.acquire() as conn:
             rows = await conn.fetch("""
                 SELECT
-                    u.id, u.nombre, u.telefono, u.es_cliente, u.created_at,
+                    u.telefono,
+                    (SELECT u2.nombre FROM usuarios u2
+                     WHERE u2.telefono = u.telefono
+                     ORDER BY u2.created_at DESC LIMIT 1) AS nombre,
                     COUNT(p.id)::int AS total_pedidos,
                     MAX(p.created_at) AS ultimo_pedido_fecha,
                     (SELECT p2.estatus FROM pedidos p2
-                     WHERE p2.usuario_id = u.id
-                     ORDER BY p2.created_at DESC LIMIT 1) AS ultimo_pedido_estatus
+                     JOIN usuarios u2 ON u2.id = p2.usuario_id
+                     WHERE u2.telefono = u.telefono
+                     ORDER BY p2.created_at DESC LIMIT 1) AS ultimo_pedido_estatus,
+                    MIN(u.created_at) AS created_at
                 FROM usuarios u
                 LEFT JOIN pedidos p ON p.usuario_id = u.id
-                WHERE u.es_cliente = TRUE
-                GROUP BY u.id
-                ORDER BY u.nombre
+                WHERE u.telefono IS NOT NULL AND u.telefono != ''
+                GROUP BY u.telefono
+                ORDER BY total_pedidos DESC, u.telefono
             """)
         return [LogisticCliente(**dict(r)) for r in rows]
 

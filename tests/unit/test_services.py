@@ -8,12 +8,11 @@ from src.application.services import (
     _calcular_fecha_entrega,
     _calcular_precio_unitario,
     _calcular_total,
-    _validar_direccion_yucatan,
     PedidoService,
     SuscripcionService,
 )
 from src.application.schemas import PedidoCreate, SuscripcionCreate
-from src.domain.interfaces import PaqueteRepository
+from src.domain.interfaces import PaqueteRepository, SepomexRepository
 from tests.conftest import make_paquete, make_suscripcion, make_usuario
 
 
@@ -26,6 +25,21 @@ class MockPaqueteRepositoryWithGetById(PaqueteRepository):
 
     async def get_by_id(self, paquete_id: str):
         return self._result
+
+
+class MockSepomexRepository(SepomexRepository):
+    def __init__(self):
+        self._data = {
+            "97000": {"municipio": "Mérida", "colonias": ["Centro"]},
+            "97100": {"municipio": "Mérida", "colonias": ["Itzimna"]},
+            "97700": {"municipio": "Tizimín", "colonias": ["Tizimín Centro"]},
+        }
+
+    async def consultar(self, cp: str) -> dict | None:
+        return self._data.get(cp)
+
+    async def existe(self, cp: str) -> bool:
+        return cp in self._data
 
 
 # ── _calcular_precio_unitario ────────────────────────────────────────────
@@ -130,146 +144,95 @@ class _MockDatetime:
         return getattr(dt, name)
 
 
-# ── _validar_direccion_yucatan ───────────────────────────────────────────
-
-class TestValidarDireccionYucatan:
-    @pytest.mark.parametrize("direccion", [
-        "Mérida, Yucatán",
-        "Calle 53 #298, Mérida, Yuc.",
-        "Progreso, Yucatán",
-        "Valladolid",
-        "calle 20 x 30, kanasín",
-        "c. 41 #200, hunucmá",
-        "Calle Yucatán 123, Mérida",  # "yucat" as part of street name
-    ])
-    def test_valid_addresses(self, direccion):
-        assert _validar_direccion_yucatan(direccion) is True
-
-    @pytest.mark.parametrize("direccion", [
-        "Calle 53 #298, CDMX",
-        "Avenida Siempre Viva 742, Cancún",
-        "Monterrey, Nuevo León",
-        "Guadalajara, Jalisco",
-        "Calle 10 #20, Chetumal",
-    ])
-    def test_invalid_addresses(self, direccion):
-        assert _validar_direccion_yucatan(direccion) is False
-
-    def test_yucatan_rejected_if_other_state_mentioned(self):
-        # Contains "Mérida" but also "Campeche" → should be rejected
-        assert _validar_direccion_yucatan("Mérida, pero en realidad es Campeche") is False
-
-    def test_empty_address(self):
-        assert _validar_direccion_yucatan("") is False
-
-
 # ── PedidoService ────────────────────────────────────────────────────────
 
 class TestPedidoService:
     @pytest.fixture
-    def service(self, usuario_repo, paquete_repo, pedido_repo):
-        return PedidoService(usuario_repo, paquete_repo, pedido_repo)
+    def service(self, pedido_repo):
+        return PedidoService(pedido_repo=pedido_repo)
 
-    async def test_crear_success(self, service, paquete_tradicional, pedido_repo):
+    async def test_crear_atomic_success(self, service, paquete_tradicional):
         datos = PedidoCreate(
             telefono="9991234567",
             nombre="Juan",
             paquete_id=paquete_tradicional.id,
             direccion="Mérida, Yucatán",
+            codigo_postal="97000",
             metodo_pago="efectivo",
             fecha_usuario=date.today(),
         )
-        pedido = await service.crear(datos)
+        pedido = await service.crear_atomic(datos, paquete=paquete_tradicional)
         assert pedido.estatus == "pendiente"
         assert pedido.total == Decimal("150")
         assert pedido.cantidad == 1
 
-    async def test_crear_con_paquete_externo(self, service, paquete_tradicional, pedido_repo):
-        """Service accepts an optional paquete object to avoid a DB query."""
-        datos = PedidoCreate(
-            telefono="9991234567",
-            nombre="Juan",
-            paquete_id=paquete_tradicional.id,
-            direccion="Mérida, Yucatán",
-            metodo_pago="efectivo",
-            fecha_usuario=date.today(),
-        )
-        pedido = await service.crear(datos, paquete=paquete_tradicional)
-        assert pedido.estatus == "pendiente"
-
     async def test_crear_fuera_de_yucatan(self, service, paquete_tradicional):
+        """Mock pedido_repo returns cp_valido=False for CP 97700."""
         datos = PedidoCreate(
             telefono="9991234567",
             nombre="Juan",
             paquete_id=paquete_tradicional.id,
             direccion="Cancún, Quintana Roo",
+            codigo_postal="97700",
             metodo_pago="efectivo",
             fecha_usuario=date.today(),
         )
-        with pytest.raises(ValueError, match="Yucatán"):
-            await service.crear(datos)
+        with pytest.raises(ValueError, match="Solo entregamos en Mérida"):
+            await service.crear_atomic(datos, paquete=paquete_tradicional)
 
-    async def test_crear_paquete_inactivo(self, usuario_repo, pedido_repo):
-        repo = MockPaqueteRepositoryWithGetById(make_paquete(activo=False))
-        service = PedidoService(usuario_repo, repo, pedido_repo)
+    async def test_crear_paquete_inactivo(self, service, paquete_tradicional):
+        paquete_inactivo = make_paquete(activo=False)
         datos = PedidoCreate(
             telefono="9991234567",
             nombre="Juan",
-            paquete_id=uuid4(),
+            paquete_id=paquete_inactivo.id,
             direccion="Mérida, Yucatán",
+            codigo_postal="97000",
             metodo_pago="efectivo",
             fecha_usuario=date.today(),
         )
         with pytest.raises(ValueError, match="Paquete no disponible"):
-            await service.crear(datos)
+            await service.crear_atomic(datos, paquete=paquete_inactivo)
 
-    async def test_crear_paquete_no_existe(self, usuario_repo, pedido_repo):
-        repo = MockPaqueteRepositoryWithGetById(None)
-        service = PedidoService(usuario_repo, repo, pedido_repo)
-        datos = PedidoCreate(
-            telefono="9991234567",
-            nombre="Juan",
-            paquete_id=uuid4(),
-            direccion="Mérida, Yucatán",
-            metodo_pago="efectivo",
-            fecha_usuario=date.today(),
-        )
-        with pytest.raises(ValueError, match="Paquete no encontrado"):
-            await service.crear(datos)
-
-    async def test_crear_customizable_cantidad_variable(self, service, paquete_customizable, pedido_repo):
+    async def test_crear_customizable_cantidad_variable(self, service, paquete_customizable):
         datos = PedidoCreate(
             telefono="9991234567",
             nombre="Juan",
             paquete_id=paquete_customizable.id,
             direccion="Mérida, Yucatán",
+            codigo_postal="97000",
             cantidad=5,
             metodo_pago="efectivo",
             fecha_usuario=date.today(),
         )
-        pedido = await service.crear(datos)
-        assert pedido.cantidad == 5  # customizable respeta cantidad
+        pedido = await service.crear_atomic(datos, paquete=paquete_customizable)
+        assert pedido.cantidad == 5
 
-    async def test_crear_no_customizable_ignora_cantidad(self, service, paquete_tradicional, pedido_repo):
+    async def test_crear_no_customizable_ignora_cantidad(self, service, paquete_tradicional):
         datos = PedidoCreate(
             telefono="9991234567",
             nombre="Juan",
             paquete_id=paquete_tradicional.id,
             direccion="Mérida, Yucatán",
+            codigo_postal="97000",
             cantidad=99,
             metodo_pago="efectivo",
             fecha_usuario=date.today(),
         )
-        pedido = await service.crear(datos)
-        assert pedido.cantidad == 1  # cantidad_fija override
+        pedido = await service.crear_atomic(datos, paquete=paquete_tradicional)
+        assert pedido.cantidad == 1
 
 
 # ── SuscripcionService ───────────────────────────────────────────────────
 
 class TestSuscripcionService:
     @pytest.fixture
-    def service(self, usuario_repo, paquete_repo, pedido_repo, suscripcion_repo):
-        return SuscripcionService(usuario_repo, paquete_repo, pedido_repo, suscripcion_repo)
+    def sepomex_repo(self):
+        return MockSepomexRepository()
+
+    @pytest.fixture
+    def service(self, usuario_repo, paquete_repo, pedido_repo, suscripcion_repo, sepomex_repo):
+        return SuscripcionService(usuario_repo, paquete_repo, pedido_repo, suscripcion_repo, sepomex_repo)
 
     async def test_crear_success(self, service, paquete_tradicional, pedido_repo, suscripcion_repo):
         datos = SuscripcionCreate(
@@ -277,6 +240,7 @@ class TestSuscripcionService:
             nombre="Juan",
             paquete_id=paquete_tradicional.id,
             direccion="Mérida, Yucatán",
+            codigo_postal="97000",
             metodo_pago="tarjeta",
             dia_entrega=1,
             fecha_inicio=date.today(),
@@ -291,6 +255,7 @@ class TestSuscripcionService:
             nombre="Juan",
             paquete_id=paquete_tradicional.id,
             direccion="Mérida, Yucatán",
+            codigo_postal="97000",
             metodo_pago="efectivo",
             dia_entrega=1,
             fecha_inicio=date.today(),
@@ -304,6 +269,7 @@ class TestSuscripcionService:
             nombre="Juan",
             paquete_id=paquete_tradicional.id,
             direccion="Mérida, Yucatán",
+            codigo_postal="97000",
             metodo_pago="tarjeta",
             dia_entrega=1,
             fecha_inicio=date.today(),
@@ -323,6 +289,7 @@ class TestSuscripcionService:
             nombre="Juan",
             paquete_id=paquete_tradicional.id,
             direccion="Mérida, Yucatán",
+            codigo_postal="97000",
             metodo_pago="tarjeta",
             dia_entrega=dia_deseado,
             fecha_inicio=hoy,

@@ -126,6 +126,49 @@ class MockPedidoRepository:
         self._pedidos: dict[str, Pedido] = {}
         self._fail_next_create = False
 
+    async def create_checkout_atomic(
+        self,
+        *,
+        codigo_postal: str,
+        nombre: str,
+        telefono: str,
+        email: str | None,
+        pedido_id: UUID,
+        paquete_id: UUID,
+        direccion: str,
+        estado: str,
+        ciudad: str,
+        colonia: str,
+        cantidad: int,
+        total: Decimal,
+        metodo_pago: str,
+        fecha_entrega: date,
+    ) -> dict:
+        cp_valido = codigo_postal == "97000"
+        if not cp_valido:
+            return {"usuario_id": uuid4(), "usuario_nombre": nombre, "pedido_id": None, "pedido_total": None, "cp_valido": False}
+        has_pending = any(
+            p.estatus == "pendiente" for p in self._pedidos.values()
+        )
+        if has_pending:
+            return {"usuario_id": uuid4(), "usuario_nombre": nombre, "pedido_id": None, "pedido_total": None, "cp_valido": True}
+        usuario_id = uuid4()
+        p = Pedido(
+            id=pedido_id,
+            usuario_id=usuario_id,
+            paquete_id=paquete_id,
+            direccion=direccion,
+            codigo_postal=codigo_postal,
+            cantidad=cantidad,
+            total=total,
+            metodo_pago=metodo_pago,
+            estatus="pendiente",
+            fecha_usuario=fecha_entrega,
+            fecha_entrega=fecha_entrega,
+        )
+        self._pedidos[str(pedido_id)] = p
+        return {"usuario_id": usuario_id, "usuario_nombre": nombre, "pedido_id": pedido_id, "pedido_total": total, "cp_valido": True}
+
     async def create_si_no_pendiente(self, pedido: Pedido) -> Pedido:
         if self._fail_next_create:
             self._fail_next_create = False

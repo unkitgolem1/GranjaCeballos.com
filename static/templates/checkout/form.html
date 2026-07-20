@@ -1,9 +1,17 @@
 <div id="checkout-container" class="pt-20" x-data="{ suscripcion: false, metodo_pago: 'efectivo', diaSel: '{{ hoy }}' }" x-init="actualizarFechaEntrega(diaSel)">
-  <div class="max-w-xl mx-auto bg-[#1F200B]/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 space-y-6">
+  <div class="max-w-[32rem] mx-auto bg-[#1F200B]/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 space-y-6">
 
-    <h2 class="text-display text-2xl text-white text-center">Completa tu pedido</h2>
+    <div class="text-center space-y-1">
+      <p class="text-[10px] text-[#90BDB5] font-medium tracking-[0.2em] uppercase">Granja Ceballos</p>
+      <h2 class="text-display text-2xl text-white">Completa tu pedido</h2>
+      <p class="text-[10px] text-[#90BDB5]/70 flex items-center justify-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#90BDB5] animate-pulse"></span>
+        Recolectados hoy en Mérida
+      </p>
+    </div>
 
     <form id="checkout-form" hx-post="/checkout" hx-target="#checkout-container" hx-swap="innerHTML" class="space-y-6">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <input type="text" name="nombre" required placeholder="Nombre completo"
@@ -12,25 +20,52 @@
                class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
       </div>
 
-      <div class="space-y-3" id="direccion-wrapper">
-        <input type="text" name="direccion" id="direccion-input" required placeholder="Escribe tu dirección (ej. C. 53a #298, Fco. de Montejo)"
-               class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
-        <div class="flex items-center gap-2">
-          <input type="text" name="codigo_postal" id="cp-input" placeholder="Código Postal"
-                 maxlength="5" inputmode="numeric" pattern="[0-9]{5}"
-                 autocomplete="postal-code"
-                 class="flex-1 bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
-          <button type="button" id="ubicacion-btn" onclick="get_location()"
-                  class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#90BDB5]/10 border border-[#90BDB5]/20 text-[#90BDB5] text-xs font-medium hover:bg-[#90BDB5]/20 transition-all duration-300 shrink-0">
-            <span>📍</span> Usar mi ubicación
-          </button>
+      <div class="space-y-4" id="formulario">
+
+        <input type="hidden" name="estado" id="estado-input" value="Yucatán"
+               autocomplete="address-level1">
+        <input type="hidden" name="ciudad" id="ciudad-input" value="Mérida"
+               autocomplete="address-level2">
+
+        <div>
+          <label for="cp-input" class="text-white/50 text-xs mb-1 block">Código Postal</label>
+          <div class="flex items-center gap-2">
+            <input type="text" name="codigo_postal" id="cp-input" required
+                   inputmode="numeric" pattern="[0-9]{5}" autocomplete="postal-code"
+                   maxlength="5" placeholder="97000"
+                   class="flex-1 bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
+            <button type="button" id="ubicacion-btn" onclick="get_location()"
+                    class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#DDAC23] text-[#1F200B] text-xs font-bold hover:bg-[#DDAC23]/90 transition-all duration-300 shrink-0"
+                    title="Usar mi ubicación actual">
+              <span aria-hidden="true">📍</span> GPS
+            </button>
+          </div>
         </div>
-        <div id="cp-detect-card" class="hidden bg-[#584D14]/40 border border-[#DDAC23]/20 rounded-xl p-3">
+
+        <div id="colonia-wrapper"><!-- siempre visible, JS lo oculta si falla carga -->
+          <label for="colonia-select" class="text-white/50 text-xs mb-1 block">Colonia</label>
+          <select name="colonia" id="colonia-select"
+                  autocomplete="address-level3"
+                  class="w-full bg-transparent border border-[#90BDB5]/30 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
+            <option value="">Selecciona tu colonia</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="calle-input" class="text-white/50 text-xs mb-1 block">Calle y número</label>
+          <input type="text" name="direccion" id="calle-input"
+                 autocomplete="street-address"
+                 placeholder="Ej. C. 53a #298 x 51 y 53, Fco. de Montejo"
+                 class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
+        </div>
+
+        <div id="cp-detect-card" class="hidden bg-[#584D14]/40 border border-[#DDAC23]/20 rounded-xl p-3" role="alert">
           <p class="text-xs text-white/70 leading-relaxed">
-            <span class="text-[#DDAC23] font-medium">📍 No pudimos encontrar tu código postal automáticamente.</span>
-            Escribe tu código postal de 5 dígitos para calcular el envío.
+            <span class="text-[#DDAC23] font-medium">📍 No encontramos ese código postal.</span>
+            Verifica que sea de Mérida, Yucatán (CP 97xxx).
           </p>
         </div>
+
       </div>
 
       <div class="space-y-2">
@@ -38,8 +73,18 @@
 
         <input type="hidden" name="paquete_id" id="selected-paquete" value="{{ paquete_id or '' }}">
 
+        {% set ns = namespace(sel=None) %}
+        {% for p in paquetes %}
+          {% if paquete_id and p.id|string == paquete_id|string %}
+            {% set ns.sel = p %}
+          {% endif %}
+        {% endfor %}
+        {% set paquete_selected = ns.sel or paquete_selected %}
+
         {% for paquete in paquetes %}
-        <div class="plan-card cursor-pointer rounded-xl px-5 py-4 flex items-center justify-between transition-all duration-300 border border-[#DDAC23]/20 bg-[#DDAC23]/5"
+        {% set is_selected = (paquete_id and paquete.id|string == paquete_id|string) %}
+        <div class="plan-card cursor-pointer rounded-xl px-5 py-4 flex items-center justify-between transition-all duration-300
+                    {% if is_selected %}ring-2 ring-[#DDAC23] bg-[#DDAC23]/10 scale-[1.02]{% else %}border border-[#DDAC23]/20 bg-[#DDAC23]/5{% endif %}"
              data-id="{{ paquete.id }}"
              data-precio="{{ paquete.precio }}"
              data-costo-envio="{{ paquete.costo_envio }}"
@@ -59,7 +104,7 @@
 
       </div>
 
-      <div id="cantidad-wrapper" class="{% if not paquete_id %}hidden{% endif %}">
+      <div id="cantidad-wrapper" class="{% if not (paquete_selected and paquete_selected.es_customizable) %}hidden{% endif %}">
         <div class="flex items-center gap-3">
           <label class="text-white/50 text-xs">Cantidad de cartones:</label>
           <div class="flex items-center bg-white/5 border border-white/10 rounded-lg overflow-hidden">
@@ -76,8 +121,29 @@
         </div>
       </div>
 
-      <div id="checkout-price-preview" class="text-center min-h-[3rem] flex flex-col items-center justify-center">
+      <div id="checkout-price-preview" class="text-center min-h-[4.5rem] flex flex-col items-center justify-center space-y-1">
+        {% if paquete_id and paquete_selected %}
+        <p class="text-xl text-white font-bold leading-none animate-price-float">
+          ${{ "%.0f"|format(precio_total) }} MXN
+        </p>
+        {% if paquete_selected.es_customizable and cantidad > 0 %}
+        <p class="text-xs text-white/40">${{ "%.0f"|format(precio_unitario) }} por cartón</p>
+        {% set ahorro = 120 - precio_unitario %}
+        {% if ahorro > 0 %}
+        <p class="text-xs text-[#90BDB5]">✨ Ahorras ${{ "%.0f"|format(ahorro * cantidad) }} MXN</p>
+        {% endif %}
+        {% endif %}
+        <p class="text-xs text-white/40">Incluye envío</p>
+        {% if not paquete_selected.es_customizable %}
+          {% if '1 Cartón' in paquete_selected.nombre %}
+          <p class="text-[11px] text-[#90BDB5]">✨ Prueba hoy — pide más y ahorras</p>
+          {% elif '4 Cartones' in paquete_selected.nombre %}
+          <p class="text-[11px] text-[#90BDB5]">🥚 El mejor precio por unidad</p>
+          {% endif %}
+        {% endif %}
+        {% else %}
         <p class="text-white/40 text-xs">Selecciona un paquete</p>
+        {% endif %}
       </div>
 
       <div class="space-y-3">
@@ -129,7 +195,7 @@
                     data-dia="{{ val }}"
                     @click="diaSel = '{{ val }}'; actualizarFechaEntrega('{{ val }}')"
                     class="flex-1 py-2 px-1 rounded-lg text-xs font-medium border transition-all duration-300"
-                    :class="diaSel === '{{ val }}' ? 'bg-[#DDAC23] text-[#1F200B] border-[#DDAC23]' : 'border-white/10 text-white/50 hover:border-white/30'">
+                    :class="diaSel === '{{ val }}' ? 'bg-[#DDAC23] text-[#1F200B] border-[#DDAC23] shadow-lg shadow-[#DDAC23]/30' : 'border-white/10 text-white/50 hover:border-white/30'">
               {{ label }}
             </button>
             {% endfor %}
@@ -142,13 +208,13 @@
         <div class="flex rounded-xl overflow-hidden border border-[#DDAC23]/30 p-0.5 bg-[#DDAC23]/5">
           <button type="button" @click="if (!suscripcion) metodo_pago = 'efectivo'"
                   class="flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
-                  :class="suscripcion ? 'opacity-30 cursor-not-allowed' : (metodo_pago === 'efectivo' ? 'bg-[#DDAC23] text-[#1F200B] shadow-lg shadow-[#DDAC23]/20' : 'text-white/50')">
+                  :class="suscripcion ? 'opacity-30 cursor-not-allowed' : (metodo_pago === 'efectivo' ? 'bg-[#DDAC23] text-[#1F200B] border border-[#DDAC23] shadow-lg shadow-[#DDAC23]/30' : 'text-white/50')">
             <span class="block leading-none">💵 Efectivo</span>
             <span class="block text-[10px] mt-1 font-normal" :class="suscripcion ? 'text-white/20' : (metodo_pago === 'efectivo' ? 'text-[#1F200B]/70' : 'text-white/30')">Pago contra entrega</span>
           </button>
           <button type="button" @click="metodo_pago = 'tarjeta'"
                   class="flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
-                  :class="metodo_pago === 'tarjeta' ? 'bg-[#DDAC23] text-[#1F200B] shadow-lg shadow-[#DDAC23]/20' : 'text-white/50'">
+                  :class="metodo_pago === 'tarjeta' ? 'bg-[#DDAC23] text-[#1F200B] border border-[#DDAC23] shadow-lg shadow-[#DDAC23]/30' : 'text-white/50'">
             <span class="block leading-none">💳 Tarjeta</span>
             <span class="block text-[10px] mt-1 font-normal" :class="metodo_pago === 'tarjeta' ? 'text-[#1F200B]/70' : 'text-white/30'">Pago en línea</span>
           </button>
@@ -157,7 +223,7 @@
         <div x-show="metodo_pago === 'efectivo'" x-transition.duration.300ms class="bg-[#584D14]/40 border border-[#DDAC23]/20 rounded-xl p-3">
           <p class="text-xs text-white/70 leading-relaxed">
             📞 Te llamaremos al número registrado para confirmar tu pedido.
-            <span class="text-[#DDAC23] font-medium">Si no contestas, el pedido se cancelará automáticamente.</span>
+            <span class="text-[#DDAC23] font-medium">Sin problema si no contestamos — te enviamos un WhatsApp para coordinar.</span>
           </p>
         </div>
 
@@ -171,8 +237,6 @@
       <input type="hidden" name="es_suscripcion" id="es-suscripcion-input" :value="suscripcion">
       <input type="hidden" name="metodo_pago" id="metodo-pago-input" :value="metodo_pago">
 
-      <div id="checkout-result"></div>
-
       <style>
         .no-spinner::-webkit-inner-spin-button,
         .no-spinner::-webkit-outer-spin-button { appearance: none; }
@@ -184,25 +248,40 @@
         #submit-btn.active {
           animation: float 2.5s ease-in-out infinite;
         }
+        @keyframes price-float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-5px); }
+        }
+        .animate-price-float {
+          animation: price-float 3s ease-in-out infinite;
+        }
       </style>
 
-      <button id="submit-btn" type="submit"
-              class="w-full bg-[#DDAC23] text-[#1F200B] py-5 rounded-xl transition-all duration-500 opacity-50 scale-90 cursor-not-allowed">
-        <span class="block text-base font-black tracking-tighter uppercase leading-none">Confirmar Pedido</span>
-        <span class="block text-[10px] font-mono font-bold tracking-widest text-black-mesa/50 mt-1 uppercase" x-text="metodo_pago === 'efectivo' ? 'Pago contra entrega · Te llamaremos' : 'Pago seguro en línea'"></span>
-      </button>
+      <!-- Sticky CTA -->
+      <div class="sticky bottom-0 z-10 -mx-6 -mb-6 px-6 pb-6 pt-6 bg-gradient-to-t from-[#1F200B] via-[#1F200B]/98 to-transparent">
+        <div id="checkout-result"></div>
+
+        <button id="submit-btn" type="submit"
+                class="w-full bg-[#DDAC23] text-[#1F200B] py-5 rounded-xl transition-all duration-500
+                       {% if paquete_id %}scale-100 shadow-lg shadow-[#DDAC23]/30 hover:scale-[1.03] hover:shadow-xl hover:shadow-[#DDAC23]/40 active
+                       {% else %}opacity-50 scale-90 cursor-not-allowed{% endif %}">
+          <span class="block text-base font-black tracking-tighter uppercase leading-none">Confirmar Pedido</span>
+          <span class="block text-[10px] font-mono font-bold tracking-widest text-black-mesa/50 mt-1 uppercase"
+                x-text="metodo_pago === 'efectivo' ? 'Pago contra entrega · Te llamaremos' : 'Pago seguro en línea'"></span>
+        </button>
+
+        <div class="text-center mt-4">
+          <a hx-get="/partial/welcome" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
+             class="text-white/25 text-xs hover:text-white/50 transition-colors inline-block">
+            &larr; Volver
+          </a>
+        </div>
+      </div>
 
     </form>
-
-    <div class="text-center">
-      <a hx-get="/partial/welcome" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
-         class="text-white/25 text-xs hover:text-white/50 transition-colors inline-block">
-        &larr; Volver
-      </a>
-    </div>
-
   </div>
 </div>
 
 <script src="/static/js/script.js"></script>
+<script src="/static/js/sepomex.js"></script>
 <script src="/static/js/getLocation.js"></script>

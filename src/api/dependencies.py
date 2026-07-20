@@ -12,6 +12,7 @@ from src.domain.interfaces import (
     SuscripcionRepository,
     UsuarioRepository,
 )
+from src.infrastructure.sepomex_repository import PostgresSepomexRepository
 from src.infrastructure.health.mercadopago import MercadoPagoHealthChecker
 from src.infrastructure.health.meta import MetaHealthChecker
 from src.infrastructure.health.supabase import SupabaseHealthChecker
@@ -23,6 +24,7 @@ from src.infrastructure.repositories import (
     PostgresSuscripcionRepository,
     PostgresUsuarioRepository,
 )
+from src.domain.interfaces import SepomexRepository
 
 
 async def get_db_pool(request: Request) -> asyncpg.Pool:
@@ -59,6 +61,13 @@ SuscripcionRepoDep = Annotated[SuscripcionRepository, Depends(get_suscripcion_re
 ClienteRepoDep = Annotated[ClienteRepository, Depends(get_cliente_repo)]
 
 
+async def get_sepomex_repo(pool: PoolDep) -> SepomexRepository:
+    return PostgresSepomexRepository(pool)
+
+
+SepomexRepoDep = Annotated[SepomexRepository, Depends(get_sepomex_repo)]
+
+
 async def get_health_service() -> HealthService:
     return HealthService(
         [
@@ -76,8 +85,9 @@ async def get_pedido_service(
     usuario_repo: UsuarioRepoDep,
     paquete_repo: PaqueteRepoDep,
     pedido_repo: PedidoRepoDep,
+    sepomex_repo: SepomexRepoDep,
 ) -> PedidoService:
-    return PedidoService(usuario_repo, paquete_repo, pedido_repo)
+    return PedidoService(pedido_repo=pedido_repo, usuario_repo=usuario_repo, paquete_repo=paquete_repo, sepomex_repo=sepomex_repo)
 
 
 PedidoServiceDep = Annotated[PedidoService, Depends(get_pedido_service)]
@@ -88,8 +98,9 @@ async def get_suscripcion_service(
     paquete_repo: PaqueteRepoDep,
     pedido_repo: PedidoRepoDep,
     suscripcion_repo: SuscripcionRepoDep,
+    sepomex_repo: SepomexRepoDep,
 ) -> SuscripcionService:
-    return SuscripcionService(usuario_repo, paquete_repo, pedido_repo, suscripcion_repo)
+    return SuscripcionService(usuario_repo, paquete_repo, pedido_repo, suscripcion_repo, sepomex_repo)
 
 
 SuscripcionServiceDep = Annotated[SuscripcionService, Depends(get_suscripcion_service)]

@@ -1,6 +1,8 @@
 import json
 from datetime import date
+from decimal import Decimal
 from typing import Optional
+from uuid import UUID
 
 import asyncpg
 
@@ -11,6 +13,7 @@ _SUSCRIPCION_COLS = "id, usuario_id, paquete_id, direccion, codigo_postal, canti
 _CLIENTE_COLS = "id, nombre, lugar, icono_svg, testimonio, activo, created_at"
 
 from src.domain.interfaces import (
+    CheckoutResult,
     ClienteRepository,
     PaqueteRepository,
     PedidoRepository,
@@ -18,6 +21,61 @@ from src.domain.interfaces import (
     UsuarioRepository,
 )
 from src.domain.models import Cliente, Paquete, Pedido, Suscripcion, Usuario
+
+_CHECKOUT_CTE = """
+WITH
+cp_info AS (
+    SELECT
+        municipio,
+        COUNT(*)::int AS num_colonias,
+        MIN(colonia) AS una_colonia
+    FROM codigos_postales
+    WHERE codigo_postal = $1
+    GROUP BY municipio
+),
+usuario AS (
+    INSERT INTO usuarios (nombre, telefono, email)
+    VALUES ($2, $3, $4)
+    ON CONFLICT (telefono) DO UPDATE
+        SET nombre = EXCLUDED.nombre,
+            email  = COALESCE(EXCLUDED.email, usuarios.email)
+    RETURNING id, nombre
+),
+colonia_resuelta AS (
+    SELECT
+        CASE
+            WHEN $11 <> '' THEN $11
+            WHEN (SELECT num_colonias FROM cp_info) = 1 THEN (SELECT una_colonia FROM cp_info)
+            ELSE ''
+        END AS colonia
+),
+pedido AS (
+    INSERT INTO pedidos
+        (id, usuario_id, paquete_id,
+         direccion, codigo_postal, estado, ciudad, colonia,
+         cantidad, total, metodo_pago,
+         estatus, fecha_entrega, created_at, updated_at)
+    SELECT
+        $5, (SELECT id FROM usuario), $6,
+        $7, $8, $9, $10, (SELECT colonia FROM colonia_resuelta),
+        $12, $13, $14,
+        'pendiente', $15, NOW(), NOW()
+    WHERE
+        (SELECT municipio FROM cp_info) = 'Mérida'
+        AND NOT EXISTS (
+            SELECT 1 FROM pedidos
+            WHERE usuario_id = (SELECT id FROM usuario)
+              AND estatus = 'pendiente'
+        )
+    RETURNING id, total
+)
+SELECT
+    (SELECT id FROM usuario)                  AS usuario_id,
+    (SELECT nombre FROM usuario)               AS usuario_nombre,
+    (SELECT id FROM pedido)                   AS pedido_id,
+    (SELECT total FROM pedido)                AS pedido_total,
+    COALESCE((SELECT municipio FROM cp_info) = 'Mérida', false) AS cp_valido
+"""
 
 
 class PostgresUsuarioRepository(UsuarioRepository):
@@ -80,6 +138,51 @@ class PostgresPaqueteRepository(PaqueteRepository):
 class PostgresPedidoRepository(PedidoRepository):
     def __init__(self, pool: asyncpg.Pool) -> None:
         self._pool = pool
+
+    async def create_checkout_atomic(
+        self,
+        *,
+        codigo_postal: str,
+        nombre: str,
+        telefono: str,
+        email: str | None,
+        pedido_id: UUID,
+        paquete_id: UUID,
+        direccion: str,
+        estado: str,
+        ciudad: str,
+        colonia: str,
+        cantidad: int,
+        total: Decimal,
+        metodo_pago: str,
+        fecha_entrega: date,
+    ) -> CheckoutResult:
+        async with self._pool.acquire() as conn:
+            row = await conn.fetchrow(
+                _CHECKOUT_CTE,
+                codigo_postal,
+                nombre,
+                telefono,
+                email,
+                pedido_id,
+                paquete_id,
+                direccion,
+                codigo_postal,
+                estado,
+                ciudad,
+                colonia,
+                cantidad,
+                total,
+                metodo_pago,
+                fecha_entrega,
+            )
+            return {
+                "usuario_id": row["usuario_id"],
+                "usuario_nombre": row["usuario_nombre"],
+                "pedido_id": row["pedido_id"],
+                "pedido_total": row["pedido_total"],
+                "cp_valido": row["cp_valido"],
+            }
 
     async def create_si_no_pendiente(self, pedido: Pedido) -> Pedido:
         async with self._pool.acquire() as conn:

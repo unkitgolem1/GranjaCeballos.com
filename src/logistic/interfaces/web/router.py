@@ -114,6 +114,8 @@ async def update_pedido_estatus(
     request: Request,
     pedido_id: str,
     estatus: str = Form(...),
+    seccion: str = Form(default="todo"),
+    estatus_filter: str = Form(default="pendiente"),
     service: LogisticService = Depends(get_logistic_service),
 ):
     if not _authed(request):
@@ -123,7 +125,35 @@ async def update_pedido_estatus(
     pedido = await service.actualizar_estatus(pedido_id, estatus)
     if pedido is None:
         return HTMLResponse("Pedido no encontrado", status_code=404)
-    return RedirectResponse(url="/logistic", status_code=302)
+
+    hoy = date.today()
+    repo = service._pedido_repo
+    todo_pedidos = today_pedidos = past_pedidos = []
+    if seccion == "todo":
+        todo_pedidos = await repo.listar_pedidos(estatus_filter, orden="ASC", limite=25)
+    else:
+        if seccion in ("", "hoy"):
+            today_pedidos = await repo.listar_pedidos(
+                estatus_filter, fecha_desde=str(hoy), orden="DESC"
+            )
+        if seccion in ("", "pasado"):
+            past_pedidos = await repo.listar_pedidos(
+                estatus_filter, fecha_hasta=str(hoy - timedelta(days=1)), orden="DESC"
+            )
+
+    context = {
+        "hoy": hoy,
+        "seccion": seccion,
+        "today_pedidos": [dict(r.__dict__) for r in today_pedidos],
+        "past_pedidos": [dict(r.__dict__) for r in past_pedidos],
+        "todo_pedidos": [dict(r.__dict__) for r in todo_pedidos],
+        "estatus_filter": estatus_filter,
+        **csrf_context(request),
+    }
+    resp = TEMPLATES.TemplateResponse(
+        request=request, name="_pedidos_content.html", context=context,
+    )
+    return resp
 
 
 @router.get("/logistic/partial/pedidos", response_class=HTMLResponse)
@@ -177,6 +207,14 @@ def _stats_clientes(rows: list) -> dict:
     return {"total_clientes": total, "nuevos_este_mes": nuevos, "total_pedidos": pedidos}
 
 
+def _agrupar_por_letra(clientes: list[dict]) -> dict[str, list[dict]]:
+    grupos: dict[str, list[dict]] = {}
+    for c in clientes:
+        letter = (c["nombre"] or "")[0].upper() if c.get("nombre") else "#"
+        grupos.setdefault(letter, []).append(c)
+    return dict(sorted(grupos.items()))
+
+
 @router.get("/logistic/partial/clientes", response_class=HTMLResponse)
 async def partial_clientes(
     request: Request,
@@ -186,10 +224,13 @@ async def partial_clientes(
         return RedirectResponse(url="/logistic/login", status_code=302)
 
     rows = await service.listar_clientes()
+    rows.sort(key=lambda c: (c.nombre or "").lower())
     clientes = [dict(r.__dict__) for r in rows]
+    grupos = _agrupar_por_letra(clientes)
+    total = len(clientes)
     return TEMPLATES.TemplateResponse(
         request=request, name="_clientes_content.html",
-        context={"clientes": clientes},
+        context={"grupos": grupos, "total_clientes": total},
     )
 
 
@@ -202,11 +243,15 @@ async def clientes_list(
         return RedirectResponse(url="/logistic/login", status_code=302)
 
     rows = await service.listar_clientes()
+    rows.sort(key=lambda c: (c.nombre or "").lower())
     clientes = [dict(r.__dict__) for r in rows]
+    grupos = _agrupar_por_letra(clientes)
+    total = len(clientes)
     return TEMPLATES.TemplateResponse(
         request=request, name="clientes.html",
         context={
-            "clientes": clientes,
+            "grupos": grupos,
+            "total_clientes": total,
             **_stats_clientes(rows),
             **_nav_ctx("clientes", request),
         },

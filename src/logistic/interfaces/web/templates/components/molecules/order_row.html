@@ -1,35 +1,82 @@
 {% from "components/atoms/action_button.html" import accept_btn, reject_btn, deliver_btn %}
+{% from "components/atoms/status_badge.html" import status_badge %}
 
-{% macro order_row(p, csrf_token) %}
-<tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-  <td class="py-3 pr-4 whitespace-nowrap">
+{% macro order_row(p, csrf_token, seccion="todo", estatus_filter="pendiente") %}
+{# Desktop grid row #}
+<div id="pedido-row-{{ p.id }}" class="order-row estatus-row-{{ p.estatus }} hidden md:grid grid-cols-[80px_85px_45px_110px_minmax(130px,1fr)_120px_80px_minmax(160px,1fr)_70px_120px] gap-2 items-center bg-white/[0.03] hover:bg-white/[0.06] rounded-lg my-0.5 transition-colors py-2.5 px-3">
+  <div class="text-xs">
     {% if p.estatus == 'pendiente' %}
     <div class="flex gap-1">
-      {{ accept_btn(p.id, csrf_token) }}
-      {{ reject_btn(p.id, csrf_token) }}
+      {{ accept_btn(p.id, csrf_token, seccion, estatus_filter) }}
+      {{ reject_btn(p.id, csrf_token, seccion, estatus_filter) }}
     </div>
     {% elif p.estatus == 'aceptado' %}
-    {{ deliver_btn(p.id, csrf_token) }}
+    {{ deliver_btn(p.id, csrf_token, seccion, estatus_filter) }}
     {% endif %}
-  </td>
-  <td class="py-3 pr-4 whitespace-nowrap text-xs font-medium estatus-{{ p.estatus }}">{{ p.estatus }}</td>
-  <td class="py-3 pr-4 whitespace-nowrap text-white/60 text-xs text-center">{{ p.cantidad }}</td>
-  <td class="py-3 pr-4 whitespace-nowrap text-white/60 text-xs">{{ p.fecha_entrega }}</td>
-  <td class="py-3 pr-4 whitespace-nowrap text-white/80">{{ p.usuario_nombre }}</td>
-  <td class="py-3 pr-4 whitespace-nowrap text-white/70 text-xs">{{ p.paquete_nombre }}</td>
-  <td class="py-3 pr-4 whitespace-nowrap text-white/80 text-xs font-mono">${{ p.total }}</td>
-  <td class="py-3 pr-4 text-white/60 text-xs max-w-[160px] truncate" title="{{ p.direccion }}">{{ p.direccion }}</td>
-  <td class="py-3 whitespace-nowrap text-xs">
-    <span class="{% if p.metodo_pago == 'efectivo' %}text-[#90BDB5]{% else %}text-white/40{% endif %}">{{ p.metodo_pago }}</span>
-  </td>
-  <td class="py-3 pl-2 whitespace-nowrap">
+  </div>
+  <span class="estatus-badge estatus-{{ p.estatus }}">{{ p.estatus }}</span>
+  <span class="text-white/80 text-xs text-center font-mono">{{ p.cantidad }}</span>
+  <span class="text-white/80 text-xs font-mono">{{ p.fecha_entrega }}</span>
+  <span class="text-white font-medium text-sm truncate" title="{{ p.usuario_nombre }}">{{ p.usuario_nombre }}</span>
+  <span class="text-white/75 text-xs truncate" title="{{ p.paquete_nombre }}">{{ p.paquete_nombre }}</span>
+  <span class="text-white text-xs font-mono font-semibold">${{ p.total }}</span>
+  <span class="text-white/60 text-xs truncate" title="{{ p.direccion }}">{{ p.direccion }}</span>
+  <span class="text-xs {% if p.metodo_pago == 'efectivo' %}text-[#90BDB5]{% else %}text-white/60{% endif %}">{{ p.metodo_pago }}</span>
+  <a href="tel:{{ p.usuario_telefono }}"
+     class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-600/25 text-emerald-300 hover:bg-emerald-600/40 transition-colors text-xs font-semibold justify-self-end">
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/>
+    </svg>
+    {{ p.usuario_telefono }}
+  </a>
+</div>
+
+{# Mobile card #}
+<div id="pedido-row-mobile-{{ p.id }}" class="order-row-mobile estatus-row-{{ p.estatus }} md:hidden bg-white/[0.03] rounded-xl mb-2 px-4 py-3 space-y-2">
+  <div class="flex items-center justify-between">
+    <span class="text-white font-semibold text-sm">{{ p.usuario_nombre }}</span>
+    {{ status_badge(p.estatus) }}
+  </div>
+  <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+    <div>
+      <span class="text-white/50 text-[10px] uppercase tracking-wider block">Paquete</span>
+      <span class="text-white/80 mt-0.5 block">{{ p.paquete_nombre }}</span>
+    </div>
+    <div>
+      <span class="text-white/50 text-[10px] uppercase tracking-wider block">Cantidad</span>
+      <span class="text-white font-mono mt-0.5 block">{{ p.cantidad }}</span>
+    </div>
+    <div>
+      <span class="text-white/50 text-[10px] uppercase tracking-wider block">Total</span>
+      <span class="text-white font-mono font-semibold mt-0.5 block">${{ p.total }}</span>
+    </div>
+    <div>
+      <span class="text-white/50 text-[10px] uppercase tracking-wider block">Fecha</span>
+      <span class="text-white/80 font-mono mt-0.5 block">{{ p.fecha_entrega }}</span>
+    </div>
+    <div class="col-span-2">
+      <span class="text-white/50 text-[10px] uppercase tracking-wider block">Dirección</span>
+      <span class="text-white/60 mt-0.5 block">{{ p.direccion }}</span>
+    </div>
+  </div>
+  <div class="flex items-center gap-2 pt-2 border-t border-white/5">
     <a href="tel:{{ p.usuario_telefono }}"
-       class="inline-flex items-center gap-0.5 px-2 py-1 rounded-lg bg-emerald-600/20 text-emerald-300 hover:bg-emerald-600/30 transition-colors text-xs font-medium">
-      <svg width="24" height="24" class="shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+       class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-600/25 text-emerald-300 font-semibold text-xs">
+      <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/>
       </svg>
       {{ p.usuario_telefono }}
     </a>
-  </td>
-</tr>
+    {% if p.estatus == 'pendiente' %}
+    <div class="flex gap-1 ml-auto">
+      {{ accept_btn(p.id, csrf_token, seccion, estatus_filter) }}
+      {{ reject_btn(p.id, csrf_token, seccion, estatus_filter) }}
+    </div>
+    {% elif p.estatus == 'aceptado' %}
+    <div class="ml-auto">
+      {{ deliver_btn(p.id, csrf_token, seccion, estatus_filter) }}
+    </div>
+    {% endif %}
+  </div>
+</div>
 {% endmacro %}
