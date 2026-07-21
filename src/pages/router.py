@@ -14,6 +14,8 @@ from fastapi import APIRouter, Depends, Form, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
+import pydantic
+
 from src.application.schemas import PedidoCreate, SuscripcionCreate
 from src.application.services import (
     _calcular_precio_unitario,
@@ -286,6 +288,23 @@ async def checkout_submit_impl(
                 request=request, name="checkout/_success.html",
                 context={**ctx, "whatsapp_phone": os.getenv("WHATSAPP_BUSINESS_PHONE", "")},
             )
+    except pydantic.ValidationError as e:
+        campo = e.errors()[0]["loc"][-1] if e.errors() else "campo"
+        friendly = {
+            "telefono": "El número de teléfono no es válido. Debe ser 10 dígitos (ej. 9991234567).",
+            "nombre": "El nombre es obligatorio.",
+            "email": "El correo electrónico no es válido.",
+            "paquete_id": "El paquete seleccionado no es válido.",
+            "cantidad": "La cantidad debe ser al menos 1.",
+            "metodo_pago": "El método de pago no es válido.",
+            "codigo_postal": "El código postal no es válido.",
+        }.get(campo, f"El campo '{campo}' no es válido.")
+        logger.warning("Checkout validacion pydantic | campo=%s error=%s telefono=%s", campo, e, telefono_masked)
+        return templates.TemplateResponse(
+            request=request,
+            name="partials/_checkout_result.html",
+            context={"error": friendly},
+        )
     except ValueError as e:
         logger.warning("Checkout validacion fallo | error=%s paquete=%s telefono=%s", e, paquete_id, telefono_masked)
         return templates.TemplateResponse(
