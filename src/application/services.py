@@ -103,7 +103,11 @@ class PedidoService:
         )
 
         if not result["cp_valido"]:
-            raise ValueError("Solo entregamos en Mérida. El código postal no corresponde.")
+            raise ValueError(
+                "Por el momento nuestra ruta solo cubre Mérida, pero estamos "
+                "trabajando para llegar a más zonas. ¿Quieres intentar con otro "
+                "código postal o buscar por el nombre de tu colonia?"
+            )
         if result["pedido_id"] is None:
             raise ValueError(
                 "Ya tienes un pedido pendiente. "
@@ -162,7 +166,11 @@ class SuscripcionService:
             raise ValueError("El código postal debe ser de 5 dígitos.")
         info = await self._sepomex_repo.consultar(datos.codigo_postal)
         if info is None or info.get("municipio") != "Mérida":
-            raise ValueError("Solo entregamos en Mérida. El código postal no corresponde.")
+            raise ValueError(
+                "Por el momento nuestra ruta solo cubre Mérida, pero estamos "
+                "trabajando para llegar a más zonas. ¿Quieres intentar con otro "
+                "código postal o buscar por el nombre de tu colonia?"
+            )
         colonia = await self._resolver_colonia(datos.codigo_postal, datos.colonia, info)
 
         usuario = await self._usuario_repo.get_or_create_by_phone(

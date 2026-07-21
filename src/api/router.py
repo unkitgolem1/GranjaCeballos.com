@@ -351,6 +351,14 @@ async def colonias_merida(repo: SepomexRepoDep):
     )
 
 
+@router.get("/colonia")
+async def buscar_colonia(repo: SepomexRepoDep, q: str = Query(...)):
+    if len(q) < 2:
+        return JSONResponse({"colonias": []})
+    colonias = await repo.buscar_colonias(q)
+    return JSONResponse({"colonias": colonias})
+
+
 @router.get("/cp/{codigo_postal}")
 async def consultar_cp(codigo_postal: str, repo: SepomexRepoDep):
     if not codigo_postal.isdigit() or len(codigo_postal) != 5:

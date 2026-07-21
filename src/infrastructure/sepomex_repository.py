@@ -41,6 +41,20 @@ class PostgresSepomexRepository(SepomexRepository):
                ORDER BY colonia, codigo_postal"""
         )
 
+    async def buscar_colonias(self, query: str) -> list[dict]:
+        if not query or len(query) < 2:
+            return []
+        rows = await self._pool.fetch(
+            """SELECT DISTINCT colonia, codigo_postal
+               FROM codigos_postales
+               WHERE municipio = 'Mérida'
+                 AND lower(colonia) LIKE lower($1)
+               ORDER BY colonia
+               LIMIT 10""",
+            f"%{query}%",
+        )
+        return [{"colonia": r["colonia"], "codigo_postal": r["codigo_postal"]} for r in rows]
+
     async def buscar_cp_por_colonia(self, nombre_colonia: str) -> str | None:
         if not nombre_colonia or len(nombre_colonia) < 3:
             return None

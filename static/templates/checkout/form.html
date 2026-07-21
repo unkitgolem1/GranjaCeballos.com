@@ -1,4 +1,28 @@
-<div id="checkout-container" class="pt-20" x-data="{ suscripcion: false, metodo_pago: 'efectivo', diaSel: '{{ hoy }}' }" x-init="actualizarFechaEntrega(diaSel)">
+<div id="checkout-container" class="pt-20"
+     x-data="{
+       suscripcion: false,
+       metodo_pago: 'efectivo',
+       diaSel: '{{ hoy }}',
+       modo_cp: true,
+       coloniaQuery: '',
+       colonias: [],
+       fetchColonias(q) {
+         if (q.length < 2) { this.colonias = []; return; }
+         fetch('/api/colonia?q=' + encodeURIComponent(q))
+           .then(r => r.json())
+           .then(data => { this.colonias = data.colonias; });
+       },
+       seleccionarColonia(item) {
+         document.getElementById('cp-input').value = item.codigo_postal;
+         var sel = document.getElementById('colonia-select');
+         if (sel) { sel.value = item.colonia; sel.dispatchEvent(new Event('change', {bubbles: true})); }
+         document.getElementById('cp-detect-card').classList.add('hidden');
+         this.modo_cp = true;
+         this.coloniaQuery = '';
+         this.colonias = [];
+       }
+     }"
+     x-init="actualizarFechaEntrega(diaSel)">
   <div class="max-w-[32rem] mx-auto bg-[#1F200B]/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 space-y-6">
 
     <div class="text-center space-y-1">
@@ -27,7 +51,7 @@
         <input type="hidden" name="ciudad" id="ciudad-input" value="Mérida"
                autocomplete="address-level2">
 
-        <div>
+        <div x-show="modo_cp" x-transition.duration.300ms>
           <label for="cp-input" class="text-white/50 text-xs mb-1 block">Código Postal</label>
           <div class="flex items-center gap-2">
             <input type="text" name="codigo_postal" id="cp-input" required
@@ -39,6 +63,29 @@
                     title="Usar mi ubicación actual">
               <span aria-hidden="true">📍</span> GPS
             </button>
+          </div>
+        </div>
+
+        <div x-show="!modo_cp" x-transition.duration.300ms>
+          <label for="colonia-search-input" class="text-white/50 text-xs mb-1 block">Busca tu colonia</label>
+          <input type="text" id="colonia-search-input"
+                 x-model="coloniaQuery"
+                 @input.debounce.300ms="fetchColonias(coloniaQuery)"
+                 placeholder="Ej. Montecristo, Alemán, García Ginerés"
+                 autocomplete="off"
+                 class="w-full bg-transparent border border-[#90BDB5]/30 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
+          <div class="mt-2 space-y-1">
+            <template x-for="item in colonias" :key="item.codigo_postal + '-' + item.colonia">
+              <button type="button" @click="seleccionarColonia(item)"
+                      class="block w-full text-left px-3 py-2 rounded-lg text-sm text-white/70 hover:bg-[#DDAC23]/10 hover:text-white transition-all duration-200">
+                <span x-text="item.colonia"></span>
+                <span class="text-white/30 text-xs ml-2" x-text="'CP ' + item.codigo_postal"></span>
+              </button>
+            </template>
+            <p x-show="coloniaQuery.length >= 2 && colonias.length === 0"
+               class="text-xs text-white/40 px-2">
+              No encontramos colonias con ese nombre. Intenta con otro.
+            </p>
           </div>
         </div>
 
@@ -59,10 +106,20 @@
                  class="w-full bg-transparent border-b border-[#90BDB5]/30 px-2 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#DDAC23] transition-all duration-300">
         </div>
 
+        <button type="button" @click="modo_cp = !modo_cp"
+                class="text-[#90BDB5] text-xs hover:text-[#DDAC23] transition-colors mt-1">
+          <span x-show="modo_cp">¿No sabes tu código postal? Buscar por colonia →</span>
+          <span x-show="!modo_cp">← Buscar por código postal</span>
+        </button>
+
         <div id="cp-detect-card" class="hidden bg-[#584D14]/40 border border-[#DDAC23]/20 rounded-xl p-3" role="alert">
           <p class="text-xs text-white/70 leading-relaxed">
             <span class="text-[#DDAC23] font-medium">📍 No encontramos ese código postal.</span>
-            Verifica que sea de Mérida, Yucatán (CP 97xxx).
+            Verifica que sea de Mérida, Yucatán (CP 97xxx) o
+            <button type="button" @click="modo_cp = false; $nextTick(() => document.getElementById('colonia-search-input').focus())"
+                    class="text-[#DDAC23] underline hover:text-white transition-colors">
+              busca por el nombre de tu colonia
+            </button>.
           </p>
         </div>
 

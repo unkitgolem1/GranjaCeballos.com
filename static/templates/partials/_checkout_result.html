@@ -1,10 +1,7 @@
 <div class="bg-red-900/30 border border-red-500/30 rounded-xl p-5 text-center max-w-lg mx-auto">
   <p class="text-red-300 text-sm leading-relaxed">{{ error }}</p>
-  <button onclick="history.back()"
-          class="mt-4 bg-[#584D14] text-white px-6 py-2 rounded-full text-xs font-medium hover:scale-105 active:scale-[0.98] transition-all duration-300">
-    ← Intentar de nuevo
-  </button>
+  <a hx-get="/partial/welcome" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
+     class="mt-4 inline-block bg-[#584D14] text-white px-6 py-2 rounded-full text-xs font-medium hover:scale-105 active:scale-[0.98] transition-all duration-300">
+    ← Volver al inicio
+  </a>
 </div>
-<script>
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-</script>

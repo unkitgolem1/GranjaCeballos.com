@@ -177,7 +177,7 @@ class TestPedidoService:
             metodo_pago="efectivo",
             fecha_usuario=date.today(),
         )
-        with pytest.raises(ValueError, match="Solo entregamos en Mérida"):
+        with pytest.raises(ValueError, match="solo cubre Mérida"):
             await service.crear_atomic(datos, paquete=paquete_tradicional)
 
     async def test_crear_paquete_inactivo(self, service, paquete_tradicional):
