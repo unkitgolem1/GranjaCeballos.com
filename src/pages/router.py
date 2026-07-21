@@ -4,6 +4,7 @@ import os
 from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
+from urllib.parse import quote as _urlquote
 from uuid import UUID
 
 logger = logging.getLogger(__name__)
@@ -54,6 +55,13 @@ def _json_filter(obj):
 templates.env.filters["to_json"] = _json_filter
 
 
+def _urlencode_filter(val):
+    return _urlquote(val or "", safe="")
+
+
+templates.env.filters["urlencode"] = _urlencode_filter
+
+
 def _precio_unitario_filter(paquete, cantidad=1):
     return f"{_calcular_precio_unitario(paquete, cantidad):.0f}"
 
@@ -93,7 +101,11 @@ async def index(
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"paquetes": paquetes, "clientes": clientes},
+        context={
+            "paquetes": paquetes,
+            "clientes": clientes,
+            "whatsapp_phone": os.getenv("WHATSAPP_BUSINESS_PHONE", ""),
+        },
     )
 
 
@@ -109,7 +121,7 @@ async def partial_view(
 
     paquetes = await _get_cached_paquetes(request, repo)
     clientes = await _get_cached_clientes(request, cliente_repo)
-    ctx = {"paquetes": paquetes, "clientes": clientes}
+    ctx = {"paquetes": paquetes, "clientes": clientes, "whatsapp_phone": os.getenv("WHATSAPP_BUSINESS_PHONE", "")}
 
     if request.headers.get("HX-Request") != "true":
         ctx["partial_name"] = PARTIALS[name]
