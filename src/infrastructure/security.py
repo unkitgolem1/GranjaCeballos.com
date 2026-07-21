@@ -1,10 +1,19 @@
 from fastapi import Request
-from fastapi.responses import Response
 
 
 class SecurityHeadersMiddleware:
     def __init__(self, app):
         self.app = app
+        self._csp = (
+            b"default-src 'self'; "
+            b"script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; "
+            b"style-src 'self' 'unsafe-inline'; "
+            b"img-src 'self' data: https://*.supabase.co; "
+            b"font-src 'self'; "
+            b"connect-src 'self'; "
+            b"frame-ancestors 'none'; "
+            b"form-action 'self'"
+        )
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
@@ -15,7 +24,7 @@ class SecurityHeadersMiddleware:
             if message["type"] == "http.response.start":
                 headers = message.get("headers", [])
                 headers.extend([
-                    (b"content-security-policy", b"default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; form-action 'self'"),
+                    (b"content-security-policy", self._csp),
                     (b"x-frame-options", b"DENY"),
                     (b"x-content-type-options", b"nosniff"),
                     (b"strict-transport-security", b"max-age=31536000; includeSubDomains"),

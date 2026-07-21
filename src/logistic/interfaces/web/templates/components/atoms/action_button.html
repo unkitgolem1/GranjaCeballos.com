@@ -1,6 +1,6 @@
 {% macro accept_btn(pedido_id, csrf_token, seccion="todo", estatus_filter="pendiente") %}
 <form hx-post="/logistic/pedidos/{{ pedido_id }}/estatus"
-      hx-target="#logistic-content" hx-swap="innerHTML"
+      hx-target="#logistic-content" hx-swap="innerHTML transition:true"
       style="display:inline">
   <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   <input type="hidden" name="estatus" value="aceptado">
@@ -12,7 +12,7 @@
 
 {% macro reject_btn(pedido_id, csrf_token, seccion="todo", estatus_filter="pendiente") %}
 <form hx-post="/logistic/pedidos/{{ pedido_id }}/estatus"
-      hx-target="#logistic-content" hx-swap="innerHTML"
+      hx-target="#logistic-content" hx-swap="innerHTML transition:true"
       style="display:inline">
   <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   <input type="hidden" name="estatus" value="rechazado">
@@ -24,7 +24,7 @@
 
 {% macro deliver_btn(pedido_id, csrf_token, seccion="todo", estatus_filter="pendiente") %}
 <form hx-post="/logistic/pedidos/{{ pedido_id }}/estatus"
-      hx-target="#logistic-content" hx-swap="innerHTML"
+      hx-target="#logistic-content" hx-swap="innerHTML transition:true"
       style="display:inline">
   <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   <input type="hidden" name="estatus" value="entregado">

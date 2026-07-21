@@ -3,7 +3,7 @@
 
 {% macro order_row(p, csrf_token, seccion="todo", estatus_filter="pendiente") %}
 {# Desktop grid row #}
-<div id="pedido-row-{{ p.id }}" class="order-row estatus-row-{{ p.estatus }} hidden md:grid grid-cols-[80px_85px_45px_110px_minmax(130px,1fr)_120px_80px_minmax(160px,1fr)_70px_120px] gap-2 items-center bg-white/[0.03] hover:bg-white/[0.06] rounded-lg my-0.5 transition-colors py-2.5 px-3">
+<div class="hidden md:grid grid-cols-[80px_85px_45px_110px_minmax(130px,1fr)_120px_80px_minmax(160px,1fr)_70px_120px] gap-2 items-center bg-white/[0.03] hover:bg-white/[0.06] rounded-lg my-0.5 transition-colors py-2.5 px-3">
   <div class="text-xs">
     {% if p.estatus == 'pendiente' %}
     <div class="flex gap-1">
@@ -32,7 +32,7 @@
 </div>
 
 {# Mobile card #}
-<div id="pedido-row-mobile-{{ p.id }}" class="order-row-mobile estatus-row-{{ p.estatus }} md:hidden bg-white/[0.03] rounded-xl mb-2 px-4 py-3 space-y-2">
+<div class="md:hidden bg-white/[0.03] rounded-xl mb-2 px-4 py-3 space-y-2">
   <div class="flex items-center justify-between">
     <span class="text-white font-semibold text-sm">{{ p.usuario_nombre }}</span>
     {{ status_badge(p.estatus) }}

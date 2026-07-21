@@ -125,35 +125,8 @@ async def update_pedido_estatus(
     pedido = await service.actualizar_estatus(pedido_id, estatus)
     if pedido is None:
         return HTMLResponse("Pedido no encontrado", status_code=404)
-
-    hoy = date.today()
-    repo = service._pedido_repo
-    todo_pedidos = today_pedidos = past_pedidos = []
-    if seccion == "todo":
-        todo_pedidos = await repo.listar_pedidos(estatus_filter, orden="ASC", limite=25)
-    else:
-        if seccion in ("", "hoy"):
-            today_pedidos = await repo.listar_pedidos(
-                estatus_filter, fecha_desde=str(hoy), orden="DESC"
-            )
-        if seccion in ("", "pasado"):
-            past_pedidos = await repo.listar_pedidos(
-                estatus_filter, fecha_hasta=str(hoy - timedelta(days=1)), orden="DESC"
-            )
-
-    context = {
-        "hoy": hoy,
-        "seccion": seccion,
-        "today_pedidos": [dict(r.__dict__) for r in today_pedidos],
-        "past_pedidos": [dict(r.__dict__) for r in past_pedidos],
-        "todo_pedidos": [dict(r.__dict__) for r in todo_pedidos],
-        "estatus_filter": estatus_filter,
-        **csrf_context(request),
-    }
-    resp = TEMPLATES.TemplateResponse(
-        request=request, name="_pedidos_content.html", context=context,
-    )
-    return resp
+    redirect_url = f"/logistic/partial/pedidos?seccion={seccion}&estatus={estatus_filter}"
+    return RedirectResponse(url=redirect_url, status_code=302)
 
 
 @router.get("/logistic/partial/pedidos", response_class=HTMLResponse)
