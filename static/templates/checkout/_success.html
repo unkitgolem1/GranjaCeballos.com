@@ -76,11 +76,10 @@
          class="flex-1 border border-[#DDAC23] text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all rounded-full px-6 py-3 text-sm font-medium">
         📄 Descargar ticket PDF
       </a>
-      <a href="https://wa.me/?text=🎫%20Mi%20ticket%20Granja%20Ceballos%3A%20{{ pedido.id }}%0A📦%20{{ pedido.paquete_nombre }}%0A📅%20{{ pedido.fecha_entrega.strftime('%d%%2F%m%%2F%Y') if pedido.fecha_entrega else 'Por confirmar' }}%0A💰%20%24{{ pedido.total }}%20MXN"
-         target="_blank"
-         class="flex-1 bg-[#25D366] text-white hover:bg-[#1da851] transition-all rounded-full px-6 py-3 text-sm font-medium">
-        💬 Compartir por WhatsApp
-      </a>
+      <button type="button" id="btn-compartir-wa" onclick="compartirTicket()"
+              class="flex-1 bg-[#25D366] text-white hover:bg-[#1da851] transition-all rounded-full px-6 py-3 text-sm font-medium">
+        💬 Enviar ticket por WhatsApp
+      </button>
     </div>
 
     <a hx-get="/partial/welcome" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
@@ -92,7 +91,7 @@
 </div>
 
 <script>
-(function() {
+(function autoDownload() {
   var a = document.createElement('a');
   a.href = '/api/ticket/{{ pedido.id }}.pdf';
   a.download = 'ticket_{{ pedido.id }}.pdf';
@@ -101,4 +100,40 @@
   a.click();
   setTimeout(function() { document.body.removeChild(a); }, 1000);
 })();
+
+function compartirTicket() {
+  var btn = document.getElementById('btn-compartir-wa');
+  var msg = '🎫 *Ticket Granja Ceballos*%0A📦 {{ pedido.paquete_nombre }}%0A📅 {{ pedido.fecha_entrega.strftime(\'%d/%m/%Y\') if pedido.fecha_entrega else \'Por confirmar\' }}%0A💰 ${{ pedido.total }} MXN';
+  var waUrl = 'https://wa.me/{{ whatsapp_phone }}?text=' + msg + '%0A%0A📎 ' + encodeURIComponent(window.location.origin + '/api/ticket/{{ pedido.id }}.pdf');
+
+  btn.disabled = true;
+  btn.innerHTML = '⌛ Preparando…';
+
+  fetch('/api/ticket/{{ pedido.id }}')
+    .then(function(r) {
+      if (!r.ok) throw new Error('Error al obtener ticket');
+      return r.blob();
+    })
+    .then(function(blob) {
+      var file = new File([blob], 'ticket_{{ pedido.id }}.pdf', { type: 'application/pdf' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({
+          files: [file],
+          title: 'Ticket Granja Ceballos',
+          text: '🎫 Ticket Granja Ceballos — {{ pedido.paquete_nombre }}',
+        }).catch(function() {
+          window.open(waUrl, '_blank');
+        });
+      } else {
+        window.open(waUrl, '_blank');
+      }
+    })
+    .catch(function() {
+      window.open(waUrl, '_blank');
+    })
+    .finally(function() {
+      btn.disabled = false;
+      btn.innerHTML = '💬 Enviar ticket por WhatsApp';
+    });
+}
 </script>
