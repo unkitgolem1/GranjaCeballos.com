@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 from datetime import date
 from pathlib import Path
@@ -34,6 +35,8 @@ from .dependencies import (
     SuscripcionSchedulerDep,
     SuscripcionServiceDep,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["api"])
 
@@ -234,15 +237,22 @@ async def descargar_ticket(
         "es_suscripcion": False,
     }
 
-    import weasyprint as _weasyprint
     html = _ticket_templates.get_template("checkout/_ticket_pdf.html").render(pedido=pedido)
-    pdf_bytes = _weasyprint.HTML(string=html).write_pdf()
 
-    return Response(
-        content=pdf_bytes,
-        media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="ticket_{pedido["id"]}.pdf"'},
-    )
+    try:
+        import weasyprint as _weasyprint
+        pdf_bytes = _weasyprint.HTML(string=html).write_pdf()
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="ticket_{pedido["id"]}.pdf"'},
+        )
+    except (ImportError, OSError, RuntimeError) as e:
+        logger.warning("WeasyPrint no disponible (serverless), sirviendo HTML ticket. %s", e)
+        return HTMLResponse(
+            content=html,
+            headers={"Content-Disposition": f'inline; filename="ticket_{pedido["id"]}.html"'},
+        )
 
 
 _ultima_consulta_nominatim: float = 0.0
