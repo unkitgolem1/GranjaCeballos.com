@@ -283,4 +283,12 @@
 </div>
 
 <script src="/static/js/sepomex.js"></script>
-<script src="/static/js/getLocation.js"></script>
+<script>
+  (function() {
+    var input = document.getElementById('calle-input');
+    var cpInput = document.getElementById('cp-input');
+    if (input && !input.value && cpInput && !cpInput.value) {
+      setTimeout(window.get_location, 200);
+    }
+  })();
+</script>
