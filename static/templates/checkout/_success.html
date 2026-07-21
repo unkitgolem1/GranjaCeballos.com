@@ -108,7 +108,7 @@
 
 function compartirTicket() {
   var btn = document.getElementById('btn-compartir-wa');
-  var msg = '🎫 *Ticket Granja Ceballos*%0A📦 {{ pedido.paquete_nombre }}%0A📅 {{ pedido.fecha_entrega.strftime(\'%d/%m/%Y\') if pedido.fecha_entrega else \'Por confirmar\' }}%0A💰 ${{ pedido.total }} MXN';
+  var msg = "🎫 *Ticket Granja Ceballos*%0A📦 {{ pedido.paquete_nombre }}%0A📅 {{ pedido.fecha_entrega.strftime('%d/%m/%Y') if pedido.fecha_entrega else 'Por confirmar' }}%0A💰 ${{ pedido.total }} MXN";
   var pdfUrl = window.location.origin + '/api/ticket/{{ pedido.id }}.pdf';
   var waUrl = 'https://wa.me/{{ whatsapp_phone }}?text=' + msg + '%0A%0A📎 ' + encodeURIComponent(pdfUrl);
 
