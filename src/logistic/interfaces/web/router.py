@@ -109,36 +109,12 @@ async def dashboard(
     )
 
 
-@router.post("/logistic/pedidos/{pedido_id}/estatus")
-async def update_pedido_estatus(
+async def _render_pedidos_partial(
     request: Request,
-    pedido_id: str,
-    estatus: str = Form(...),
-    seccion: str = Form(default="todo"),
-    estatus_filter: str = Form(default="pendiente"),
-    service: LogisticService = Depends(get_logistic_service),
+    service: LogisticService,
+    seccion: str,
+    estatus: str,
 ):
-    if not _authed(request):
-        return RedirectResponse(url="/logistic/login", status_code=302)
-    await validate_csrf(request)
-
-    pedido = await service.actualizar_estatus(pedido_id, estatus)
-    if pedido is None:
-        return HTMLResponse("Pedido no encontrado", status_code=404)
-    redirect_url = f"/logistic/partial/pedidos?seccion={seccion}&estatus={estatus_filter}"
-    return RedirectResponse(url=redirect_url, status_code=302)
-
-
-@router.get("/logistic/partial/pedidos", response_class=HTMLResponse)
-async def partial_pedidos(
-    request: Request,
-    service: LogisticService = Depends(get_logistic_service),
-    seccion: str = "todo",
-    estatus: str = "pendiente",
-):
-    if not _authed(request):
-        return RedirectResponse(url="/logistic/login", status_code=302)
-
     hoy = date.today()
     repo = service._pedido_repo
     todo_pedidos = today_pedidos = past_pedidos = []
@@ -164,9 +140,40 @@ async def partial_pedidos(
             "past_pedidos": [dict(r.__dict__) for r in past_pedidos],
             "todo_pedidos": [dict(r.__dict__) for r in todo_pedidos],
             "estatus_filter": estatus,
-            **csrf_context(request),
+            **_nav_ctx("pedidos", request),
         },
     )
+
+
+@router.post("/logistic/pedidos/{pedido_id}/estatus")
+async def update_pedido_estatus(
+    request: Request,
+    pedido_id: str,
+    estatus: str = Form(...),
+    seccion: str = Form(default="todo"),
+    estatus_filter: str = Form(default="pendiente"),
+    service: LogisticService = Depends(get_logistic_service),
+):
+    if not _authed(request):
+        return RedirectResponse(url="/logistic/login", status_code=302)
+    await validate_csrf(request)
+
+    pedido = await service.actualizar_estatus(pedido_id, estatus)
+    if pedido is None:
+        return HTMLResponse("Pedido no encontrado", status_code=404)
+    return await _render_pedidos_partial(request, service, seccion, estatus_filter)
+
+
+@router.get("/logistic/partial/pedidos", response_class=HTMLResponse)
+async def partial_pedidos(
+    request: Request,
+    service: LogisticService = Depends(get_logistic_service),
+    seccion: str = "todo",
+    estatus: str = "pendiente",
+):
+    if not _authed(request):
+        return RedirectResponse(url="/logistic/login", status_code=302)
+    return await _render_pedidos_partial(request, service, seccion, estatus)
 
 
 def _stats_clientes(rows: list) -> dict:

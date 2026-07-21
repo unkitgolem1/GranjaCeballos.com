@@ -6,7 +6,7 @@ class SecurityHeadersMiddleware:
         self.app = app
         self._csp = (
             b"default-src 'self'; "
-            b"script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; "
+            b"script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; "
             b"style-src 'self' 'unsafe-inline'; "
             b"img-src 'self' data: https://*.supabase.co; "
             b"font-src 'self'; "
