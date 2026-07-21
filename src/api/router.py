@@ -1,4 +1,5 @@
 import asyncio
+import io
 import logging
 import os
 from datetime import date
@@ -242,17 +243,25 @@ async def descargar_ticket(
     try:
         import weasyprint as _weasyprint
         pdf_bytes = _weasyprint.HTML(string=html).write_pdf()
-        return Response(
-            content=pdf_bytes,
-            media_type="application/pdf",
-            headers={"Content-Disposition": f'attachment; filename="ticket_{pedido["id"]}.pdf"'},
-        )
-    except (ImportError, OSError, RuntimeError) as e:
-        logger.warning("WeasyPrint no disponible (serverless), sirviendo HTML ticket. %s", e)
-        return HTMLResponse(
-            content=html,
-            headers={"Content-Disposition": f'inline; filename="ticket_{pedido["id"]}.html"'},
-        )
+        logger.info("PDF generado con WeasyPrint")
+    except (ImportError, OSError, RuntimeError):
+        try:
+            from xhtml2pdf import pisa
+            buf = io.BytesIO()
+            pisa.CreatePDF(io.StringIO(html), dest=buf)
+            pdf_bytes = buf.getvalue()
+            logger.info("PDF generado con xhtml2pdf (fallback)")
+        except (ImportError, OSError, RuntimeError) as e2:
+            logger.warning("PDF no disponible (weasyprint + xhtml2pdf fallaron), sirviendo HTML ticket. %s", e2)
+            return HTMLResponse(
+                content=html,
+                headers={"Content-Disposition": "inline"},
+            )
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="ticket_{pedido["id"]}.pdf"'},
+    )
 
 
 _ultima_consulta_nominatim: float = 0.0

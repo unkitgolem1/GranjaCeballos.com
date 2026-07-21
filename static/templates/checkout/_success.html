@@ -82,9 +82,9 @@
       </button>
     </div>
 
-      <a href="https://wa.me/{{ whatsapp_phone }}?text=¡Hola!%20🐔%20Acabo%20de%20hacer%20un%20pedido%20en%20%2AGranja%20Ceballos%2A.%0A🆔%20Mi%20número%20es%20%2A{{ pedido.id }}%2A%0A🥚%20Paquete%3A%20{{ pedido.paquete_nombre | urlencode }}%0A📅%20Entrega%3A%20{{ pedido.fecha_entrega.strftime('%d/%m/%Y') if pedido.fecha_entrega else 'Por confirmar' }}%0A📍%20{{ pedido.direccion | urlencode }}%0A💰%20${{ pedido.total }}%20MXN%0A%0A¿Me%20lo%20confirman%3F" target="_blank" rel="noopener"
+      <a href="https://wa.me/{{ whatsapp_phone }}?text=Hola%2C%20ya%20hice%20esta%20compra%20🐔%0A🆔%20Pedido%20%2A{{ pedido.id }}%2A%0A🥚%20Paquete%3A%20{{ pedido.paquete_nombre | urlencode }}%0A📅%20Entrega%3A%20{{ pedido.fecha_entrega.strftime('%d/%m/%Y') if pedido.fecha_entrega else 'Por confirmar' }}%0A📍%20{{ pedido.direccion | urlencode }}%0A💰%20${{ pedido.total }}%20MXN" target="_blank" rel="noopener"
          class="text-white/50 hover:text-[#25D366] text-xs transition-colors underline underline-offset-2">
-        💬 ¿Problemas? Confirma tu pedido por WhatsApp en un toque
+        💬 Confirmar por WhatsApp
       </a>
 
       <a hx-get="/partial/welcome" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
@@ -108,7 +108,7 @@
 
 function compartirTicket() {
   var btn = document.getElementById('btn-compartir-wa');
-  var msg = "🎫 *Ticket Granja Ceballos*%0A📦 {{ pedido.paquete_nombre }}%0A📅 {{ pedido.fecha_entrega.strftime('%d/%m/%Y') if pedido.fecha_entrega else 'Por confirmar' }}%0A💰 ${{ pedido.total }} MXN";
+  var msg = "Hola, ya hice esta compra 🐔%0A📦 {{ pedido.paquete_nombre }}%0A📅 {{ pedido.fecha_entrega.strftime('%d/%m/%Y') if pedido.fecha_entrega else 'Por confirmar' }}%0A💰 ${{ pedido.total }} MXN";
   var pdfUrl = window.location.origin + '/api/ticket/{{ pedido.id }}.pdf';
   var waUrl = 'https://wa.me/{{ whatsapp_phone }}?text=' + msg + '%0A%0A📎 ' + encodeURIComponent(pdfUrl);
 
@@ -128,7 +128,7 @@ function compartirTicket() {
         navigator.share({
           files: [file],
           title: 'Ticket Granja Ceballos',
-          text: '🎫 Ticket Granja Ceballos — {{ pedido.paquete_nombre }}',
+          text: 'Hola, ya hice esta compra 🐔 — {{ pedido.paquete_nombre }}',
         }).catch(function() {
           window.open(waUrl, '_blank');
         });
