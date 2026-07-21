@@ -4,12 +4,10 @@ import logging
 import os
 import time
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
@@ -24,9 +22,6 @@ from src.pages import router as pages_router
 from src.logistic.interfaces.web.router import router as logistic_router
 
 load_dotenv()
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-STATIC_DIR = BASE_DIR / "static"
 
 SECRET_KEY = os.getenv("SECRET_KEY", os.urandom(32).hex())
 SERVER_MODE = os.getenv("SERVER_MODE", "uvicorn")
@@ -126,7 +121,6 @@ app.add_middleware(
     session_cookie="session",
     max_age=86400 * 7,
 )
-app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 app.include_router(api_router)
 app.include_router(pages_router)
 app.include_router(logistic_router)
