@@ -1,4 +1,5 @@
 <div id="checkout-container" class="pt-20"
+     x-init="$nextTick(() => { var f=document.getElementById('checkout-form'); if (f) htmx.process(f); })"
      x-data="{
        suscripcion: false,
        metodo_pago: 'efectivo',
