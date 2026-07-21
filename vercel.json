@@ -1,5 +1,5 @@
 {
-  "buildCommand": "uv export --no-dev --format requirements-txt > requirements.txt",
+  "buildCommand": "uv export --no-dev --format requirements-txt > requirements.txt && cp -r static public",
   "outputDirectory": ".",
   "functions": {
     "api/index.py": {
@@ -7,7 +7,6 @@
     }
   },
   "rewrites": [
-    { "source": "/static/(.*)", "destination": "/static/$1" },
     { "source": "/(.*)", "destination": "/api/index.py" }
   ],
   "headers": [
