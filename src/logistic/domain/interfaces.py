@@ -1,14 +1,18 @@
 from abc import ABC, abstractmethod
+from datetime import date
 from typing import Optional
 
 from .models import LogisticCliente, LogisticPedido
+
+_COLUMNAS_FECHA = frozenset({"fecha_entrega", "created_at"})
 
 
 class PedidoQueryRepository(ABC):
     @abstractmethod
     async def listar_pedidos(
-        self, estatus: str, fecha_desde: Optional[str] = None,
-        fecha_hasta: Optional[str] = None, orden: str = "DESC", limite: int = 25
+        self, estatus: str, fecha_desde: Optional[date] = None,
+        fecha_hasta: Optional[date] = None, orden: str = "DESC", limite: int = 25,
+        fecha_columna: str = "fecha_entrega",
     ) -> list[LogisticPedido]:
         ...
 

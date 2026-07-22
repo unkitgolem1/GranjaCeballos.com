@@ -24,6 +24,7 @@ dev = [
     "pytest-asyncio>=0.26.0",
     "pytest-benchmark>=5.1.0",
     "granian>=1.7.0",
+    "locust>=2.46.0",
 ]
 
 [tool.pytest.ini_options]

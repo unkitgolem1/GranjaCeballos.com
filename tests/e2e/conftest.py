@@ -3,7 +3,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Optional
 from unittest.mock import AsyncMock, MagicMock
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -14,6 +14,7 @@ from src.main import app
 
 
 _TELEFONO = "9991234567"
+_mock_conn = None  # set by _reset fixture
 
 
 def make_usuario(**kwargs) -> Usuario:
@@ -143,6 +144,47 @@ class MockPedidoRepository:
         self._pedidos[str(pedido.id)] = pedido
         return pedido
 
+    async def create_checkout_atomic(
+        self,
+        *,
+        codigo_postal: str,
+        nombre: str,
+        telefono: str,
+        email: str | None = None,
+        pedido_id: UUID,
+        paquete_id: UUID,
+        direccion: str,
+        estado: str = "",
+        ciudad: str = "",
+        colonia: str = "",
+        cantidad: int = 1,
+        total: Decimal = Decimal("150"),
+        metodo_pago: str = "efectivo",
+        fecha_entrega: date = date.today(),
+    ) -> dict:
+        from src.domain.interfaces import CheckoutResult
+        uid = uuid4()
+        pedido = Pedido(
+            id=pedido_id,
+            usuario_id=uid,
+            paquete_id=paquete_id,
+            direccion=direccion,
+            cantidad=cantidad,
+            total=total,
+            metodo_pago=metodo_pago,
+            estatus="pendiente",
+            fecha_usuario=fecha_entrega,
+            fecha_entrega=fecha_entrega,
+        )
+        self._pedidos[str(pedido_id)] = pedido
+        return {
+            "usuario_id": uid,
+            "usuario_nombre": nombre,
+            "pedido_id": pedido_id,
+            "pedido_total": total,
+            "cp_valido": codigo_postal == "97100",
+        }
+
     async def get_by_id(self, pedido_id: str) -> Optional[Pedido]:
         return self._pedidos.get(pedido_id)
 
@@ -204,16 +246,114 @@ class MockClienteRepository:
         return [c for c in self._clientes.values() if c.activo]
 
 
+class MockSepomexRepository:
+    async def consultar(self, cp: str) -> dict | None:
+        if cp == "97100":
+            return {"colonias": ["Centro"], "municipio": "Mérida", "estado": "Yucatán"}
+        return None
+
+    async def existe(self, cp: str) -> bool:
+        return cp == "97100"
+
+
+
+class _FakeRecord(dict):
+    """A dict subclass that allows attribute-style access (like asyncpg.Record).
+
+    Returns sensible defaults for missing keys so different query result shapes
+    (create_checkout_atomic, usuario upsert, pedido insert, etc.) all work.
+    """
+    _DEFAULTS = {
+        "cp_valido": True,
+        "total": Decimal("150"),
+        "pedido_total": Decimal("150"),
+        "cantidad": 1,
+        "fecha_entrega": date.today(),
+        "fecha_usuario": date.today(),
+        "estatus": "pendiente",
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+        "nombre": "Juan",
+        "usuario_nombre": "Test User",
+        "telefono": "9991234567",
+        "paquete_nombre": "Tradicional E2E",
+        "direccion": "Mérida, Yucatán",
+        "codigo_postal": "97000",
+        "metodo_pago": "efectivo",
+        "id": uuid4(),
+        "usuario_id": uuid4(),
+        "paquete_id": uuid4(),
+        "pedido_id": uuid4(),
+    }
+
+    def __missing__(self, key):
+        return self._DEFAULTS.get(key, uuid4())
+
+    def __getattr__(self, name):
+        if name in self:
+            return self[name]
+        return self.__missing__(name)
+
+    def __getitem__(self, key):
+        try:
+            return super().__getitem__(key)
+        except KeyError:
+            return self.__missing__(key)
+
+    def __bool__(self):
+        return self.get("pedido_id") is not None
+
+
+def checkout_row(cp_valido: bool = True, pedido_id=None) -> _FakeRecord:
+    """Build a FakeRecord with all commonly-expected keys from different DB queries."""
+    pid = pedido_id if pedido_id is not None else uuid4()
+    uid = uuid4()
+    return _FakeRecord({
+        # create_checkout_atomic keys
+        "usuario_id": uid,
+        "usuario_nombre": "Test User",
+        "pedido_id": pid,
+        "pedido_total": Decimal("150"),
+        "cp_valido": cp_valido,
+        # usuario get_or_create keys
+        "id": pid,
+        "nombre": "Juan",
+        "telefono": "9991234567",
+        # pending-order query keys
+        "paquete_id": uuid4(),
+        "paquete_nombre": "Tradicional E2E",
+        "direccion": "Mérida, Yucatán",
+        "codigo_postal": "97000",
+        "cantidad": 1,
+        "total": Decimal("150"),
+        "metodo_pago": "efectivo",
+        "fecha_entrega": date.today(),
+        # pedido model keys (for _row_to_pedido)
+        "estatus": "pendiente",
+        "fecha_usuario": date.today(),
+        "notas": None,
+        # suscripcion model keys (for _row_to_suscripcion)
+        "dia_entrega": 1,
+        "fecha_inicio": date.today(),
+        "proxima_generacion": date.today(),
+        "activa": True,
+        # common timestamp keys
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+    })
+
 
 def _make_mock_pool():
     """Return a mock asyncpg Pool that yields a mock connection.
 
-    The connection returns None for fetchrow, [] for fetch, and today for fetchval.
+    The connection returns a FakeRecord for fetchrow (supports dict and attr access),
+    [] for fetch, today for fetchval, and None for execute.
+    Default fetchrow returns a valid checkout row.
     """
     mock_conn = MagicMock()
-    mock_conn.fetchval = AsyncMock(return_value=date.today())
+    mock_conn.fetchval = AsyncMock(return_value=None)
     mock_conn.fetch = AsyncMock(return_value=[])
-    mock_conn.fetchrow = AsyncMock(return_value=None)
+    mock_conn.fetchrow = AsyncMock(return_value=checkout_row())
     mock_conn.execute = AsyncMock(return_value=None)
 
     ctx_mgr = MagicMock()
@@ -222,16 +362,34 @@ def _make_mock_pool():
 
     pool = MagicMock()
     pool.acquire.return_value = ctx_mgr
+    pool.fetchval = AsyncMock(return_value=None)
+    pool.fetch = AsyncMock(return_value=[{
+        "colonia": "Centro",
+        "codigo_postal": "97000",
+        "municipio": "Mérida",
+        "estado": "Yucatán",
+        "ciudad": "Mérida",
+    }])
     return pool, mock_conn
+
+
+@pytest.fixture
+def mock_conn():
+    """Return the mock connection used by the current test's mock pool.
+
+    Tests can override mock_conn.fetchrow.return_value to simulate different DB responses.
+    """
+    return _mock_conn
 
 
 @pytest.fixture(autouse=True)
 def _reset():
+    global _mock_conn
     limiter.enabled = False
     app.dependency_overrides.clear()
 
     _saved_pool = getattr(app.state, "db_pool", None)
-    pool, _ = _make_mock_pool()
+    pool, _mock_conn = _make_mock_pool()
     app.state.db_pool = pool
 
     from src.infrastructure.cache import MemoryCache

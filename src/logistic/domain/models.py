@@ -11,6 +11,7 @@ class LogisticPedido:
     paquete_id: str = ""
     direccion: str = ""
     codigo_postal: Optional[str] = None
+    colonia: str = ""
     cantidad: int = 0
     total: Decimal = Decimal("0")
     metodo_pago: str = ""

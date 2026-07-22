@@ -7,8 +7,9 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -40,6 +41,8 @@ _handler.setFormatter(logging.Formatter(
     "%(asctime)s [%(levelname)s] %(message)s"
 ))
 _log.addHandler(_handler)
+
+logger = logging.getLogger(__name__)
 
 
 class LatencyMiddleware:
@@ -107,6 +110,17 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.exception("Unhandled exception on %s %s", request.method, request.url.path)
+    if request.url.path.startswith("/api/"):
+        return JSONResponse(
+            {"detail": "Error interno del servidor"},
+            status_code=500,
+        )
+    return HTMLResponse("Error interno del servidor", status_code=500)
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,6 +1,7 @@
 import os
 from datetime import date, timedelta
 from pathlib import Path
+from urllib.parse import quote as _urlquote
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -14,6 +15,14 @@ from .deps import get_logistic_service
 
 _TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 TEMPLATES = Jinja2Templates(directory=str(_TEMPLATES_DIR))
+
+
+def _urlencode_filter(val):
+    return _urlquote(val or "", safe="")
+
+
+TEMPLATES.env.filters["urlencode"] = _urlencode_filter
+
 
 router = APIRouter()
 
@@ -88,11 +97,11 @@ async def dashboard(
     else:
         if seccion in ("", "hoy"):
             today_pedidos = await repo.listar_pedidos(
-                estatus, fecha_desde=str(hoy), orden="DESC"
+                estatus, fecha_desde=hoy, fecha_hasta=hoy + timedelta(days=1), orden="DESC"
             )
         if seccion in ("", "pasado"):
             past_pedidos = await repo.listar_pedidos(
-                estatus, fecha_hasta=str(hoy - timedelta(days=1)), orden="DESC"
+                estatus, fecha_hasta=hoy, fecha_columna="created_at", orden="DESC"
             )
 
     return TEMPLATES.TemplateResponse(
@@ -124,11 +133,11 @@ async def _render_pedidos_partial(
     else:
         if seccion in ("", "hoy"):
             today_pedidos = await repo.listar_pedidos(
-                estatus, fecha_desde=str(hoy), orden="DESC"
+                estatus, fecha_desde=hoy, fecha_hasta=hoy + timedelta(days=1), orden="DESC"
             )
         if seccion in ("", "pasado"):
             past_pedidos = await repo.listar_pedidos(
-                estatus, fecha_hasta=str(hoy - timedelta(days=1)), orden="DESC"
+                estatus, fecha_hasta=hoy, fecha_columna="created_at", orden="DESC"
             )
 
     return TEMPLATES.TemplateResponse(

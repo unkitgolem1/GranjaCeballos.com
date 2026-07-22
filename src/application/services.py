@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from decimal import Decimal
 from typing import Optional
 from uuid import UUID, uuid4
@@ -40,16 +40,7 @@ def _calcular_total(paquete: Paquete, cantidad: int, envio_gratis: bool = False)
     return paquete.precio * paquete.cantidad_fija + envio
 
 
-def _calcular_fecha_entrega(deseada: date) -> date:
-    hoy = date.today()
-    ahora = datetime.now()
-    if deseada == hoy and ahora.hour >= 12:
-        return hoy + timedelta(days=1)
-    return deseada
-
-
 class PedidoService:
-
     def __init__(
         self,
         pedido_repo: PedidoRepository,
@@ -83,7 +74,7 @@ class PedidoService:
 
         cantidad = datos.cantidad if paquete.es_customizable else paquete.cantidad_fija
         total = _calcular_total(paquete, cantidad)
-        fecha_entrega = _calcular_fecha_entrega(datos.fecha_usuario)
+        fecha_entrega = datos.fecha_usuario
 
         result: CheckoutResult = await self._pedido_repo.create_checkout_atomic(
             codigo_postal=datos.codigo_postal,
@@ -165,7 +156,7 @@ class SuscripcionService:
         if not datos.codigo_postal.isdigit() or len(datos.codigo_postal) != 5:
             raise ValueError("El código postal debe ser de 5 dígitos.")
         info = await self._sepomex_repo.consultar(datos.codigo_postal)
-        if info is None or info.get("municipio") != "Mérida":
+        if info is None or info.get("estado") != "Yucatán":
             raise ValueError(
                 "Por el momento nuestra ruta solo cubre Mérida, pero estamos "
                 "trabajando para llegar a más zonas. ¿Quieres intentar con otro "

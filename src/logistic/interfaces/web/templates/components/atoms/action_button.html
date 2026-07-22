@@ -6,7 +6,7 @@
   <input type="hidden" name="estatus" value="aceptado">
   <input type="hidden" name="seccion" value="{{ seccion }}">
   <input type="hidden" name="estatus_filter" value="{{ estatus_filter }}">
-  <button class="px-3 py-1.5 bg-emerald-600/20 text-emerald-400 rounded-lg text-xs font-medium hover:bg-emerald-600/30 transition-colors">✔</button>
+  <button class="action-pill bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/35 px-5 py-2.5 text-sm font-semibold">✔ Aceptar</button>
 </form>
 {% endmacro %}
 
@@ -18,7 +18,7 @@
   <input type="hidden" name="estatus" value="rechazado">
   <input type="hidden" name="seccion" value="{{ seccion }}">
   <input type="hidden" name="estatus_filter" value="{{ estatus_filter }}">
-  <button class="px-3 py-1.5 bg-red-600/20 text-red-400 rounded-lg text-xs font-medium hover:bg-red-600/30 transition-colors">✘</button>
+  <button class="action-pill bg-red-600/20 text-red-400 hover:bg-red-600/35 px-5 py-2.5 text-sm font-semibold">✘ Rechazar</button>
 </form>
 {% endmacro %}
 
@@ -30,6 +30,6 @@
   <input type="hidden" name="estatus" value="entregado">
   <input type="hidden" name="seccion" value="{{ seccion }}">
   <input type="hidden" name="estatus_filter" value="{{ estatus_filter }}">
-  <button class="btn-deliver px-4 py-2 rounded-lg text-xs font-semibold tracking-wide bg-emerald-600/25 text-emerald-300 hover:bg-emerald-600/40 transition-all">Entregar</button>
+  <button class="btn-deliver action-pill bg-emerald-600/25 text-emerald-300 hover:bg-emerald-600/40 px-5 py-2.5 text-sm font-semibold">📦 Entregar</button>
 </form>
 {% endmacro %}

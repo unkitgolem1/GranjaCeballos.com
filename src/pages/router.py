@@ -1,3 +1,4 @@
+import asyncio
 import json as _json
 import logging
 import os
@@ -16,6 +17,7 @@ from fastapi.templating import Jinja2Templates
 
 import pydantic
 
+from src.api import pdf_service
 from src.application.schemas import PedidoCreate, SuscripcionCreate
 from src.application.services import (
     _calcular_precio_unitario,
@@ -247,6 +249,9 @@ async def checkout_submit_impl(
                 },
             }
             logger.info("Suscripcion creada | id=%s telefono=%s", sub.id, telefono_masked)
+            asyncio.create_task(
+                pdf_service.pre_generar_background(pool, ctx["pedido"], os.getenv("WHATSAPP_BUSINESS_PHONE", ""))
+            )
             return templates.TemplateResponse(
                 request=request, name="checkout/_success.html",
                 context={**ctx, "whatsapp_phone": os.getenv("WHATSAPP_BUSINESS_PHONE", "")},
@@ -284,6 +289,9 @@ async def checkout_submit_impl(
                 },
             }
             logger.info("Pedido creado | id=%s total=%s telefono=%s", pedido.id, pedido.total, telefono_masked)
+            asyncio.create_task(
+                pdf_service.pre_generar_background(pool, ctx["pedido"], os.getenv("WHATSAPP_BUSINESS_PHONE", ""))
+            )
             return templates.TemplateResponse(
                 request=request, name="checkout/_success.html",
                 context={**ctx, "whatsapp_phone": os.getenv("WHATSAPP_BUSINESS_PHONE", "")},
@@ -306,11 +314,57 @@ async def checkout_submit_impl(
             context={"error": friendly},
         )
     except ValueError as e:
+        msg = str(e)
+        if "pendiente" in msg:
+            async with pool.acquire() as conn:
+                row = await conn.fetchrow(
+                    """SELECT p.id, p.paquete_id, p.direccion, p.codigo_postal,
+                              p.cantidad, p.total, p.metodo_pago, p.fecha_entrega,
+                              u.nombre, u.telefono, paq.nombre as paquete_nombre
+                       FROM pedidos p
+                       JOIN usuarios u ON u.id = p.usuario_id
+                       JOIN paquetes paq ON paq.id = p.paquete_id
+                       WHERE u.telefono = $1 AND p.estatus = 'pendiente'
+                       ORDER BY p.created_at DESC
+                       LIMIT 1""",
+                    telefono,
+                )
+            if row:
+                ctx = {
+                    "pedido": {
+                        "id": row["id"],
+                        "usuario_nombre": row["nombre"],
+                        "es_suscripcion": False,
+                        "paquete_nombre": row["paquete_nombre"],
+                        "cantidad": row["cantidad"],
+                        "total": f"{row['total']:.0f}",
+                        "fecha_entrega": row["fecha_entrega"],
+                        "direccion": row["direccion"],
+                        "codigo_postal": row["codigo_postal"] or "",
+                        "telefono": row["telefono"],
+                        "metodo_pago": row["metodo_pago"],
+                    },
+                }
+                logger.info("Redirigiendo a WhatsApp con pedido pendiente | id=%s telefono=%s", row["id"], telefono_masked)
+                asyncio.create_task(
+                    pdf_service.pre_generar_background(pool, ctx["pedido"], os.getenv("WHATSAPP_BUSINESS_PHONE", ""))
+                )
+                return templates.TemplateResponse(
+                    request=request, name="checkout/_success.html",
+                    context={**ctx, "whatsapp_phone": os.getenv("WHATSAPP_BUSINESS_PHONE", "")},
+                )
         logger.warning("Checkout validacion fallo | error=%s paquete=%s telefono=%s", e, paquete_id, telefono_masked)
         return templates.TemplateResponse(
             request=request,
             name="partials/_checkout_result.html",
-            context={"error": str(e)},
+            context={"error": msg},
+        )
+    except Exception:
+        logger.exception("Checkout error inesperado | paquete=%s telefono=%s", paquete_id, telefono_masked)
+        return templates.TemplateResponse(
+            request=request,
+            name="partials/_checkout_result.html",
+            context={"error": "Ocurrió un error inesperado. Intenta de nuevo."},
         )
 
 

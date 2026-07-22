@@ -1,0 +1,5 @@
+CREATE UNLOGGED TABLE IF NOT EXISTS pdf_cache (
+    ticket_id UUID PRIMARY KEY,
+    pdf_bytes BYTEA NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

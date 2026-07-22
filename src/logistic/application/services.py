@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Optional
 
 from ..domain.interfaces import ClienteQueryRepository, PedidoQueryRepository
@@ -14,11 +15,12 @@ class LogisticService:
         self._cliente_repo = cliente_repo
 
     async def listar_pedidos(
-        self, estatus: str = "", fecha_desde: Optional[str] = None,
-        fecha_hasta: Optional[str] = None, orden: str = "DESC", limite: int = 25
+        self, estatus: str = "", fecha_desde: Optional[date] = None,
+        fecha_hasta: Optional[date] = None, orden: str = "DESC", limite: int = 25,
+        fecha_columna: str = "fecha_entrega",
     ) -> list[LogisticPedido]:
         return await self._pedido_repo.listar_pedidos(
-            estatus, fecha_desde, fecha_hasta, orden, limite
+            estatus, fecha_desde, fecha_hasta, orden, limite, fecha_columna,
         )
 
     async def actualizar_estatus(self, pedido_id: str, nuevo_estatus: str) -> Optional[LogisticPedido]:

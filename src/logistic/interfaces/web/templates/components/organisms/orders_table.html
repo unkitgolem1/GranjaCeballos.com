@@ -9,18 +9,11 @@
   </h2>
   {% endif %}
 
-  {# Desktop grid header #}
-  <div class="hidden md:grid grid-cols-[80px_85px_45px_110px_minmax(130px,1fr)_120px_80px_minmax(160px,1fr)_70px_120px] gap-2 text-white/50 text-xs uppercase tracking-[0.1em] bg-white/[0.04] rounded-lg py-2 px-3 mb-1">
-    <span>Acción</span>
-    <span>Estatus</span>
-    <span class="text-center">Cant.</span>
-    <span>Fecha</span>
-    <span>Cliente</span>
-    <span>Paquete</span>
-    <span>Total</span>
-    <span>Dirección</span>
-    <span>Pago</span>
-    <span class="text-right">Teléfono</span>
+  {# Desktop header — zonas 10% | 60% | 30% #}
+  <div class="hidden md:grid grid-cols-[auto_1fr_auto] gap-3 text-white/40 text-[10px] uppercase tracking-[0.15em] mb-1.5 px-4">
+    <span class="w-[80px]">Estatus</span>
+    <span>Información</span>
+    <span class="text-right">Acción</span>
   </div>
 
   {% for p in pedidos %}

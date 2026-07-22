@@ -1,5 +1,4 @@
 import asyncio
-import io
 import logging
 import os
 from datetime import date
@@ -10,7 +9,7 @@ from uuid import UUID
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, Response
-from fastapi.templating import Jinja2Templates
+from src.api import pdf_service
 from src.application.schemas import (
     PedidoCreate,
     PedidoUpdateEstatus,
@@ -18,8 +17,6 @@ from src.application.schemas import (
     SuscripcionUpdate,
 )
 
-_TEMPLATES_DIR = Path(__file__).resolve().parent.parent.parent / "static" / "templates"
-_ticket_templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
 from src.application.services import _calcular_precio_unitario, _calcular_total
 
 from src.infrastructure.limiter import limiter
@@ -196,72 +193,77 @@ async def descargar_ticket(
     order_id: UUID,
     pool: PoolDep,
 ):
-    async with pool.acquire() as conn:
-        row = await conn.fetchrow(
-            """SELECT p.id, p.usuario_id, p.paquete_id, p.direccion,
-                      p.codigo_postal, p.cantidad,
-                   p.total, p.metodo_pago, p.fecha_entrega, u.nombre, u.telefono,
-                   paq.nombre as paquete_nombre
-             FROM pedidos p
-             JOIN usuarios u ON u.id = p.usuario_id
-             JOIN paquetes paq ON paq.id = p.paquete_id
-             WHERE p.id = $1""",
-            order_id,
-        )
-        if row is None:
+    try:
+        cached = await pdf_service.get_cached(pool, order_id)
+        if cached is not None:
+            logger.info("Ticket %s servido desde cache", order_id)
+            return Response(
+                content=cached,
+                media_type="application/pdf",
+                headers={"Content-Disposition": f'attachment; filename="ticket_{order_id}.pdf"'},
+            )
+
+        async with pool.acquire() as conn:
             row = await conn.fetchrow(
-                """SELECT s.id, s.usuario_id, s.paquete_id, s.direccion,
-                          s.codigo_postal, s.cantidad,
-                      0 as total, 'efectivo' as metodo_pago,
-                      s.proxima_generacion as fecha_entrega,
-                      u.nombre, u.telefono, paq.nombre as paquete_nombre
-                 FROM suscripciones s
-                 JOIN usuarios u ON u.id = s.usuario_id
-                 JOIN paquetes paq ON paq.id = s.paquete_id
-                 WHERE s.id = $1""",
+                """SELECT p.id, p.usuario_id, p.paquete_id, p.direccion,
+                          p.codigo_postal, p.cantidad,
+                       p.total, p.metodo_pago, p.fecha_entrega, u.nombre, u.telefono,
+                       paq.nombre as paquete_nombre
+                 FROM pedidos p
+                 JOIN usuarios u ON u.id = p.usuario_id
+                 JOIN paquetes paq ON paq.id = p.paquete_id
+                 WHERE p.id = $1""",
                 order_id,
             )
-        if row is None:
-            raise HTTPException(status_code=404, detail="Ticket no encontrado")
+            if row is None:
+                row = await conn.fetchrow(
+                    """SELECT s.id, s.usuario_id, s.paquete_id, s.direccion,
+                              s.codigo_postal, s.cantidad,
+                          0 as total, 'efectivo' as metodo_pago,
+                          s.proxima_generacion as fecha_entrega,
+                          u.nombre, u.telefono, paq.nombre as paquete_nombre
+                     FROM suscripciones s
+                     JOIN usuarios u ON u.id = s.usuario_id
+                     JOIN paquetes paq ON paq.id = s.paquete_id
+                     WHERE s.id = $1""",
+                    order_id,
+                )
+            if row is None:
+                raise HTTPException(status_code=404, detail="Ticket no encontrado")
 
-    pedido = {
-        "id": str(row["id"]),
-        "usuario_nombre": row["nombre"],
-        "telefono": row["telefono"],
-        "paquete_nombre": row["paquete_nombre"],
-        "cantidad": row["cantidad"],
-        "total": f"{row['total']:.0f}",
-        "fecha_entrega": row["fecha_entrega"],
-        "direccion": row["direccion"],
-        "codigo_postal": row.get("codigo_postal") or "",
-        "metodo_pago": row["metodo_pago"],
-        "es_suscripcion": False,
-    }
+        pedido = {
+            "id": str(row["id"]),
+            "usuario_nombre": row["nombre"],
+            "telefono": row["telefono"],
+            "paquete_nombre": row["paquete_nombre"],
+            "cantidad": row["cantidad"],
+            "total": f"{row['total']:.0f}",
+            "fecha_entrega": row["fecha_entrega"],
+            "direccion": row["direccion"],
+            "codigo_postal": row.get("codigo_postal") or "",
+            "metodo_pago": row["metodo_pago"],
+            "es_suscripcion": False,
+        }
 
-    html = _ticket_templates.get_template("checkout/_ticket_pdf.html").render(pedido=pedido)
+        html = pdf_service.render_ticket_html(pedido, os.getenv("WHATSAPP_BUSINESS_PHONE", ""))
+        pdf_bytes = await pdf_service.generar_pdf(html, pool, order_id)
 
-    try:
-        import weasyprint as _weasyprint
-        pdf_bytes = _weasyprint.HTML(string=html).write_pdf()
-        logger.info("PDF generado con WeasyPrint")
-    except (ImportError, OSError, RuntimeError):
-        try:
-            from xhtml2pdf import pisa
-            buf = io.BytesIO()
-            pisa.CreatePDF(io.StringIO(html), dest=buf)
-            pdf_bytes = buf.getvalue()
-            logger.info("PDF generado con xhtml2pdf (fallback)")
-        except (ImportError, OSError, RuntimeError) as e2:
-            logger.warning("PDF no disponible (weasyprint + xhtml2pdf fallaron), sirviendo HTML ticket. %s", e2)
+        if pdf_bytes is None:
             return HTMLResponse(
                 content=html,
                 headers={"Content-Disposition": "inline"},
             )
-    return Response(
-        content=pdf_bytes,
-        media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="ticket_{pedido["id"]}.pdf"'},
-    )
+
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="ticket_{pedido["id"]}.pdf"'},
+        )
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Error inesperado generando ticket %s", order_id)
+        raise HTTPException(status_code=500, detail="Error al generar el ticket")
 
 
 _ultima_consulta_nominatim: float = 0.0
@@ -383,7 +385,7 @@ async def consultar_cp(codigo_postal: str, repo: SepomexRepoDep):
     if not codigo_postal.isdigit() or len(codigo_postal) != 5:
         raise HTTPException(status_code=400, detail="CP debe ser 5 dígitos")
     resultado = await repo.consultar(codigo_postal)
-    if resultado is None or resultado.get("municipio") != "Mérida":
+    if resultado is None or resultado.get("estado") != "Yucatán":
         return JSONResponse(
             {"encontrado": False, "codigo_postal": codigo_postal},
             status_code=404,

@@ -4,12 +4,14 @@ from typing import Optional
 import asyncpg
 from dataclasses import fields as dc_fields
 
-from ..domain.interfaces import ClienteQueryRepository, PedidoQueryRepository
+from ..domain.interfaces import (
+    ClienteQueryRepository, PedidoQueryRepository, _COLUMNAS_FECHA,
+)
 from ..domain.models import LogisticCliente, LogisticPedido
 
 _ORDERS_SQL = """SELECT
                     p.id, p.usuario_id, p.paquete_id,
-                    p.direccion, p.codigo_postal, p.cantidad, p.total,
+                    p.direccion, p.codigo_postal, p.colonia, p.cantidad, p.total,
                     p.metodo_pago, p.estatus,
                     p.fecha_usuario, p.fecha_entrega,
                     p.created_at, p.updated_at,
@@ -27,23 +29,27 @@ class PostgresPedidoQueryRepo(PedidoQueryRepository):
         self._pool = pool
 
     async def listar_pedidos(
-        self, estatus: str, fecha_desde: Optional[str] = None,
-        fecha_hasta: Optional[str] = None, orden: str = "ASC", limite: int = 25
+        self, estatus: str, fecha_desde: Optional[date] = None,
+        fecha_hasta: Optional[date] = None, orden: str = "ASC", limite: int = 25,
+        fecha_columna: str = "fecha_entrega",
     ) -> list[LogisticPedido]:
+        if fecha_columna not in _COLUMNAS_FECHA:
+            fecha_columna = "fecha_entrega"
+
         async with self._pool.acquire() as conn:
             sql = _ORDERS_SQL
             params = [estatus]
 
             if fecha_desde:
-                sql += " AND p.fecha_entrega >= $2"
+                sql += f" AND p.{fecha_columna} >= $2"
                 params.append(fecha_desde)
             if fecha_hasta:
                 n = len(params) + 1
-                sql += f" AND p.fecha_entrega < ${n}"
+                sql += f" AND p.{fecha_columna} < ${n}"
                 params.append(fecha_hasta)
 
             n = len(params) + 1
-            sql += f" ORDER BY CASE WHEN p.estatus = 'pendiente' THEN 0 ELSE 1 END, p.fecha_entrega ASC LIMIT ${n}"
+            sql += f" ORDER BY p.estatus <> 'pendiente', p.created_at DESC LIMIT ${n}"
             params.append(limite)
 
             rows = await conn.fetch(sql, *params)
@@ -53,31 +59,29 @@ class PostgresPedidoQueryRepo(PedidoQueryRepository):
     async def actualizar_estatus(self, pedido_id: str, nuevo_estatus: str) -> Optional[LogisticPedido]:
         async with self._pool.acquire() as conn:
             row = await conn.fetchrow(
-                f"""
-                UPDATE pedidos
+                """
+                UPDATE pedidos p
                 SET estatus = $1, updated_at = NOW()
-                WHERE id = $2
-                RETURNING id, usuario_id, paquete_id, direccion, codigo_postal,
-                          cantidad, total, metodo_pago, estatus,
-                          fecha_usuario, fecha_entrega, created_at, updated_at
+                FROM usuarios u, paquetes paq
+                WHERE p.id = $2
+                  AND u.id = p.usuario_id
+                  AND paq.id = p.paquete_id
+                RETURNING p.id, p.usuario_id, p.paquete_id,
+                          p.direccion, p.codigo_postal, p.colonia,
+                          p.cantidad, p.total, p.metodo_pago, p.estatus,
+                          p.fecha_usuario, p.fecha_entrega,
+                          p.created_at, p.updated_at,
+                          u.nombre AS usuario_nombre,
+                          u.telefono AS usuario_telefono,
+                          paq.nombre AS paquete_nombre
                 """,
                 nuevo_estatus, pedido_id,
             )
             if row is None:
                 return None
 
-            usr = await conn.fetchrow(
-                "SELECT nombre, telefono FROM usuarios WHERE id = $1", row["usuario_id"]
-            )
-            paq = await conn.fetchrow(
-                "SELECT nombre FROM paquetes WHERE id = $1", row["paquete_id"]
-            )
-            d = dict(row)
-            d["usuario_nombre"] = usr.get("nombre", "") if usr else ""
-            d["usuario_telefono"] = str(usr.get("telefono", "")) if usr else ""
-            d["paquete_nombre"] = paq.get("nombre", "") if paq else ""
             valid = {f.name for f in dc_fields(LogisticPedido)}
-            return LogisticPedido(**{k: v for k, v in d.items() if k in valid})
+            return LogisticPedido(**{k: v for k, v in dict(row).items() if k in valid})
 
 
 class PostgresClienteQueryRepo(ClienteQueryRepository):

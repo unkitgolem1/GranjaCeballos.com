@@ -1,79 +1,158 @@
 {% from "components/atoms/action_button.html" import accept_btn, reject_btn, deliver_btn %}
 {% from "components/atoms/status_badge.html" import status_badge %}
 
+{% macro _maps_url(p) %}
+  https://www.google.com/maps/search/?api=1&query={{ p.direccion | urlencode }}{% if p.colonia %},%20{{ p.colonia | urlencode }}{% endif %}{% if p.codigo_postal %},%20{{ p.codigo_postal }},%20M%C3%A9rida,%20Yucat%C3%A1n{% endif %}
+{% endmacro %}
+
+{% macro _es_valida_dir(d) %}
+  {{- d|length > 10 and ' ' in d -}}
+{% endmacro %}
+
 {% macro order_row(p, csrf_token, seccion="todo", estatus_filter="pendiente") %}
-{# Desktop grid row #}
-<div class="hidden md:grid grid-cols-[80px_85px_45px_110px_minmax(130px,1fr)_120px_80px_minmax(160px,1fr)_70px_120px] gap-2 items-center bg-white/[0.03] hover:bg-white/[0.06] rounded-lg my-0.5 transition-colors py-2.5 px-3">
-  <div class="text-xs">
-    {% if p.estatus == 'pendiente' %}
-    <div class="flex gap-1">
-      {{ accept_btn(p.id, csrf_token, seccion, estatus_filter) }}
-      {{ reject_btn(p.id, csrf_token, seccion, estatus_filter) }}
+
+{# Desktop card #}
+<div class="hidden md:block card-glass px-5 py-4 mb-1.5 hover:bg-white/[0.06] transition-all duration-200">
+  <div class="grid grid-cols-[auto_1fr_auto] gap-4">
+
+    {# 10% — Status badge #}
+    <div class="min-w-[80px] flex items-start justify-center bg-white/[0.04] backdrop-blur-sm border border-white/[0.06] rounded-lg py-1.5">
+      {{ status_badge(p.estatus) }}
     </div>
-    {% elif p.estatus == 'aceptado' %}
-    {{ deliver_btn(p.id, csrf_token, seccion, estatus_filter) }}
-    {% endif %}
+
+    {# 60% — Info stacked #}
+    <div class="flex flex-col gap-1.5 min-w-0">
+
+      {# Row 1: nombre, paquete, cantidad #}
+      <div class="flex flex-wrap gap-1.5">
+        <span class="glass-chip font-medium" title="{{ p.usuario_nombre }}">{{ p.usuario_nombre }}</span>
+        <span class="glass-chip">{{ p.paquete_nombre }}</span>
+        <span class="glass-chip">{{ p.cantidad }} cart</span>
+      </div>
+
+      {# Row 2: total, fecha, pago #}
+      <div class="flex flex-wrap gap-1.5">
+        <span class="glass-chip font-semibold font-mono text-base">${{ p.total }}</span>
+        <span class="glass-chip font-mono">{{ p.fecha_entrega }}</span>
+        <span class="glass-chip" style="color:{% if p.metodo_pago == 'efectivo' %}#90BDB5{% else %}rgba(255,255,255,0.6){% endif %}">
+          {% if p.metodo_pago == 'efectivo' %}💵{% else %}💳{% endif %} {{ p.metodo_pago }}
+        </span>
+      </div>
+
+      {# Address box — clickable to Maps when valid #}
+      {% if p.direccion|length > 10 and ' ' in p.direccion %}
+      <a href="{{ _maps_url(p) }}"
+         target="_blank" rel="noopener"
+         class="mt-1.5 bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] rounded-xl px-3 py-2 hover:bg-white/[0.06] transition-all duration-200 animate-float block cursor-pointer">
+        <div class="flex items-start gap-2">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#fca5a5" stroke-width="2" class="shrink-0 mt-0.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 0 1 15 0Z"/>
+          </svg>
+          <div class="flex flex-col min-w-0">
+            {% if p.colonia %}
+            <span class="text-sm font-semibold text-white/90 truncate">{{ p.colonia }}</span>
+            {% endif %}
+            <span class="text-xs {% if p.colonia %}text-white/50{% else %}text-white/70{% endif %} truncate" title="{{ p.direccion }}">{{ p.direccion }}</span>
+            {% if p.codigo_postal %}
+            <span class="text-[10px] text-white/30 mt-0.5">C.P. {{ p.codigo_postal }}</span>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+      {% else %}
+      <div class="mt-1.5 bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] rounded-xl px-3 py-2">
+        <div class="flex items-center gap-2">
+          <span class="text-red-400 text-base shrink-0">⚠️</span>
+          <span class="text-red-400/70 text-xs">El cliente anot&oacute; la direcci&oacute;n con el qlo &mdash; verifica en texto</span>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+
+    {# 30% — Action pills en vertical #}
+    <div class="flex flex-col gap-2 justify-center">
+      <a href="tel:{{ p.usuario_telefono }}"
+         class="action-pill bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/35 animate-float px-5 py-2.5 text-sm font-semibold"
+         title="Llamar">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/>
+        </svg>
+        {{ p.usuario_telefono }}
+      </a>
+
+      {% if p.estatus == 'pendiente' %}
+        {{ accept_btn(p.id, csrf_token, seccion, estatus_filter) }}
+        {{ reject_btn(p.id, csrf_token, seccion, estatus_filter) }}
+      {% elif p.estatus == 'aceptado' %}
+        {{ deliver_btn(p.id, csrf_token, seccion, estatus_filter) }}
+      {% endif %}
+    </div>
+
   </div>
-  <span class="estatus-badge estatus-{{ p.estatus }}">{{ p.estatus }}</span>
-  <span class="text-white/80 text-xs text-center font-mono">{{ p.cantidad }}</span>
-  <span class="text-white/80 text-xs font-mono">{{ p.fecha_entrega }}</span>
-  <span class="text-white font-medium text-sm truncate" title="{{ p.usuario_nombre }}">{{ p.usuario_nombre }}</span>
-  <span class="text-white/75 text-xs truncate" title="{{ p.paquete_nombre }}">{{ p.paquete_nombre }}</span>
-  <span class="text-white text-xs font-mono font-semibold">${{ p.total }}</span>
-  <span class="text-white/60 text-xs truncate" title="{{ p.direccion }}">{{ p.direccion }}</span>
-  <span class="text-xs {% if p.metodo_pago == 'efectivo' %}text-[#90BDB5]{% else %}text-white/60{% endif %}">{{ p.metodo_pago }}</span>
-  <a href="tel:{{ p.usuario_telefono }}"
-     class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-600/25 text-emerald-300 hover:bg-emerald-600/40 transition-colors text-xs font-semibold justify-self-end">
-    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/>
-    </svg>
-    {{ p.usuario_telefono }}
-  </a>
 </div>
 
 {# Mobile card #}
-<div class="md:hidden bg-white/[0.03] rounded-xl mb-2 px-4 py-3 space-y-2">
-  <div class="flex items-center justify-between">
+<div class="md:hidden card-glass px-4 py-3 mb-2">
+  <div class="flex items-center justify-between mb-2">
     <span class="text-white font-semibold text-sm">{{ p.usuario_nombre }}</span>
     {{ status_badge(p.estatus) }}
   </div>
-  <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-    <div>
-      <span class="text-white/50 text-[10px] uppercase tracking-wider block">Paquete</span>
-      <span class="text-white/80 mt-0.5 block">{{ p.paquete_nombre }}</span>
+
+  <div class="flex flex-wrap gap-1.5 mb-2">
+    <span class="glass-chip">{{ p.paquete_nombre }}</span>
+    <span class="glass-chip">{{ p.cantidad }} cart</span>
+    <span class="glass-chip font-semibold font-mono text-sm">${{ p.total }}</span>
+    <span class="glass-chip font-mono">{{ p.fecha_entrega }}</span>
+    <span class="glass-chip" style="color:{% if p.metodo_pago == 'efectivo' %}#90BDB5{% else %}rgba(255,255,255,0.6){% endif %}">
+      {% if p.metodo_pago == 'efectivo' %}💵{% else %}💳{% endif %} {{ p.metodo_pago }}
+    </span>
+  </div>
+
+  {# Mobile address box — clickable to Maps when valid #}
+  {% if p.direccion|length > 10 and ' ' in p.direccion %}
+  <a href="{{ _maps_url(p) }}"
+     target="_blank" rel="noopener"
+     class="mb-2 bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] rounded-xl px-3 py-2 hover:bg-white/[0.06] transition-all duration-200 animate-float block cursor-pointer">
+    <div class="flex items-start gap-2">
+      <span class="text-red-400 text-base shrink-0 mt-0.5">📍</span>
+      <div class="flex flex-col min-w-0">
+        {% if p.colonia %}
+        <span class="text-sm font-semibold text-white/90 truncate">{{ p.colonia }}</span>
+        {% endif %}
+        <span class="text-xs {% if p.colonia %}text-white/50{% else %}text-white/70{% endif %} truncate" title="{{ p.direccion }}">{{ p.direccion }}</span>
+        {% if p.codigo_postal %}
+        <span class="text-[10px] text-white/30 mt-0.5">C.P. {{ p.codigo_postal }}</span>
+        {% endif %}
+      </div>
     </div>
-    <div>
-      <span class="text-white/50 text-[10px] uppercase tracking-wider block">Cantidad</span>
-      <span class="text-white font-mono mt-0.5 block">{{ p.cantidad }}</span>
-    </div>
-    <div>
-      <span class="text-white/50 text-[10px] uppercase tracking-wider block">Total</span>
-      <span class="text-white font-mono font-semibold mt-0.5 block">${{ p.total }}</span>
-    </div>
-    <div>
-      <span class="text-white/50 text-[10px] uppercase tracking-wider block">Fecha</span>
-      <span class="text-white/80 font-mono mt-0.5 block">{{ p.fecha_entrega }}</span>
-    </div>
-    <div class="col-span-2">
-      <span class="text-white/50 text-[10px] uppercase tracking-wider block">Dirección</span>
-      <span class="text-white/60 mt-0.5 block">{{ p.direccion }}</span>
+  </a>
+  {% else %}
+  <div class="mb-2 bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] rounded-xl px-3 py-2">
+    <div class="flex items-center gap-2">
+      <span class="text-red-400 text-base shrink-0">⚠️</span>
+      <span class="text-red-400/70 text-xs">El cliente anot&oacute; la direcci&oacute;n con el qlo &mdash; verifica en texto</span>
     </div>
   </div>
-  <div class="flex items-center gap-2 pt-2 border-t border-white/5">
+  {% endif %}
+
+  <div class="flex items-center justify-end gap-1.5 pt-2 border-t border-white/5">
     <a href="tel:{{ p.usuario_telefono }}"
-       class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-600/25 text-emerald-300 font-semibold text-xs">
-      <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+       class="action-pill bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/35 animate-float px-4 py-2 text-xs">
+      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/>
       </svg>
       {{ p.usuario_telefono }}
     </a>
+
     {% if p.estatus == 'pendiente' %}
-    <div class="flex gap-1 ml-auto">
+    <div class="flex gap-1 ml-2">
       {{ accept_btn(p.id, csrf_token, seccion, estatus_filter) }}
       {{ reject_btn(p.id, csrf_token, seccion, estatus_filter) }}
     </div>
     {% elif p.estatus == 'aceptado' %}
-    <div class="ml-auto">
+    <div class="ml-2">
       {{ deliver_btn(p.id, csrf_token, seccion, estatus_filter) }}
     </div>
     {% endif %}

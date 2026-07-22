@@ -164,6 +164,7 @@ class TestStatusUpdate:
             "paquete_id": "00000000-0000-0000-0000-000000000003",
             "suscripcion_id": None,
             "direccion": "Mérida, Yucatán",
+            "codigo_postal": "97000",
             "cantidad": 1,
             "total": 150,
             "metodo_pago": "efectivo",
@@ -173,6 +174,9 @@ class TestStatusUpdate:
             "fecha_entrega": date.today(),
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow(),
+            "usuario_nombre": "Test User",
+            "usuario_telefono": "9991234567",
+            "paquete_nombre": "Tradicional",
         }
         _do_login(client)
         resp = client.post(
@@ -180,8 +184,8 @@ class TestStatusUpdate:
             data={"csrf_token": csrf, "estatus": "aceptado"},
             follow_redirects=False,
         )
-        assert resp.status_code == 302
-        assert urlparse(resp.headers["location"]).path == "/logistic"
+        assert resp.status_code == 200
+        assert "pedido" in resp.text.lower()
 
 
 class TestLogout:

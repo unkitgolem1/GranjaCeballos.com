@@ -31,6 +31,7 @@ from tests.e2e.conftest import (
     MockUsuarioRepository,
     MockSuscripcionRepository,
     MockClienteRepository,
+    MockSepomexRepository,
     make_paquete,
     make_pedido,
     make_usuario,
@@ -62,10 +63,11 @@ def mock_repos():
     usuario_repo = MockUsuarioRepository()
     suscripcion_repo = MockSuscripcionRepository()
     cliente_repo = MockClienteRepository()
+    sepomex_repo = MockSepomexRepository()
     health_service = HealthService([])
 
-    pedido_service = PedidoService(usuario_repo, paquete_repo, pedido_repo)
-    suscripcion_service = SuscripcionService(usuario_repo, paquete_repo, pedido_repo, suscripcion_repo)
+    pedido_service = PedidoService(pedido_repo, usuario_repo, paquete_repo)
+    suscripcion_service = SuscripcionService(usuario_repo, paquete_repo, pedido_repo, suscripcion_repo, sepomex_repo)
     scheduler = SuscripcionScheduler(suscripcion_repo, pedido_repo, paquete_repo, health_service)
 
     app.dependency_overrides[get_usuario_repo] = lambda: usuario_repo

@@ -1,11 +1,10 @@
-from datetime import date, datetime, timedelta
+from datetime import date
 from decimal import Decimal
 from uuid import uuid4
 
 import pytest
 
 from src.application.services import (
-    _calcular_fecha_entrega,
     _calcular_precio_unitario,
     _calcular_total,
     PedidoService,
@@ -36,7 +35,10 @@ class MockSepomexRepository(SepomexRepository):
         }
 
     async def consultar(self, cp: str) -> dict | None:
-        return self._data.get(cp)
+        result = self._data.get(cp)
+        if result is not None:
+            result = {**result, "estado": "Yucatán"}
+        return result
 
     async def existe(self, cp: str) -> bool:
         return cp in self._data
@@ -110,38 +112,6 @@ class TestCalcularTotal:
     def test_cantidad_fija_multiplica(self):
         p = make_paquete(precio=Decimal("150"), cantidad_fija=2, es_customizable=False)
         assert _calcular_total(p, 1) == Decimal("300")
-
-
-# ── _calcular_fecha_entrega ──────────────────────────────────────────────
-
-class TestCalcularFechaEntrega:
-    def test_fecha_futura(self):
-        f = date.today() + timedelta(days=5)
-        assert _calcular_fecha_entrega(f) == f
-
-    def test_hoy_antes_de_12(self, monkeypatch):
-        fake = datetime.now().replace(hour=11, minute=0)
-        monkeypatch.setattr("src.application.services.datetime", _MockDatetime(fake))
-        hoy = date.today()
-        assert _calcular_fecha_entrega(hoy) == hoy
-
-    def test_hoy_despues_de_12(self, monkeypatch):
-        fake = datetime.now().replace(hour=13, minute=0)
-        monkeypatch.setattr("src.application.services.datetime", _MockDatetime(fake))
-        hoy = date.today()
-        assert _calcular_fecha_entrega(hoy) == hoy + timedelta(days=1)
-
-
-class _MockDatetime:
-    def __init__(self, now):
-        self._now = now
-
-    def now(self):
-        return self._now
-
-    def __getattr__(self, name):
-        import datetime as dt
-        return getattr(dt, name)
 
 
 # ── PedidoService ────────────────────────────────────────────────────────

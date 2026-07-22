@@ -27,11 +27,12 @@ WITH
 cp_info AS (
     SELECT
         municipio,
+        estado,
         COUNT(*)::int AS num_colonias,
         MIN(colonia) AS una_colonia
     FROM codigos_postales
     WHERE codigo_postal = $1
-    GROUP BY municipio
+    GROUP BY municipio, estado
 ),
 usuario AS (
     INSERT INTO usuarios (nombre, telefono, email)
@@ -61,7 +62,7 @@ pedido AS (
         $12, $13, $14,
         'pendiente', $15, NOW(), NOW()
     WHERE
-        (SELECT municipio FROM cp_info) = 'Mérida'
+        (SELECT municipio FROM cp_info) IS NOT NULL
         AND NOT EXISTS (
             SELECT 1 FROM pedidos
             WHERE usuario_id = (SELECT id FROM usuario)
@@ -74,7 +75,7 @@ SELECT
     (SELECT nombre FROM usuario)               AS usuario_nombre,
     (SELECT id FROM pedido)                   AS pedido_id,
     (SELECT total FROM pedido)                AS pedido_total,
-    COALESCE((SELECT municipio FROM cp_info) = 'Mérida', false) AS cp_valido
+    COALESCE((SELECT estado FROM cp_info) = 'Yucatán', false) AS cp_valido
 """
 
 

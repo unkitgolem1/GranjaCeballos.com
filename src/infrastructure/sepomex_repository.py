@@ -37,7 +37,7 @@ class PostgresSepomexRepository(SepomexRepository):
         return await self._pool.fetch(
             """SELECT DISTINCT ON (colonia) colonia, codigo_postal
                FROM codigos_postales
-               WHERE municipio = 'Mérida'
+               WHERE estado = 'Yucatán'
                ORDER BY colonia, codigo_postal"""
         )
 
@@ -47,7 +47,7 @@ class PostgresSepomexRepository(SepomexRepository):
         rows = await self._pool.fetch(
             """SELECT DISTINCT colonia, codigo_postal
                FROM codigos_postales
-               WHERE municipio = 'Mérida'
+               WHERE estado = 'Yucatán'
                  AND lower(colonia) LIKE lower($1)
                ORDER BY colonia
                LIMIT 10""",
@@ -60,7 +60,7 @@ class PostgresSepomexRepository(SepomexRepository):
             return None
         row = await self._pool.fetchrow(
             """SELECT codigo_postal FROM codigos_postales
-               WHERE municipio = 'Mérida'
+               WHERE estado = 'Yucatán'
                  AND lower(colonia) LIKE lower($1)
                LIMIT 1""",
             f"%{nombre_colonia}%",
@@ -69,7 +69,7 @@ class PostgresSepomexRepository(SepomexRepository):
             return row["codigo_postal"]
         row = await self._pool.fetchrow(
             """SELECT codigo_postal FROM codigos_postales
-               WHERE municipio = 'Mérida'
+               WHERE estado = 'Yucatán'
                LIMIT 1"""
         )
         return row["codigo_postal"] if row else None
