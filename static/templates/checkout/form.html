@@ -1,8 +1,9 @@
 <div id="checkout-container" class="pt-20"
      x-init="$nextTick(() => { var f=document.getElementById('checkout-form'); if (f) htmx.process(f); })"
-     x-data="{
-       suscripcion: false,
-       metodo_pago: 'efectivo',
+      x-data="{
+        suscripcion: false,
+        tarjeta_disabled: true,
+        metodo_pago: 'efectivo',
        diaSel: '{{ hoy }}',
        modo_cp: true,
        coloniaQuery: '',
@@ -214,11 +215,11 @@
             <span class="block leading-none">📦 Pedido único</span>
             <span class="block text-[10px] mt-1 font-normal" :class="suscripcion ? 'text-white/30' : 'text-[#1F200B]/70'">Pago contra entrega</span>
           </button>
-          <button type="button" @click="suscripcion = true; metodo_pago = 'tarjeta'; calcularPrecio()"
+          <button type="button" @click="if (!tarjeta_disabled) { suscripcion = true; metodo_pago = 'tarjeta'; calcularPrecio(); }"
                   class="flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
-                  :class="suscripcion ? 'bg-[#DDAC23] text-[#1F200B] shadow-lg shadow-[#DDAC23]/20' : 'text-white/50'">
+                  :class="tarjeta_disabled ? 'opacity-30 cursor-not-allowed' : (suscripcion ? 'bg-[#DDAC23] text-[#1F200B] shadow-lg shadow-[#DDAC23]/20' : 'text-white/50')">
             <span class="block leading-none">🔄 Suscripción</span>
-            <span class="block text-[10px] mt-1 font-normal" :class="suscripcion ? 'text-[#1F200B]/70' : 'text-white/30'">Envío gratis</span>
+            <span class="block text-[10px] mt-1 font-normal" :class="tarjeta_disabled ? 'text-white/20' : (suscripcion ? 'text-[#1F200B]/70' : 'text-white/30')">Envío gratis</span>
           </button>
         </div>
 
@@ -262,6 +263,9 @@
       </div>
 
       <div class="space-y-2">
+        <div class="bg-[#584D14]/40 border border-[#DDAC23]/20 rounded-xl p-3 text-xs text-white/70 leading-relaxed">
+          💳 Pago con tarjeta deshabilitado temporalmente. Solo <strong>pago contra entrega</strong> en efectivo.
+        </div>
         <p class="text-xs text-white/50 uppercase tracking-wider">Método de pago</p>
         <div class="flex rounded-xl overflow-hidden border border-[#DDAC23]/30 p-0.5 bg-[#DDAC23]/5">
           <button type="button" @click="if (!suscripcion) metodo_pago = 'efectivo'"
@@ -270,11 +274,10 @@
             <span class="block leading-none">💵 Efectivo</span>
             <span class="block text-[10px] mt-1 font-normal" :class="suscripcion ? 'text-white/20' : (metodo_pago === 'efectivo' ? 'text-[#1F200B]/70' : 'text-white/30')">Pago contra entrega</span>
           </button>
-          <button type="button" @click="metodo_pago = 'tarjeta'"
-                  class="flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
-                  :class="metodo_pago === 'tarjeta' ? 'bg-[#DDAC23] text-[#1F200B] border border-[#DDAC23] shadow-lg shadow-[#DDAC23]/30' : 'text-white/50'">
+          <button type="button" disabled
+                  class="flex-1 py-3 px-4 rounded-lg text-sm font-semibold opacity-30 cursor-not-allowed">
             <span class="block leading-none">💳 Tarjeta</span>
-            <span class="block text-[10px] mt-1 font-normal" :class="metodo_pago === 'tarjeta' ? 'text-[#1F200B]/70' : 'text-white/30'">Pago en línea</span>
+            <span class="block text-[10px] mt-1 font-normal text-white/30">No disponible</span>
           </button>
         </div>
 
@@ -325,7 +328,7 @@
                        {% else %}opacity-50 scale-90 cursor-not-allowed{% endif %}">
           <span class="block text-base font-black tracking-tighter uppercase leading-none">Confirmar Pedido</span>
           <span class="block text-[10px] font-mono font-bold tracking-widest text-black-mesa/50 mt-1 uppercase"
-                x-text="metodo_pago === 'efectivo' ? 'Pago contra entrega · Te llamaremos' : 'Pago seguro en línea'"></span>
+                x-text="'Pago contra entrega · Te llamaremos'"></span>
         </button>
 
         <div class="text-center mt-4">
