@@ -249,8 +249,9 @@ async def checkout_submit_impl(
                 },
             }
             logger.info("Suscripcion creada | id=%s telefono=%s", sub.id, telefono_masked)
+            ticket_url = str(request.base_url) + f"api/ticket/{ctx['pedido']['id']}.pdf"
             asyncio.create_task(
-                pdf_service.pre_generar_background(pool, ctx["pedido"], os.getenv("WHATSAPP_BUSINESS_PHONE", ""))
+                pdf_service.pre_generar_background(pool, ctx["pedido"], os.getenv("WHATSAPP_BUSINESS_PHONE", ""), ticket_url)
             )
             return templates.TemplateResponse(
                 request=request, name="checkout/_success.html",
@@ -289,8 +290,9 @@ async def checkout_submit_impl(
                 },
             }
             logger.info("Pedido creado | id=%s total=%s telefono=%s", pedido.id, pedido.total, telefono_masked)
+            ticket_url = str(request.base_url) + f"api/ticket/{ctx['pedido']['id']}.pdf"
             asyncio.create_task(
-                pdf_service.pre_generar_background(pool, ctx["pedido"], os.getenv("WHATSAPP_BUSINESS_PHONE", ""))
+                pdf_service.pre_generar_background(pool, ctx["pedido"], os.getenv("WHATSAPP_BUSINESS_PHONE", ""), ticket_url)
             )
             return templates.TemplateResponse(
                 request=request, name="checkout/_success.html",
@@ -346,8 +348,9 @@ async def checkout_submit_impl(
                     },
                 }
                 logger.info("Redirigiendo a WhatsApp con pedido pendiente | id=%s telefono=%s", row["id"], telefono_masked)
+                ticket_url = str(request.base_url) + f"api/ticket/{ctx['pedido']['id']}.pdf"
                 asyncio.create_task(
-                    pdf_service.pre_generar_background(pool, ctx["pedido"], os.getenv("WHATSAPP_BUSINESS_PHONE", ""))
+                    pdf_service.pre_generar_background(pool, ctx["pedido"], os.getenv("WHATSAPP_BUSINESS_PHONE", ""), ticket_url)
                 )
                 return templates.TemplateResponse(
                     request=request, name="checkout/_success.html",

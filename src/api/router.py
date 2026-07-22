@@ -192,6 +192,7 @@ async def actualizar_suscripcion(
 async def descargar_ticket(
     order_id: UUID,
     pool: PoolDep,
+    request: Request,
 ):
     try:
         cached = await pdf_service.get_cached(pool, order_id)
@@ -245,7 +246,8 @@ async def descargar_ticket(
             "es_suscripcion": False,
         }
 
-        html = pdf_service.render_ticket_html(pedido, os.getenv("WHATSAPP_BUSINESS_PHONE", ""))
+        ticket_url = str(request.base_url) + f"api/ticket/{order_id}.pdf"
+        html = pdf_service.render_ticket_html(pedido, os.getenv("WHATSAPP_BUSINESS_PHONE", ""), ticket_url)
         pdf_bytes = await pdf_service.generar_pdf(html, pool, order_id)
 
         if pdf_bytes is None:
