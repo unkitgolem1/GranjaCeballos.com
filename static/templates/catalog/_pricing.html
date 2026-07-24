@@ -105,6 +105,40 @@
   </div>
 </section>
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": [
+    {% for paquete in paquetes %}
+    {
+      "@type": "ListItem",
+      "position": {{ loop.index }},
+      "item": {
+        "@type": "Product",
+        "name": "{{ paquete.nombre }}",
+        "description": "{{ paquete.descripcion }}",
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "MXN",
+          "price": "{{ paquete.precio if paquete.es_customizable else paquete.precio * paquete.cantidad_fija }}",
+          "availability": "https://schema.org/InStock",
+          "shippingDetails": {
+            "@type": "OfferShippingDetail",
+            "shippingRate": {
+              "@type": "MonetaryAmount",
+              "value": "{{ paquete.costo_envio }}",
+              "currency": "MXN"
+            }
+          }
+        }
+      }
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+
 <style>
 .no-spinner::-webkit-inner-spin-button,
 .no-spinner::-webkit-outer-spin-button { appearance: none; }

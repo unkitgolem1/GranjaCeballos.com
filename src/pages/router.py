@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 import asyncpg
 from fastapi import APIRouter, Depends, Form, Query, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 
 import pydantic
@@ -92,6 +92,16 @@ async def _get_cached_paquete_by_id(request: Request, repo: PaqueteRepoDep, paqu
 async def _get_cached_clientes(request: Request, cliente_repo: ClienteRepoDep) -> list:
     cache = request.app.state.cache
     return await cache.get_or_load("clientes", loader=cliente_repo.list_active, ttl=120)
+
+
+@router.get("/robots.txt", response_class=PlainTextResponse)
+async def robots_txt():
+    return PlainTextResponse("User-agent: *\nAllow: /\n\nSitemap: https://granjaceballos.com/sitemap.xml\n")
+
+
+@router.get("/sitemap.xml", response_class=FileResponse)
+async def sitemap_xml():
+    return FileResponse(str(_TEMPLATES_DIR.parent / "sitemap.xml"), media_type="application/xml")
 
 
 @router.get("/", response_class=HTMLResponse)

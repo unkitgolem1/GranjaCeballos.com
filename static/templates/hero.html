@@ -7,6 +7,7 @@
   <meta name="description" content="{% block meta_description %}Huevos de libre pastoreo en Mérida, Yucatán. Frescos, del campo a tu puerta. Pide hoy y recibe en casa. Granja Ceballos, calidad y tradición.{% endblock %}">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="{% block canonical %}{{ request.url.scheme }}://{{ request.url.hostname }}{% endblock %}">
+  <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Granja Ceballos">
@@ -14,12 +15,16 @@
   <meta property="og:description" content="{% block og_description %}Huevos de libre pastoreo en Mérida, Yucatán. Frescos, del campo a tu puerta. Pide hoy y recibe en casa.{% endblock %}">
   <meta property="og:url" content="{{ request.url }}">
   <meta property="og:locale" content="es_MX">
-  <meta property="og:image" content="https://ptxhwrzuefattcjiqfoq.supabase.co/storage/v1/object/sign/fotos/grano_028.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kOTBmYjY1MC1kYzU3LTQ1YTgtOTJhNS04NzRhYzM5Zjk2NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmb3Rvcy9ncmFub18wMjgud2VicCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQzMzI3MzgsImV4cCI6MTgxNTg2ODczOH0.ljtnqtHq_tgXnNqJjDqc3oV9mHQFkIMhQ5nZmtWVcnU">
+  <meta property="og:image" content="{{ request.url.scheme }}://{{ request.url.hostname }}/static/og-image.png">
+  <meta property="og:image:width" content="1424">
+  <meta property="og:image:height" content="752">
+  <meta property="og:image:alt" content="Granja Ceballos — Huevos frescos de libre pastoreo en Mérida">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{% block twitter_title %}Granja Ceballos — Huevos frescos de libre pastoreo en Mérida{% endblock %}">
   <meta name="twitter:description" content="{% block twitter_description %}Huevos de libre pastoreo en Mérida, Yucatán. Frescos, del campo a tu puerta.{% endblock %}">
-  <meta name="twitter:image" content="https://ptxhwrzuefattcjiqfoq.supabase.co/storage/v1/object/sign/fotos/grano_028.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kOTBmYjY1MC1kYzU3LTQ1YTgtOTJhNS04NzRhYzM5Zjk2NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmb3Rvcy9ncmFub18wMjgud2VicCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQzMzI3MzgsImV4cCI6MTgxNTg2ODczOH0.ljtnqtHq_tgXnNqJjDqc3oV9mHQFkIMhQ5nZmtWVcnU">
+  <meta name="twitter:image" content="{{ request.url.scheme }}://{{ request.url.hostname }}/static/og-image.png">
+  <meta name="twitter:image:alt" content="Granja Ceballos — Huevos frescos de libre pastoreo en Mérida">
 
   <script type="application/ld+json">
   {
@@ -28,7 +33,7 @@
     "name": "Granja Ceballos",
     "description": "Venta de huevos de libre pastoreo en Mérida, Yucatán. Entrega a domicilio.",
     "url": "{{ request.url.scheme }}://{{ request.url.hostname }}",
-    "image": "https://ptxhwrzuefattcjiqfoq.supabase.co/storage/v1/object/sign/fotos/grano_028.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kOTBmYjY1MC1kYzU3LTQ1YTgtOTJhNS04NzRhYzM5Zjk2NjYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmb3Rvcy9ncmFub18wMjgud2VicCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQzMzI3MzgsImV4cCI6MTgxNTg2ODczOH0.ljtnqtHq_tgXnNqJjDqc3oV9mHQFkIMhQ5nZmtWVcnU",
+    "image": "{{ request.url.scheme }}://{{ request.url.hostname }}/static/og-image.png",
     "email": "granjaceballos@granjaceballos.com",
     "address": {
       "@type": "PostalAddress",
