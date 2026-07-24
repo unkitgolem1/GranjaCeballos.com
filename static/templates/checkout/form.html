@@ -1,5 +1,13 @@
 <div id="checkout-container" class="pt-20"
-     x-init="$nextTick(() => { var f=document.getElementById('checkout-form'); if (f) htmx.process(f); })"
+     x-init="
+       const hs = ((new Date().getDay() + 6) % 7) + 1;
+       const disp = [2, 5, 6, 7];
+       let p = disp.find(d => d >= hs);
+       if (p === undefined) p = disp[0];
+       diaSel = String(p);
+       actualizarFechaEntrega(diaSel);
+       $nextTick(() => { var f = document.getElementById('checkout-form'); if (f) htmx.process(f); })
+     "
       x-data="{
         suscripcion: false,
         tarjeta_disabled: true,
@@ -23,8 +31,7 @@
          this.coloniaQuery = '';
          this.colonias = [];
        }
-     }"
-     x-init="actualizarFechaEntrega(diaSel)">
+     }">
   <div class="max-w-[32rem] mx-auto bg-[#1F200B]/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 space-y-6">
 
     <div class="text-center space-y-1">
@@ -248,7 +255,7 @@
           <input type="hidden" name="fecha_entrega" id="fecha-entrega-hidden" value="{{ hoy_iso }}">
           <input type="hidden" name="dia_entrega" id="dia-entrega-hidden" value="{{ hoy }}">
           <div class="flex gap-2" id="dia-entrega-group">
-            {% set dias = [('L','1'), ('M','2'), ('M','3'), ('J','4'), ('V','5'), ('S','6'), ('D','7')] %}
+            {% set dias = [('M','2'), ('V','5'), ('S','6'), ('D','7')] %}
             {% for label, val in dias %}
             <button type="button"
                     data-dia="{{ val }}"

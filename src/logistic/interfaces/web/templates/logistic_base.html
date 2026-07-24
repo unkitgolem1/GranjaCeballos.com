@@ -48,6 +48,13 @@
     .btn-deliver {
       animation: float-glow 3s ease-in-out infinite;
     }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
+    }
 
     .glass-chip {
       background: rgba(255,255,255,0.04);
@@ -104,23 +111,47 @@
   </main>
 
   <dialog id="ticket-modal"
-          class="fixed inset-0 z-50 w-full h-full max-w-none max-h-none bg-black/70 backdrop-blur-sm p-4 open:flex items-center justify-center"
+          class="fixed inset-0 z-50 w-full h-full max-w-none max-h-none bg-transparent p-4"
           onclick="if (event.target === this) this.close()">
-    <div class="relative w-full max-w-2xl max-h-[90vh] bg-[#1F200B] rounded-2xl overflow-hidden border border-[#DDAC23]/20 shadow-2xl flex flex-col">
+    <div class="relative w-full max-w-2xl max-h-[75vh] bg-[#1F200B] rounded-2xl overflow-hidden border border-[#DDAC23]/20 shadow-2xl flex flex-col">
       <div class="flex items-center justify-between px-5 py-3 border-b border-white/10">
         <span class="text-sm text-white/70 font-medium">Ticket del pedido</span>
-        <button type="button" onclick="document.getElementById('ticket-modal').close()"
+        <button type="button" onclick="closeTicketModal()"
                 class="text-white/40 hover:text-white/80 transition-colors text-xl leading-none">&times;</button>
       </div>
-      <iframe id="ticket-frame" class="w-full flex-1 min-h-0 border-0" src="about:blank"></iframe>
+      <div id="ticket-loader" class="flex items-center justify-center py-20 text-white/40 text-sm gap-2">
+        <span class="inline-block w-4 h-4 border-2 border-white/20 border-t-[#DDAC23] rounded-full animate-spin"></span>
+        Cargando ticket…
+      </div>
+      <iframe id="ticket-frame" class="w-full flex-1 min-h-0 border-0 hidden" src="about:blank"></iframe>
     </div>
   </dialog>
 
+  <style>
+    #ticket-modal[open] { display: flex; align-items: center; justify-content: center; }
+    #ticket-modal::backdrop { background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+  </style>
+
   <script>
     function openTicketModal(pedidoId) {
-      document.getElementById('ticket-frame').src = '/api/ticket/' + pedidoId + '.pdf';
-      document.getElementById('ticket-modal').showModal();
+      var modal = document.getElementById('ticket-modal');
+      var frame = document.getElementById('ticket-frame');
+      var loader = document.getElementById('ticket-loader');
+      frame.classList.add('hidden');
+      loader.classList.remove('hidden');
+      frame.src = '/api/ticket/' + pedidoId + '.pdf';
+      modal.showModal();
     }
+    function closeTicketModal() {
+      document.getElementById('ticket-modal').close();
+    }
+    document.getElementById('ticket-frame').addEventListener('load', function() {
+      document.getElementById('ticket-loader').classList.add('hidden');
+      this.classList.remove('hidden');
+    });
+    document.getElementById('ticket-frame').addEventListener('error', function() {
+      document.getElementById('ticket-loader').innerHTML = '<span class="text-red-400">Error al cargar el ticket</span>';
+    });
   </script>
 
 </body>

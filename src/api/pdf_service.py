@@ -73,7 +73,7 @@ async def pre_generar_background(
         loop = asyncio.get_running_loop()
         pdf_bytes = await loop.run_in_executor(None, _generar_pdf_sync, html)
         if pdf_bytes:
-            await _store(pool, UUID(pedido["id"]), pdf_bytes)
+            await _store(pool, pedido["id"], pdf_bytes)
             logger.info("PDF pre-generado para ticket %s", pedido["id"])
     except Exception:
         logger.exception("Error pre-generando PDF para ticket %s", pedido["id"])

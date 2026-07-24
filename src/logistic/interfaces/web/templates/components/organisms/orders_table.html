@@ -1,7 +1,7 @@
 {% from "components/molecules/order_row.html" import order_row %}
 
 {% macro orders_table(pedidos, csrf_token, titulo, subtitulo=none, seccion="todo", estatus_filter="pendiente") %}
-<div class="mb-12">
+<div class="mb-10 md:mb-16">
   {% if titulo %}
   <h2 class="text-white/60 text-xs uppercase tracking-[0.2em] mb-4">
     <span class="{% if subtitulo %}text-baroque font-semibold{% else %}text-white/70{% endif %}">{{ titulo }}</span>
