@@ -20,6 +20,7 @@ from src.api import router as api_router
 from src.infrastructure.cache import MemoryCache
 from src.infrastructure.database import create_pool
 from src.infrastructure.limiter import limiter
+from src.infrastructure.http_cache import CacheControlMiddleware
 from src.infrastructure.security import SecurityHeadersMiddleware
 from src.pages import router as pages_router
 from src.logistic.interfaces.web.router import router as logistic_router
@@ -130,6 +131,7 @@ app.add_middleware(
     allow_headers=[],
 )
 app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(CacheControlMiddleware)
 app.add_middleware(LatencyMiddleware)
 app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(
