@@ -7,6 +7,9 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
+
+load_dotenv()
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -24,8 +27,6 @@ from src.infrastructure.http_cache import CacheControlMiddleware
 from src.infrastructure.security import SecurityHeadersMiddleware
 from src.pages import router as pages_router
 from src.logistic.interfaces.web.router import router as logistic_router
-
-load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / "static"

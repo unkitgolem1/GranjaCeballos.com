@@ -6,6 +6,8 @@ from pathlib import Path
 from time import time
 from uuid import UUID
 
+_WHATSAPP_PHONE = os.getenv("WHATSAPP_BUSINESS_PHONE", "")
+
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, Response
@@ -247,7 +249,7 @@ async def descargar_ticket(
         }
 
         ticket_url = str(request.base_url) + f"api/ticket/{order_id}.pdf"
-        html = pdf_service.render_ticket_html(pedido, os.getenv("WHATSAPP_BUSINESS_PHONE", ""), ticket_url)
+        html = await pdf_service.render_ticket_html_async(pedido, _WHATSAPP_PHONE, ticket_url)
         pdf_bytes = await pdf_service.generar_pdf(html, pool, order_id)
 
         if pdf_bytes is None:

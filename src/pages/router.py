@@ -26,6 +26,7 @@ from src.application.services import (
     SuscripcionService,
 )
 from src.domain.models import Paquete
+from src.infrastructure.profiling import profile
 from src.infrastructure.repositories import (
     PostgresPaqueteRepository,
     PostgresPedidoRepository,
@@ -38,6 +39,8 @@ from src.infrastructure.csrf import csrf_context, validate_csrf
 from src.infrastructure.limiter import limiter
 
 from .dependencies import ClienteRepoDep, PaqueteRepoDep, get_db_pool
+
+_WHATSAPP_PHONE = os.getenv("WHATSAPP_BUSINESS_PHONE", "")
 
 _TEMPLATES_DIR = Path(__file__).resolve().parent.parent.parent / "static" / "templates"
 templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
@@ -74,6 +77,8 @@ templates.env.filters["precio_unitario"] = _precio_unitario_filter
 
 router = APIRouter()
 PARTIALS = {"welcome": "catalog/welcome.html"}
+_PARTIALS_NEED_PAQUETES = {"welcome", "pricing"}
+_PARTIALS_NEED_CLIENTES = {"welcome", "clientes"}
 
 
 async def _get_cached_paquetes(request: Request, repo: PaqueteRepoDep) -> list[Paquete]:
@@ -118,12 +123,13 @@ async def index(
         context={
             "paquetes": paquetes,
             "clientes": clientes,
-            "whatsapp_phone": os.getenv("WHATSAPP_BUSINESS_PHONE", ""),
+            "whatsapp_phone": _WHATSAPP_PHONE,
         },
     )
 
 
 @router.get("/partial/{name}", response_class=HTMLResponse)
+@profile(threshold_ms=15)
 async def partial_view(
     request: Request,
     name: str,
@@ -133,9 +139,11 @@ async def partial_view(
     if name not in PARTIALS:
         return HTMLResponse("Partial no encontrado", status_code=404)
 
-    paquetes = await _get_cached_paquetes(request, repo)
-    clientes = await _get_cached_clientes(request, cliente_repo)
-    ctx = {"paquetes": paquetes, "clientes": clientes, "whatsapp_phone": os.getenv("WHATSAPP_BUSINESS_PHONE", "")}
+    ctx: dict = {"whatsapp_phone": _WHATSAPP_PHONE}
+    if name in _PARTIALS_NEED_PAQUETES:
+        ctx["paquetes"] = await _get_cached_paquetes(request, repo)
+    if name in _PARTIALS_NEED_CLIENTES:
+        ctx["clientes"] = await _get_cached_clientes(request, cliente_repo)
 
     if request.headers.get("HX-Request") != "true":
         ctx["partial_name"] = PARTIALS[name]
@@ -261,11 +269,11 @@ async def checkout_submit_impl(
             logger.info("Suscripcion creada | id=%s telefono=%s", sub.id, telefono_masked)
             ticket_url = str(request.base_url) + f"api/ticket/{ctx['pedido']['id']}.pdf"
             asyncio.create_task(
-                pdf_service.pre_generar_background(pool, ctx["pedido"], os.getenv("WHATSAPP_BUSINESS_PHONE", ""), ticket_url)
+                pdf_service.pre_generar_background(pool, ctx["pedido"], _WHATSAPP_PHONE, ticket_url)
             )
             return templates.TemplateResponse(
                 request=request, name="checkout/_success.html",
-                context={**ctx, "whatsapp_phone": os.getenv("WHATSAPP_BUSINESS_PHONE", "")},
+                context={**ctx, "whatsapp_phone": _WHATSAPP_PHONE},
             )
         else:
             pedido_repo = PostgresPedidoRepository(pool)
@@ -302,11 +310,11 @@ async def checkout_submit_impl(
             logger.info("Pedido creado | id=%s total=%s telefono=%s", pedido.id, pedido.total, telefono_masked)
             ticket_url = str(request.base_url) + f"api/ticket/{ctx['pedido']['id']}.pdf"
             asyncio.create_task(
-                pdf_service.pre_generar_background(pool, ctx["pedido"], os.getenv("WHATSAPP_BUSINESS_PHONE", ""), ticket_url)
+                pdf_service.pre_generar_background(pool, ctx["pedido"], _WHATSAPP_PHONE, ticket_url)
             )
             return templates.TemplateResponse(
                 request=request, name="checkout/_success.html",
-                context={**ctx, "whatsapp_phone": os.getenv("WHATSAPP_BUSINESS_PHONE", "")},
+                context={**ctx, "whatsapp_phone": _WHATSAPP_PHONE},
             )
     except pydantic.ValidationError as e:
         campo = e.errors()[0]["loc"][-1] if e.errors() else "campo"
@@ -360,11 +368,11 @@ async def checkout_submit_impl(
                 logger.info("Redirigiendo a WhatsApp con pedido pendiente | id=%s telefono=%s", row["id"], telefono_masked)
                 ticket_url = str(request.base_url) + f"api/ticket/{ctx['pedido']['id']}.pdf"
                 asyncio.create_task(
-                    pdf_service.pre_generar_background(pool, ctx["pedido"], os.getenv("WHATSAPP_BUSINESS_PHONE", ""), ticket_url)
+                    pdf_service.pre_generar_background(pool, ctx["pedido"], _WHATSAPP_PHONE, ticket_url)
                 )
                 return templates.TemplateResponse(
                     request=request, name="checkout/_success.html",
-                    context={**ctx, "whatsapp_phone": os.getenv("WHATSAPP_BUSINESS_PHONE", "")},
+                    context={**ctx, "whatsapp_phone": _WHATSAPP_PHONE},
                 )
         logger.warning("Checkout validacion fallo | error=%s paquete=%s telefono=%s", e, paquete_id, telefono_masked)
         return templates.TemplateResponse(

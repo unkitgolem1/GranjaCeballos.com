@@ -1,3 +1,6 @@
+# Archivos no esenciales del proyecto (agrupados aquí)
+_misc/
+
 # Python-generated files
 __pycache__/
 *.py[oc]
