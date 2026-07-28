@@ -1,12 +1,22 @@
+# -*- coding: utf-8 -*-
 import asyncio
 import logging
 import os
 from datetime import date
 from pathlib import Path
 from time import time
+from urllib.parse import quote
 from uuid import UUID
 
 _WHATSAPP_PHONE = os.getenv("WHATSAPP_BUSINESS_PHONE", "")
+
+_EMOJI_CHICKEN = "\U0001F414"
+_EMOJI_ID = "\U0001F194"
+_EMOJI_EGG = "\U0001F95A"
+_EMOJI_CALENDAR = "\U0001F4C5"
+_EMOJI_PIN = "\U0001F4CD"
+_EMOJI_MONEY = "\U0001F4B0"
+_EMOJI_CLIP = "\U0001F4CE"
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -249,7 +259,19 @@ async def descargar_ticket(
         }
 
         ticket_url = str(request.base_url) + f"api/ticket/{order_id}.pdf"
-        html = await pdf_service.render_ticket_html_async(pedido, _WHATSAPP_PHONE, ticket_url)
+        fecha_str = pedido["fecha_entrega"].strftime("%d/%m/%Y") if pedido["fecha_entrega"] else "Por confirmar"
+        mensaje_texto = (
+            f"Hola, soy *{pedido['usuario_nombre']}*, ya hice esta compra {_EMOJI_CHICKEN}\n"
+            f"{_EMOJI_ID} Pedido *{pedido['id']}*\n"
+            f"{_EMOJI_EGG} *{pedido['paquete_nombre']}*\n"
+            f"{_EMOJI_CALENDAR} Entrega: *{fecha_str}*\n"
+            f"{_EMOJI_PIN} *{pedido['direccion']}*\n"
+            f"{_EMOJI_MONEY} *${pedido['total']} MXN*\n\n"
+            f"{_EMOJI_CLIP} Ticket: {ticket_url}"
+        )
+        texto_codificado = quote(mensaje_texto)
+        wa_url = f"https://api.whatsapp.com/send?phone={_WHATSAPP_PHONE}&text={texto_codificado}"
+        html = await pdf_service.render_ticket_html_async(pedido, _WHATSAPP_PHONE, ticket_url, wa_url)
         pdf_bytes = await pdf_service.generar_pdf(html, pool, order_id)
 
         if pdf_bytes is None:

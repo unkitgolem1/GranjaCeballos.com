@@ -17,13 +17,13 @@ _TICKET_TEMPLATES_DIR = (
 _jinja_env = Environment(loader=FileSystemLoader(str(_TICKET_TEMPLATES_DIR)))
 
 
-def render_ticket_html(pedido: dict, whatsapp_phone: str, ticket_url: str = "") -> str:
+def render_ticket_html(pedido: dict, whatsapp_phone: str, ticket_url: str = "", wa_url: str = "") -> str:
     tmpl = _jinja_env.get_template("checkout/_ticket_pdf.html")
-    return tmpl.render(pedido=pedido, whatsapp_phone=whatsapp_phone, ticket_url=ticket_url)
+    return tmpl.render(pedido=pedido, whatsapp_phone=whatsapp_phone, ticket_url=ticket_url, wa_url=wa_url)
 
 
-async def render_ticket_html_async(pedido: dict, whatsapp_phone: str, ticket_url: str = "") -> str:
-    return await anyio.to_thread.run_sync(render_ticket_html, pedido, whatsapp_phone, ticket_url)
+async def render_ticket_html_async(pedido: dict, whatsapp_phone: str, ticket_url: str = "", wa_url: str = "") -> str:
+    return await anyio.to_thread.run_sync(render_ticket_html, pedido, whatsapp_phone, ticket_url, wa_url)
 
 
 def _generar_pdf_sync(html: str) -> Optional[bytes]:
@@ -71,10 +71,10 @@ async def _store(pool: asyncpg.Pool, ticket_id: UUID, pdf_bytes: bytes) -> None:
 
 
 async def pre_generar_background(
-    pool: asyncpg.Pool, pedido: dict, whatsapp_phone: str, ticket_url: str = ""
+    pool: asyncpg.Pool, pedido: dict, whatsapp_phone: str, ticket_url: str = "", wa_url: str = ""
 ) -> None:
     try:
-        html = await render_ticket_html_async(pedido, whatsapp_phone, ticket_url)
+        html = await render_ticket_html_async(pedido, whatsapp_phone, ticket_url, wa_url)
         loop = asyncio.get_running_loop()
         pdf_bytes = await loop.run_in_executor(None, _generar_pdf_sync, html)
         if pdf_bytes:

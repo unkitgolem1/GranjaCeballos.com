@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import asyncio
 import json as _json
 import logging
@@ -41,6 +42,14 @@ from src.infrastructure.limiter import limiter
 from .dependencies import ClienteRepoDep, PaqueteRepoDep, get_db_pool
 
 _WHATSAPP_PHONE = os.getenv("WHATSAPP_BUSINESS_PHONE", "")
+
+_EMOJI_CHICKEN = "\U0001F414"
+_EMOJI_ID = "\U0001F194"
+_EMOJI_EGG = "\U0001F95A"
+_EMOJI_CALENDAR = "\U0001F4C5"
+_EMOJI_PIN = "\U0001F4CD"
+_EMOJI_MONEY = "\U0001F4B0"
+_EMOJI_CLIP = "\U0001F4CE"
 
 _TEMPLATES_DIR = Path(__file__).resolve().parent.parent.parent / "static" / "templates"
 templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
@@ -268,12 +277,25 @@ async def checkout_submit_impl(
             }
             logger.info("Suscripcion creada | id=%s telefono=%s", sub.id, telefono_masked)
             ticket_url = str(request.base_url) + f"api/ticket/{ctx['pedido']['id']}.pdf"
+            p = ctx["pedido"]
+            fecha_str = p["fecha_entrega"].strftime("%d/%m/%Y") if p["fecha_entrega"] else "Por confirmar"
+            mensaje_texto = (
+                f"Hola, soy *{p['usuario_nombre']}*, ya hice esta compra {_EMOJI_CHICKEN}\n"
+                f"{_EMOJI_ID} Pedido *{p['id']}*\n"
+                f"{_EMOJI_EGG} *{p['paquete_nombre']}*\n"
+                f"{_EMOJI_CALENDAR} Entrega: *{fecha_str}*\n"
+                f"{_EMOJI_PIN} *{p['direccion']}*\n"
+                f"{_EMOJI_MONEY} *${p['total']} MXN*\n\n"
+                f"{_EMOJI_CLIP} Ticket: {ticket_url}"
+            )
+            texto_codificado = _urlquote(mensaje_texto)
+            wa_url = f"https://api.whatsapp.com/send?phone={_WHATSAPP_PHONE}&text={texto_codificado}"
             asyncio.create_task(
-                pdf_service.pre_generar_background(pool, ctx["pedido"], _WHATSAPP_PHONE, ticket_url)
+                pdf_service.pre_generar_background(pool, ctx["pedido"], _WHATSAPP_PHONE, ticket_url, wa_url)
             )
             return templates.TemplateResponse(
                 request=request, name="checkout/_success.html",
-                context={**ctx, "whatsapp_phone": _WHATSAPP_PHONE},
+                context={**ctx, "whatsapp_phone": _WHATSAPP_PHONE, "wa_url": wa_url},
             )
         else:
             pedido_repo = PostgresPedidoRepository(pool)
@@ -309,12 +331,25 @@ async def checkout_submit_impl(
             }
             logger.info("Pedido creado | id=%s total=%s telefono=%s", pedido.id, pedido.total, telefono_masked)
             ticket_url = str(request.base_url) + f"api/ticket/{ctx['pedido']['id']}.pdf"
+            p = ctx["pedido"]
+            fecha_str = p["fecha_entrega"].strftime("%d/%m/%Y") if p["fecha_entrega"] else "Por confirmar"
+            mensaje_texto = (
+                f"Hola, soy *{p['usuario_nombre']}*, ya hice esta compra {_EMOJI_CHICKEN}\n"
+                f"{_EMOJI_ID} Pedido *{p['id']}*\n"
+                f"{_EMOJI_EGG} *{p['paquete_nombre']}*\n"
+                f"{_EMOJI_CALENDAR} Entrega: *{fecha_str}*\n"
+                f"{_EMOJI_PIN} *{p['direccion']}*\n"
+                f"{_EMOJI_MONEY} *${p['total']} MXN*\n\n"
+                f"{_EMOJI_CLIP} Ticket: {ticket_url}"
+            )
+            texto_codificado = _urlquote(mensaje_texto)
+            wa_url = f"https://api.whatsapp.com/send?phone={_WHATSAPP_PHONE}&text={texto_codificado}"
             asyncio.create_task(
-                pdf_service.pre_generar_background(pool, ctx["pedido"], _WHATSAPP_PHONE, ticket_url)
+                pdf_service.pre_generar_background(pool, ctx["pedido"], _WHATSAPP_PHONE, ticket_url, wa_url)
             )
             return templates.TemplateResponse(
                 request=request, name="checkout/_success.html",
-                context={**ctx, "whatsapp_phone": _WHATSAPP_PHONE},
+                context={**ctx, "whatsapp_phone": _WHATSAPP_PHONE, "wa_url": wa_url},
             )
     except pydantic.ValidationError as e:
         campo = e.errors()[0]["loc"][-1] if e.errors() else "campo"
@@ -367,12 +402,25 @@ async def checkout_submit_impl(
                 }
                 logger.info("Redirigiendo a WhatsApp con pedido pendiente | id=%s telefono=%s", row["id"], telefono_masked)
                 ticket_url = str(request.base_url) + f"api/ticket/{ctx['pedido']['id']}.pdf"
+                p = ctx["pedido"]
+                fecha_str = p["fecha_entrega"].strftime("%d/%m/%Y") if p["fecha_entrega"] else "Por confirmar"
+                mensaje_texto = (
+                    f"Hola, soy *{p['usuario_nombre']}*, ya hice esta compra {_EMOJI_CHICKEN}\n"
+                    f"{_EMOJI_ID} Pedido *{p['id']}*\n"
+                    f"{_EMOJI_EGG} *{p['paquete_nombre']}*\n"
+                    f"{_EMOJI_CALENDAR} Entrega: *{fecha_str}*\n"
+                    f"{_EMOJI_PIN} *{p['direccion']}*\n"
+                    f"{_EMOJI_MONEY} *${p['total']} MXN*\n\n"
+                    f"{_EMOJI_CLIP} Ticket: {ticket_url}"
+                )
+                texto_codificado = _urlquote(mensaje_texto)
+                wa_url = f"https://api.whatsapp.com/send?phone={_WHATSAPP_PHONE}&text={texto_codificado}"
                 asyncio.create_task(
-                    pdf_service.pre_generar_background(pool, ctx["pedido"], _WHATSAPP_PHONE, ticket_url)
+                    pdf_service.pre_generar_background(pool, ctx["pedido"], _WHATSAPP_PHONE, ticket_url, wa_url)
                 )
                 return templates.TemplateResponse(
                     request=request, name="checkout/_success.html",
-                    context={**ctx, "whatsapp_phone": _WHATSAPP_PHONE},
+                    context={**ctx, "whatsapp_phone": _WHATSAPP_PHONE, "wa_url": wa_url},
                 )
         logger.warning("Checkout validacion fallo | error=%s paquete=%s telefono=%s", e, paquete_id, telefono_masked)
         return templates.TemplateResponse(

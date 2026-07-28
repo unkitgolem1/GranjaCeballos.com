@@ -34,7 +34,7 @@
              class="flex-1 border border-[#DDAC23] text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all rounded-full px-6 py-3 text-sm font-medium">
             📄 Descargar ticket PDF
           </a>
-          <a href="#" id="wa-link" target="_blank" rel="noopener"
+          <a href="{{ wa_url | safe }}" target="_blank" rel="noopener"
              class="flex-1 bg-[#25D366] text-white hover:bg-[#1da851] transition-all rounded-full px-6 py-3 text-sm font-medium">
             💬 Compartir por WhatsApp
           </a>
@@ -63,29 +63,8 @@
 <script>
 (function() {
   var pedidoId = '{{ pedido.id }}';
-  var whatsappPhone = '{{ whatsapp_phone }}';
-  var paqueteNombre = '{{ pedido.paquete_nombre }}';
-  var total = '{{ pedido.total }}';
-  var fechaEntrega = '{{ pedido.fecha_entrega.strftime("%d/%m/%Y") if pedido.fecha_entrega else "Por confirmar" }}';
-  var direccion = '{{ pedido.direccion }}';
   var origin = window.location.origin;
   var pdfUrl = origin + '/api/ticket/' + pedidoId + '.pdf';
-
-  function buildWaMsg() {
-    return 'Hola, ya hice esta compra 🐔'
-      + '%0A🆔 Pedido *' + pedidoId + '*'
-      + '%0A🥚 Paquete: ' + paqueteNombre
-      + '%0A📅 Entrega: ' + fechaEntrega
-      + '%0A📍 ' + direccion
-      + '%0A💰 $' + total + ' MXN'
-      + '%0A%0A📎 Ticket: ' + encodeURIComponent(pdfUrl);
-  }
-
-  // Set WhatsApp link href with PDF URL included
-  var waLink = document.getElementById('wa-link');
-  if (waLink) {
-    waLink.href = 'https://wa.me/' + whatsappPhone + '?text=' + buildWaMsg();
-  }
 
   // After 3.5s, open the PDF in a new tab
   setTimeout(function() {
