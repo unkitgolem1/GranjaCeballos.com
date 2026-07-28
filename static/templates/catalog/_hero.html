@@ -4,12 +4,13 @@
     <div class="space-y-6">
       <p class="font-sans text-xs uppercase tracking-[0.2em] text-[#90BDB5]">Granja Ceballos</p>
       <h1 class="font-heading tracking-tight text-white text-4xl sm:text-5xl md:text-6xl leading-tight">
-        Huevos de libre pastoreo,<br>
-        <span class="text-baroque">frescos a tu puerta.</span>
+        Huevo fresco de libre pastoreo,<br>
+        <span class="text-baroque">directo a tu puerta en M&eacute;rida</span>
       </h1>
       <p class="text-white/70 text-sm sm:text-base max-w-md leading-relaxed">
-        Cuidamos la tierra, el sol y nuestras gallinas en Yucat&aacute;n para llevar
-        el verdadero sabor del campo a tu cocina.
+        En Granja Ceballos criamos nuestras gallinas en libertad con alimentaci&oacute;n
+        100% natural, sin hormonas ni antibi&oacute;ticos. La mejor opci&oacute;n para llevar
+        huevo fresco y saludable a tu hogar en M&eacute;rida, Yucat&aacute;n.
       </p>
       {% set paquete_custom = paquetes | selectattr('es_customizable') | first %}
       <button hx-get="/checkout?paquete_id={{ paquete_custom.id if paquete_custom else '' }}"
