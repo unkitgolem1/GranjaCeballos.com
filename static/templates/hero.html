@@ -7,7 +7,9 @@
   <meta name="description" content="{% block meta_description %}Huevos de libre pastoreo en Mérida, Yucatán. Frescos, del campo a tu puerta. Pide hoy y recibe en casa. Granja Ceballos, calidad y tradición.{% endblock %}">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="{% block canonical %}{{ request.url.scheme }}://{{ request.url.hostname }}{% endblock %}">
-  <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="/static/favicon-192.png">
+  <link rel="shortcut icon" href="/static/favicon.ico">
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Granja Ceballos">
@@ -29,22 +31,44 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": "Granja Ceballos",
-    "description": "Venta de huevos de libre pastoreo en Mérida, Yucatán. Entrega a domicilio.",
-    "url": "{{ request.url.scheme }}://{{ request.url.hostname }}",
-    "image": "{{ request.url.scheme }}://{{ request.url.hostname }}/static/og-image.jpg",
-    "email": "granjaceballos@granjaceballos.com",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "Camino Real 457",
-      "addressLocality": "Mérida",
-      "addressRegion": "Yucatán",
-      "addressCountry": "MX"
-    },
-    "sameAs": [
-      "https://www.facebook.com/profile.php?id=61591810984792",
-      "https://www.instagram.com/granjaceballosoficial/"
+    "@graph": [
+      {
+        "@type": "LocalBusiness",
+        "@id": "https://granjaceballos.com/#organization",
+        "name": "Granja Ceballos",
+        "url": "{{ request.url.scheme }}://{{ request.url.hostname }}",
+        "description": "Productor local de HUEVO FRESCO de LIBRE PASTOREO en Mérida, Yucatán. Gallinas felices, entregas a domicilio.",
+        "image": "{{ request.url.scheme }}://{{ request.url.hostname }}/static/og-image.jpg",
+        "email": "granjaceballos@granjaceballos.com",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Mérida",
+          "addressRegion": "Yucatán",
+          "addressCountry": "MX"
+        },
+        "areaServed": "Mérida",
+        "priceRange": "$$",
+        "sameAs": [
+          "https://www.facebook.com/profile.php?id=61591810984792",
+          "https://www.instagram.com/granjaceballosoficial/"
+        ]
+      },
+      {
+        "@type": "Product",
+        "name": "Huevo Fresco de Libre Pastoreo",
+        "description": "Cartón de huevo fresco de gallinas criadas en libre pastoreo en Mérida, Yucatán.",
+        "brand": {
+          "@type": "Brand",
+          "name": "Granja Ceballos"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "120.00",
+          "priceCurrency": "MXN",
+          "availability": "https://schema.org/InStock",
+          "url": "https://granjaceballos.com/checkout"
+        }
+      }
     ]
   }
   </script>

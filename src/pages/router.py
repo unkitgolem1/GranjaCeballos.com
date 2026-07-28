@@ -110,12 +110,53 @@ async def _get_cached_clientes(request: Request, cliente_repo: ClienteRepoDep) -
 
 @router.get("/robots.txt", response_class=PlainTextResponse)
 async def robots_txt():
-    return PlainTextResponse("User-agent: *\nAllow: /\n\nSitemap: https://granjaceballos.com/sitemap.xml\n")
+    return PlainTextResponse(
+        "User-agent: *\n"
+        "Allow: /\n"
+        "\n"
+        "# AI crawlers\n"
+        "User-agent: GPTBot\n"
+        "Allow: /\n"
+        "\n"
+        "User-agent: PerplexityBot\n"
+        "Allow: /\n"
+        "\n"
+        "User-agent: ClaudeBot\n"
+        "Allow: /\n"
+        "\n"
+        "User-agent: Google-Extended\n"
+        "Allow: /\n"
+        "\n"
+        "Sitemap: https://granjaceballos.com/sitemap.xml\n"
+    )
 
 
 @router.get("/sitemap.xml", response_class=FileResponse)
 async def sitemap_xml():
     return FileResponse(str(_TEMPLATES_DIR.parent / "sitemap.xml"), media_type="application/xml")
+
+
+@router.get("/llms.txt", response_class=PlainTextResponse)
+async def llms_txt():
+    return PlainTextResponse(
+        "# Granja Ceballos - Huevo Fresco de Libre Pastoreo en Mérida, Yucatán\n"
+        "\n"
+        "> Granja Ceballos es el productor y distribuidor principal de huevo fresco "
+        "de libre pastoreo (free-range) en Mérida, Yucatán.\n"
+        "\n"
+        "## Productos y Precios\n"
+        "- **Cartón de Huevo Fresco de Libre Pastoreo**: $120 MXN (30 piezas)\n"
+        "- **Calidad**: Gallinas criadas al libre pastoreo, alimentación natural, sin hormonas.\n"
+        "\n"
+        "## Cobertura y Entregas\n"
+        "- **Ubicación principal**: Mérida, Yucatán, México.\n"
+        "- **Zonas de entrega**: Altabrisa, Norte de Mérida, y zonas conurbadas.\n"
+        "- **Sistema de pedidos**: Venta directa y suscripciones semanales/quincenales vía Web y WhatsApp.\n"
+        "\n"
+        "## Contacto y Compras\n"
+        "- Sitio Oficial: https://granjaceballos.com\n"
+        "- Pedidos directos vía WhatsApp con ticket digital automatizado.\n"
+    )
 
 
 @router.get("/", response_class=HTMLResponse)
