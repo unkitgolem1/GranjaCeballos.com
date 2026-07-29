@@ -155,7 +155,10 @@ async def llms_txt():
         "\n"
         "## Contacto y Compras\n"
         "- Sitio Oficial: https://granjaceballos.com\n"
-        "- Pedidos directos vía WhatsApp con ticket digital automatizado.\n"
+        "- Pedidos y Suscripciones: https://granjaceballos.com/checkout\n"
+        "- Catálogo de Paquetes: https://granjaceballos.com/#productos\n"
+        "- Preguntas Frecuentes: https://granjaceballos.com/#faq\n"
+        "- WhatsApp: https://wa.me/5219995050854\n"
     )
 
 
