@@ -1,18 +1,9 @@
+{% extends "hero.html" %}
+{% block content %}
 <nav class="flex items-center justify-between px-4 sm:px-8 py-2 max-w-6xl mx-auto mt-4">
   <span class="text-display text-base sm:text-lg text-baroque">Granja Ceballos</span>
 </nav>
 <main id="main-content-flow" class="w-full max-w-5xl mx-auto px-4 pb-24">
   {% include "checkout/form.html" %}
 </main>
-{% block scripts %}
-<script src="/static/js/sepomex.js"></script>
-<script>
-  (function() {
-    var input = document.getElementById('calle-input');
-    var cpInput = document.getElementById('cp-input');
-    if (input && !input.value && cpInput && !cpInput.value) {
-      setTimeout(window.get_location, 200);
-    }
-  })();
-</script>
 {% endblock %}
