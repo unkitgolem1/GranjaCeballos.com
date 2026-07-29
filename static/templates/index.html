@@ -9,7 +9,7 @@
   <p class="font-sans text-teal-tree text-lg sm:text-xl mb-10 text-center px-4 max-w-md animate-hollywood-subtitle animate-hollywood-float">
     Huevo Fresco de Libre Pastoreo 
   </p>
-  <button
+  <a href="/"
     hx-get="/partial/welcome"
     hx-target="#main-content-flow"
     hx-swap="innerHTML transition:true"
@@ -18,16 +18,16 @@
       this.closest('header').classList.add('opacity-0', 'pointer-events-none');
       document.getElementById('navbar').classList.remove('opacity-0', '-translate-y-full');
     "
-    class="bg-[#DDAC23] text-[#1F200B] px-10 py-4 rounded-full text-lg sm:text-xl font-semibold hover:scale-105 active:scale-[0.98] transition-all duration-300 cursor-pointer animate-hollywood-btn"
+    class="bg-[#DDAC23] text-[#1F200B] px-10 py-4 rounded-full text-lg sm:text-xl font-semibold hover:scale-105 active:scale-[0.98] transition-all duration-300 inline-block animate-hollywood-btn"
     aria-label="Explorar el catálogo"
   >
     Explorar
-  </button>
+  </a>
 </header>
 
 <nav id="navbar" class="fixed top-0 left-0 w-full z-40 glass-mesa transition-all duration-700 opacity-0 -translate-y-full" aria-label="Navegación principal">
   <div class="flex items-center justify-between px-4 sm:px-8 py-2 max-w-6xl mx-auto">
-    <a hx-get="/partial/welcome" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
+    <a href="/" hx-get="/partial/welcome" hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
        class="text-display text-base sm:text-lg text-baroque hover:text-baroque/80 transition-colors whitespace-nowrap">
       Granja Ceballos
     </a>

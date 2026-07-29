@@ -13,11 +13,12 @@
         huevo fresco y saludable a tu hogar en M&eacute;rida, Yucat&aacute;n.
       </p>
       {% set paquete_custom = paquetes | selectattr('es_customizable') | first %}
-      <button hx-get="/checkout?paquete_id={{ paquete_custom.id if paquete_custom else '' }}"
-              hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
-              class="bg-[#DDAC23] text-[#1F200B] px-10 py-4 rounded-full text-base font-semibold hover:scale-105 active:scale-[0.98] transition-all duration-300 cta-arrow animate-pulse-glow">
+      <a href="/checkout?paquete_id={{ paquete_custom.id if paquete_custom else '' }}"
+         hx-get="/checkout?paquete_id={{ paquete_custom.id if paquete_custom else '' }}"
+         hx-target="#main-content-flow" hx-swap="innerHTML transition:true"
+         class="bg-[#DDAC23] text-[#1F200B] px-10 py-4 rounded-full text-base font-semibold hover:scale-105 active:scale-[0.98] transition-all duration-300 cta-arrow animate-pulse-glow inline-block">
         Pedir mi cart&oacute;n
-      </button>
+      </a>
     </div>
 
     <div class="flex justify-center items-center relative" style="min-height: 320px;">

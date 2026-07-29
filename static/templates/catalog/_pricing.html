@@ -72,15 +72,12 @@
               <p class="text-[#90BDB5]/70 text-xs mt-1">🚚 Envío incluido</p>
               <p id="ahorro-{{ paquete.id }}" class="text-[#90BDB5] text-xs mt-1"></p>
             </div>
-            <button
-              id="btn-customizable"
-              hx-get="/checkout?paquete_id={{ paquete.id }}&cantidad=1"
-              hx-target="#main-content-flow"
-              hx-swap="innerHTML transition:true"
-              class="w-full bg-[#DDAC23] text-[#1F200B] py-3 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#DDAC23]/20 hover:shadow-xl hover:shadow-[#DDAC23]/30"
-              onclick="event.preventDefault(); var qty=document.getElementById('qty-{{ paquete.id }}').value; htmx.ajax('GET', '/checkout?paquete_id={{ paquete.id }}&cantidad='+qty, {target:'#main-content-flow', swap:'innerHTML transition:true'});">
+            <a href="/checkout?paquete_id={{ paquete.id }}&cantidad=1"
+               id="btn-customizable"
+               class="block w-full bg-[#DDAC23] text-[#1F200B] py-3 rounded-full text-sm font-semibold text-center transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#DDAC23]/20 hover:shadow-xl hover:shadow-[#DDAC23]/30"
+               onclick="event.preventDefault(); var qty=document.getElementById('qty-{{ paquete.id }}').value; htmx.ajax('GET', '/checkout?paquete_id={{ paquete.id }}&cantidad='+qty, {target:'#main-content-flow', swap:'innerHTML transition:true'});">
               Pedir mi cartón
-            </button>
+            </a>
           </div>
         {% else %}
           <p class="text-white/50 text-xs leading-relaxed">{{ paquete.descripcion }}</p>
@@ -89,13 +86,14 @@
             <span class="text-[#90BDB5]/70">🚚 Envío incluido</span>
           </div>
           {% set btn_id = 'btn-1carton' if '1 Cartón' in paquete.nombre else 'btn-4cartones' %}
-          <button id="{{ btn_id }}"
-                  hx-get="/checkout?paquete_id={{ paquete.id }}"
-                  hx-target="#main-content-flow"
-                  hx-swap="innerHTML transition:true"
-                  class="mt-2 w-full border border-[#DDAC23] text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all rounded-full px-6 py-3 text-sm font-medium">
+          <a href="/checkout?paquete_id={{ paquete.id }}"
+             id="{{ btn_id }}"
+             hx-get="/checkout?paquete_id={{ paquete.id }}"
+             hx-target="#main-content-flow"
+             hx-swap="innerHTML transition:true"
+             class="mt-2 block w-full border border-[#DDAC23] text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all rounded-full px-6 py-3 text-sm font-medium text-center">
             Pedir
-          </button>
+          </a>
         {% endif %}
 
       </div>
