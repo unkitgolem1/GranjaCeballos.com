@@ -230,20 +230,26 @@ async def checkout_view(
         unitario = 0
         total = 0
 
+    ctx = {
+        "paquetes": paquetes,
+        "paquete_id": str(paquete_id) if paquete_id else None,
+        "paquete_selected": paquete_selected,
+        "cantidad": cantidad,
+        "precio_unitario": unitario,
+        "precio_total": total,
+        "hoy": datetime.now().isoweekday(),
+        "hoy_iso": date.today().isoformat(),
+        **csrf_context(request),
+    }
+
+    if request.headers.get("HX-Request") != "true":
+        ctx["whatsapp_phone"] = _WHATSAPP_PHONE
+        return templates.TemplateResponse(
+            request=request, name="checkout/page.html", context=ctx
+        )
+
     return templates.TemplateResponse(
-        request=request,
-        name="checkout/form.html",
-        context={
-            "paquetes": paquetes,
-            "paquete_id": str(paquete_id) if paquete_id else None,
-            "paquete_selected": paquete_selected,
-            "cantidad": cantidad,
-            "precio_unitario": unitario,
-            "precio_total": total,
-            "hoy": datetime.now().isoweekday(),
-            "hoy_iso": date.today().isoformat(),
-            **csrf_context(request),
-        },
+        request=request, name="checkout/form.html", context=ctx,
     )
 
 
