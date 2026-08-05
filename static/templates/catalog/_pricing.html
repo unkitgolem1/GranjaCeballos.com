@@ -44,41 +44,57 @@
         </div>
 
         {% if paquete.es_customizable %}
-          <div class="space-y-3">
+          <div class="space-y-3"
+               x-data="{
+                 cantidad: 1,
+                 precio: {{ paquete.precio }},
+                 precioMinimo: {{ paquete.precio_minimo }},
+                 tiers: {{ paquete.tiers | to_json }},
+                 get unitario() {
+                   const t = this.tiers || [];
+                   if (t.length) {
+                     const s = t.slice().sort((a, b) => b.min_cantidad - a.min_cantidad);
+                     for (const tr of s) {
+                       if (this.cantidad >= tr.min_cantidad) return Math.max(tr.precio_unitario, this.precioMinimo);
+                     }
+                     return Math.max(this.precio, this.precioMinimo);
+                   }
+                   const desc = Math.min(this.cantidad - 1, 8) * 5;
+                   return Math.max(this.precio - desc, this.precioMinimo);
+                 },
+                 get total() { return Math.round(this.unitario * this.cantidad); },
+                 get ahorro() { return Math.max(this.precio - this.unitario, 0) * this.cantidad; },
+                 step(d) { this.cantidad = Math.max(1, (parseInt(this.cantidad) || 1) + d); },
+                 ir() {
+                   htmx.ajax('GET', '/checkout?paquete_id={{ paquete.id }}&cantidad=' + this.cantidad,
+                     { target: '#main-content-flow', swap: 'innerHTML transition:true' });
+                 }
+               }">
             <p class="text-white/50 text-xs leading-relaxed">{{ paquete.descripcion }}</p>
             <div class="flex items-center gap-3">
               <label class="text-white/50 text-xs">Cantidad:</label>
               <div class="flex items-center bg-white/5 border border-white/10 rounded-lg overflow-hidden">
-                <button type="button"
-                  class="px-3 py-1.5 text-sm text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all font-bold"
-                  onclick="stepperPricing(this, -1)">−</button>
-                <input
-                  type="number"
-                  min="1"
-                  value="1"
-                  class="w-14 bg-transparent border-x border-white/10 px-2 py-1.5 text-sm text-white text-center focus:outline-none no-spinner"
-                  id="qty-{{ paquete.id }}"
-                  name="cantidad-{{ paquete.id }}"
-                  oninput="var v=Math.max(1,parseInt(this.value)||1);this.value=v;updatePricing('{{ paquete.id }}');"
-                >
-                <button type="button"
-                  class="px-3 py-1.5 text-sm text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all font-bold"
-                  onclick="stepperPricing(this, 1)">+</button>
+                <button type="button" @click="step(-1)"
+                  class="px-3 py-1.5 text-sm text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all font-bold">−</button>
+                <input type="number" min="1" x-model.number="cantidad"
+                       @input="if (cantidad < 1) cantidad = 1"
+                       class="w-14 bg-transparent border-x border-white/10 px-2 py-1.5 text-sm text-white text-center focus:outline-none no-spinner">
+                <button type="button" @click="step(1)"
+                  class="px-3 py-1.5 text-sm text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all font-bold">+</button>
               </div>
             </div>
-            <div id="price-{{ paquete.id }}">
-              <p class="text-baroque text-lg font-bold">${{ paquete.precio }} MXN</p>
-              <p class="text-white/50 text-xs">${{ paquete.precio }} por cartón</p>
+            <div>
+              <p class="text-baroque text-lg font-bold" x-text="'$' + total + ' MXN'"></p>
+              <p class="text-white/50 text-xs" x-text="'$' + Math.round(unitario) + ' por cartón'"></p>
               <p class="text-[#90BDB5]/70 text-xs mt-1">🚚 Envío incluido</p>
-              <p id="ahorro-{{ paquete.id }}" class="text-[#90BDB5] text-xs mt-1"></p>
+              <p class="text-[#90BDB5] text-xs mt-1" x-show="ahorro > 0"
+                 x-text="'✨ Ahorras $' + Math.round(ahorro) + ' MXN'"></p>
             </div>
             <a href="/checkout?paquete_id={{ paquete.id }}&cantidad=1"
                id="btn-customizable"
+               @click.prevent="ir()"
                class="block w-full bg-[#DDAC23] text-[#1F200B] py-3 rounded-full text-sm font-semibold text-center transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#DDAC23]/20 hover:shadow-xl hover:shadow-[#DDAC23]/30"
-               onclick="event.preventDefault(); var qty=document.getElementById('qty-{{ paquete.id }}').value; htmx.ajax('GET', '/checkout?paquete_id={{ paquete.id }}&cantidad='+qty, {target:'#main-content-flow', swap:'innerHTML transition:true'});">
-              Pedir mi cartón
-            </a>
-          </div>
+               x-text="cantidad > 1 ? 'Pedir ' + cantidad + ' cartones · $' + total + ' MXN' : 'Pedir mi cartón · $' + total + ' MXN'"></a>
         {% else %}
           <p class="text-white/50 text-xs leading-relaxed">{{ paquete.descripcion }}</p>
           <div class="flex items-center gap-4 text-xs">
@@ -86,9 +102,9 @@
             <span class="text-[#90BDB5]/70">🚚 Envío incluido</span>
           </div>
           {% set btn_id = 'btn-1carton' if '1 Cartón' in paquete.nombre else 'btn-4cartones' %}
-          <a href="/checkout?paquete_id={{ paquete.id }}"
+          <a href="/checkout?paquete_id={{ paquete.id }}&cantidad={{ paquete.cantidad_fija }}"
              id="{{ btn_id }}"
-             hx-get="/checkout?paquete_id={{ paquete.id }}"
+             hx-get="/checkout?paquete_id={{ paquete.id }}&cantidad={{ paquete.cantidad_fija }}"
              hx-target="#main-content-flow"
              hx-swap="innerHTML transition:true"
              class="mt-2 block w-full border border-[#DDAC23] text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all rounded-full px-6 py-3 text-sm font-medium text-center">
@@ -159,40 +175,3 @@
   }
 }
 </style>
-<script>
-function pricear(precioBase, cantidad) {
-  var desc = Math.min(cantidad - 1, 8) * 5;
-  return Math.max(precioBase - desc, 80);
-}
-
-function updatePricing(id) {
-  var input = document.getElementById('qty-' + id);
-  var priceDiv = document.getElementById('price-' + id);
-  var ahorroDiv = document.getElementById('ahorro-' + id);
-  if (!input || !priceDiv) return;
-  var qty = parseInt(input.value) || 1;
-  var unitario = pricear(120, qty);
-  var total = unitario * qty;
-  priceDiv.innerHTML =
-    '<p class="text-baroque text-lg font-bold">$' + total + ' MXN</p>' +
-    '<p class="text-white/50 text-xs">$' + unitario + ' por cartón</p>' +
-    '<p class="text-[#90BDB5]/70 text-xs mt-1">🚚 Envío incluido</p>';
-  if (ahorroDiv) {
-    var ahorro = 120 - unitario;
-    if (ahorro > 0) {
-      ahorroDiv.innerHTML = '✨ Ahorras $' + (ahorro * qty) + ' MXN';
-    } else {
-      ahorroDiv.innerHTML = '';
-    }
-  }
-}
-
-function stepperPricing(btn, delta) {
-  var input = btn.parentElement.querySelector('input[type=number]');
-  var val = parseInt(input.value) || 1;
-  val = Math.max(1, val + delta);
-  input.value = val;
-  var id = input.id.replace('qty-', '');
-  updatePricing(id);
-}
-</script>

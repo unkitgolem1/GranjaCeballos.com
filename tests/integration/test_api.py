@@ -1,9 +1,13 @@
+import asyncio
 import re
+from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock
+from uuid import UUID
 
 import pytest
 from fastapi.testclient import TestClient
 
+from src.domain.models import CustomTier, Paquete
 from src.main import app
 from src.infrastructure.limiter import limiter
 
@@ -50,7 +54,147 @@ class TestCheckoutPage:
 
     def test_checkout_renders_pricing_js(self, client):
         resp = client.get("/checkout")
-        assert "calcularPrecio" in resp.text
+        assert "x-data" in resp.text
+        assert "Selecciona tu paquete" in resp.text
+
+    def test_checkout_sin_cantidad_no_marca_4(self, client):
+        """Regresión: omitir cantidad no debe pre-llenar 4 cartones ($420)."""
+        resp = client.get("/checkout")
+        assert "cantidad: 1," in resp.text
+        assert "cantidad: 4," not in resp.text
+
+    def test_checkout_cantidad_explicita(self, client):
+        resp = client.get("/checkout", params={"cantidad": "4"})
+        assert "cantidad: 4," in resp.text
+
+
+_CUSTOM_ID = UUID("00000000-0000-0000-0000-00000000000a")
+_P1_ID = UUID("00000000-0000-0000-0000-000000000001")
+_P4_ID = UUID("00000000-0000-0000-0000-000000000004")
+
+
+def _seed_paquetes_real():
+    """Escenario real del incidente: el paquete custom ($120/cartón) tiene un tier
+    de 4+ cartones a $105 → 4 cartones = $420. Este es el escenario de la clienta."""
+    custom = Paquete(
+        id=_CUSTOM_ID,
+        nombre="Cartón a tu medida",
+        precio=Decimal("120"),
+        cantidad_fija=1,
+        es_customizable=True,
+        precio_minimo=Decimal("80"),
+        tiers=[CustomTier(min_cantidad=4, precio_unitario=Decimal("105"))],
+    )
+    p1 = Paquete(
+        id=_P1_ID, nombre="1 Cartón", precio=Decimal("120"), cantidad_fija=1,
+    )
+    p4 = Paquete(
+        id=_P4_ID, nombre="4 Cartones", precio=Decimal("100"), cantidad_fija=4,
+    )
+
+    async def load():
+        return [custom, p1, p4]
+
+    asyncio.run(app.state.cache.get_or_load("paquetes", loader=load, ttl=60))
+
+
+class TestCheckoutRegresion:
+    def _renders(self, url) -> str:
+        _seed_paquetes_real()
+        return TestClient(app).get(url).text
+
+    def test_custom_sin_cantidad_es_1_carton(self):
+        """Regresión raíz del incidente: el paquete "a tu medida" sin cantidad
+        NO debe pre-llenar 4 cartones ($420), sino 1 ($120)."""
+        html = self._renders(f"/checkout?paquete_id={_CUSTOM_ID}")
+        assert "cantidad: 1," in html
+        # el tier 4→105 viaja al cliente para que el precio JS coincida con el server
+        assert "tiers" in html
+        assert "105" in html
+
+    def test_custom_con_cantidad_4_mantiene_4(self):
+        html = self._renders(f"/checkout?paquete_id={_CUSTOM_ID}&cantidad=4")
+        assert "cantidad: 4," in html
+
+    def test_fijo_4_cartones_sin_cantidad_fuerza_4(self):
+        html = self._renders(f"/checkout?paquete_id={_P4_ID}")
+        assert "cantidad: 4," in html
+
+    def test_fijo_1_carton_ignora_cantidad_erronea(self):
+        """Aunque llegue cantidad=4 por URL, el paquete fijo "1 Cartón" debe
+        facturarse como 1 cartón ($120), no 4."""
+        html = self._renders(f"/checkout?paquete_id={_P1_ID}&cantidad=4")
+        assert "cantidad: 1," in html
+
+
+class TestModalAvisoPrecio:
+    """Contrato A+B del modal de confirmación: el precio que muestra el aviso
+    (GET /api/paquetes/{id}/precio) es EXACTAMENTE el que facturará el server.
+    Garantiza que el total visible == total real (sin drift JS)."""
+
+    def _precio(self, paquete_id: str, cantidad: int = 1) -> dict:
+        from src.api.dependencies import get_paquete_repo
+        from tests.e2e.conftest import MockPaqueteRepository
+
+        custom = Paquete(
+            id=_CUSTOM_ID, nombre="Cartón a tu medida", precio=Decimal("120"),
+            cantidad_fija=1, es_customizable=True, precio_minimo=Decimal("80"),
+            tiers=[CustomTier(min_cantidad=4, precio_unitario=Decimal("105"))],
+        )
+        p1 = Paquete(id=_P1_ID, nombre="1 Cartón", precio=Decimal("120"), cantidad_fija=1)
+        p4 = Paquete(id=_P4_ID, nombre="4 Cartones", precio=Decimal("100"), cantidad_fija=4)
+        app.dependency_overrides[get_paquete_repo] = lambda: MockPaqueteRepository([custom, p1, p4])
+        try:
+            return TestClient(app).get(
+                f"/api/paquetes/{paquete_id}/precio", params={"cantidad": cantidad}
+            ).json()
+        finally:
+            app.dependency_overrides.pop(get_paquete_repo, None)
+
+    def _es_number(self, v: str) -> float:
+        return float(v)
+
+    def test_custom_1_carton_es_120(self):
+        """Incidente raíz: 1 cartón a tu medida == $120 (NUNCA $420 por error de default)."""
+        d = self._precio(_CUSTOM_ID, cantidad=1)
+        assert self._es_number(d["total"]) == 120
+        assert self._es_number(d["precio_unitario"]) == 120
+        assert self._es_number(d["envio"]) == 0
+
+    def test_custom_4_cartones_es_420(self):
+        """El MISMO paquete con 4 cartones __eligen__ el tier 4→$105 ⇒ $420. Este es
+        el escenario donde la clienta sí pagó $420; el aviso debe mostrarlo."""
+        d = self._precio(_CUSTOM_ID, cantidad=4)
+        assert self._es_number(d["precio_unitario"]) == 105
+        assert self._es_number(d["total"]) == 420
+
+    def test_fijo_un_carton_ignora_cantidad_url(self):
+        """Paquete fijo '1 Cartón' rehúsa cantidad=4: total queda $120, no $420."""
+        d = self._precio(_P1_ID, cantidad=4)
+        assert self._es_number(d["total"]) == 120
+        assert self._es_number(d["precio_unitario"]) == 120
+
+    def test_fijo_4_cartones_fuerza_cantidad_fija(self):
+        """Paquete fijo '4 Cartones' fuerza cantidad_fija=4 aunque llegue cantidad=1."""
+        d = self._precio(_P4_ID, cantidad=1)
+        assert self._es_number(d["total"]) == 400
+        assert self._es_number(d["precio_unitario"]) == 100
+
+    def test_subtotal_mas_envio_igual_total(self):
+        """Invariante del contrato: unitario*cantidad + envio == total (lo que firma el modal)."""
+        for pid, c in ((_CUSTOM_ID, 3), (_P1_ID, 1), (_P4_ID, 4)):
+            d = self._precio(pid, cantidad=c)
+            esperado = self._es_number(d["precio_unitario"]) * c + self._es_number(d["envio"])
+            assert abs(esperado - self._es_number(d["total"])) < 0.01
+
+    def test_checkout_contiene_modal_aviso(self):
+        """El HTML de /checkout incluye el modal de confirmación con 'Volver a ajustar'."""
+        _seed_paquetes_real()
+        html = TestClient(app).get("/checkout").text
+        assert "avisoAbierto" in html
+        assert "Volver a ajustar" in html
+        assert "abrirAviso" in html
+        assert "confirmarAviso" in html
 
 
 class TestCheckoutSubmit:

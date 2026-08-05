@@ -37,6 +37,13 @@ ASYNC_DEBUG = os.getenv("ASYNC_DEBUG", "").lower() in ("1", "true", "yes")
 _PROD = os.getenv("ENVIRONMENT", "").lower() == "production"
 
 _log = logging.getLogger("uvicorn.access")
+# Uvicorn adjunta SU propio handler con AccessFormatter al logger "uvicorn.access".
+# La app usa ese logger para emitir logs estructurados (LatencyMiddleware), y el
+# AccessFormatter espera exactamente 5 args de un access-log clásico; al recibir
+# un record sin args rompe con "ValueError: not enough values to unpack (5, 0)".
+# Limpiamos el handler de uvicorn y ponemos SOLO el formatter de la app.
+_log.handlers.clear()
+_log.propagate = False
 _log.setLevel(logging.INFO)
 _handler = logging.StreamHandler()
 _handler.setFormatter(logging.Formatter(

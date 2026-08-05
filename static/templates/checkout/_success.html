@@ -21,6 +21,9 @@
       <div class="bg-[#584D14]/30 rounded-xl p-4 space-y-1.5 text-left text-xs">
         <p class="text-white/70 flex justify-between"><span>Pedido:</span><span class="text-white font-medium">{{ pedido.id }}</span></p>
         <p class="text-white/70 flex justify-between"><span>Paquete:</span><span class="text-white font-medium">{{ pedido.paquete_nombre }}</span></p>
+        {% if pedido.cantidad is defined %}
+        <p class="text-white/70 flex justify-between"><span>Cantidad:</span><span class="text-white font-medium">{{ pedido.cantidad }} cartón(es)</span></p>
+        {% endif %}
         <p class="text-white/70 flex justify-between"><span>Total:</span><span class="text-baroque font-bold">${{ pedido.total }} MXN</span></p>
       </div>
     </div>

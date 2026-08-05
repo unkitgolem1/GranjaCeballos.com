@@ -8,15 +8,87 @@
        actualizarFechaEntrega(diaSel);
        $nextTick(() => { var f = document.getElementById('checkout-form'); if (f) htmx.process(f); })
      "
-      x-data="{
+x-data="{
         suscripcion: false,
         tarjeta_disabled: true,
         metodo_pago: 'efectivo',
+        paquetes: {{ paquetes_json }},
+        paqueteId: '{{ paquete_id or '' }}',
+        cantidad: {{ cantidad }},
+        get paqueteActual() {
+          if (!this.paqueteId) return null;
+          return this.paquetes.find(p => p.id === this.paqueteId) || null;
+        },
+        get customizable() { return this.paqueteActual && this.paqueteActual.es_customizable; },
+        get unitario() {
+          const p = this.paqueteActual;
+          if (!p) return 0;
+          if (!p.es_customizable) return p.precio;
+          const t = p.tiers || [];
+          if (t.length) {
+            const s = t.slice().sort((a, b) => b.min_cantidad - a.min_cantidad);
+            for (const tr of s) {
+              if (this.cantidad >= tr.min_cantidad) return Math.max(tr.precio_unitario, p.precio_minimo);
+            }
+            return Math.max(p.precio, p.precio_minimo);
+          }
+          const desc = Math.min(this.cantidad - 1, 8) * 5;
+          return Math.max(p.precio - desc, p.precio_minimo);
+        },
+        get precioTotal() {
+          const p = this.paqueteActual;
+          if (!p) return 0;
+          let total;
+          if (p.es_customizable) total = this.unitario * this.cantidad;
+          else total = p.precio * p.cantidad_fija;
+          if (!this.suscripcion) total += p.costo_envio || 0;
+          return Math.round(total);
+        },
+        get ahorro() {
+          const p = this.paqueteActual;
+          if (!p || !p.es_customizable) return 0;
+          return Math.max(p.precio - this.unitario, 0) * this.cantidad;
+        },
+        seleccionar(id) {
+          this.paqueteId = id;
+          const p = this.paquetes.find(x => x.id === id);
+          if (p && !p.es_customizable) this.cantidad = p.cantidad_fija;
+          else this.cantidad = Math.max(1, this.cantidad);
+        },
+        step(d) {
+          if (this.customizable) this.cantidad = Math.max(1, (this.cantidad || 1) + d);
+        },
+        avisoAbierto: false,
+        precioServer: null,
+        get avCargando() { return this.precioServer === null; },
+        get avUnitario() { return this.precioServer ? '$' + Math.round(parseFloat(this.precioServer.precio_unitario)) + ' MXN' : '…'; },
+        get avSubtotal() { return this.precioServer ? '$' + Math.round(parseFloat(this.precioServer.subtotal)) + ' MXN' : '…'; },
+        get avEnvio() { return this.precioServer ? '$' + Math.round(parseFloat(this.precioServer.envio)) + ' MXN' : '…'; },
+        get avTotal() { return this.precioServer ? '$' + Math.round(parseFloat(this.precioServer.total)) + ' MXN' : '…'; },
+        abrirAviso() {
+          const p = this.paqueteActual;
+          if (!p) return;
+          this.precioServer = null;
+          this.avisoAbierto = true;
+          fetch('/api/paquetes/' + p.id + '/precio?cantidad=' + this.cantidad)
+            .then(r => r.ok ? r.json() : null)
+            .then(d => { this.precioServer = d; });
+        },
+        cerrarAviso() {
+          this.avisoAbierto = false;
+          this.precioServer = null;
+        },
+        confirmarAviso() {
+          if (!this.precioServer) return;
+          this.avisoAbierto = false;
+          const f = document.getElementById('checkout-form');
+          if (f) f.requestSubmit();
+        },
        diaSel: '{{ hoy }}',
-       modo_cp: true,
-       coloniaQuery: '',
-       colonias: [],
-       fetchColonias(q) {
+        modo_cp: true,
+        coloniaQuery: '',
+        colonias: [],
+        fetchColonias(q) {
          if (q.length < 2) { this.colonias = []; return; }
          fetch('/api/colonia?q=' + encodeURIComponent(q))
            .then(r => r.json())
@@ -137,28 +209,12 @@
       <div class="space-y-2">
         <p class="text-xs text-white/50 uppercase tracking-wider">Selecciona tu paquete</p>
 
-        <input type="hidden" name="paquete_id" id="selected-paquete" value="{{ paquete_id or '' }}">
-
-        {% set ns = namespace(sel=None) %}
-        {% for p in paquetes %}
-          {% if paquete_id and p.id|string == paquete_id|string %}
-            {% set ns.sel = p %}
-          {% endif %}
-        {% endfor %}
-        {% set paquete_selected = ns.sel or paquete_selected %}
+        <input type="hidden" name="paquete_id" id="selected-paquete" :value="paqueteId">
 
         {% for paquete in paquetes %}
-        {% set is_selected = (paquete_id and paquete.id|string == paquete_id|string) %}
-        <div class="plan-card cursor-pointer rounded-xl px-5 py-4 flex items-center justify-between transition-all duration-300
-                    {% if is_selected %}ring-2 ring-[#DDAC23] bg-[#DDAC23]/10 scale-[1.02]{% else %}border border-[#DDAC23]/20 bg-[#DDAC23]/5{% endif %}"
-             data-id="{{ paquete.id }}"
-             data-precio="{{ paquete.precio }}"
-             data-costo-envio="{{ paquete.costo_envio }}"
-             data-cantidad-fija="{{ paquete.cantidad_fija }}"
-             data-customizable="{% if paquete.es_customizable %}true{% else %}false{% endif %}"
-             data-precio-minimo="{{ paquete.precio_minimo }}"
-             data-tiers='{{ paquete.tiers | to_json }}'
-             onclick="selectPaquete(this)">
+        <div class="plan-card cursor-pointer rounded-xl px-5 py-4 flex items-center justify-between transition-all duration-300"
+             @click="seleccionar('{{ paquete.id }}')"
+             :class="paqueteId === '{{ paquete.id }}' ? 'ring-2 ring-[#DDAC23] bg-[#DDAC23]/10 scale-[1.02]' : 'border border-[#DDAC23]/20 bg-[#DDAC23]/5'">
           <div>
             <p class="text-sm text-white font-medium">{{ paquete.nombre }}</p>
             <p class="text-xs text-white/50">{{ paquete.descripcion[:80] }}{% if paquete.descripcion|length > 80 %}...{% endif %}</p>
@@ -170,59 +226,54 @@
 
       </div>
 
-      <div id="cantidad-wrapper" class="{% if not (paquete_selected and paquete_selected.es_customizable) %}hidden{% endif %}">
+      <div id="cantidad-wrapper" x-show="customizable" x-transition.duration.300ms>
         <div class="flex items-center gap-3">
           <label class="text-white/50 text-xs">Cantidad de cartones:</label>
           <div class="flex items-center bg-white/5 border border-white/10 rounded-lg overflow-hidden">
             <button type="button"
               class="px-3 py-1.5 text-sm text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all font-bold"
-              onclick="stepperCheckout(this, -1)">−</button>
-            <input type="number" id="cantidad-input" name="cantidad" min="1" value="{{ cantidad }}"
-                   class="w-14 bg-transparent border-x border-white/10 px-2 py-1.5 text-sm text-white text-center focus:outline-none no-spinner"
-                   oninput="var v=Math.max(1,parseInt(this.value)||1);this.value=v;calcularPrecio();">
+              @click="step(-1)">−</button>
+            <input type="number" id="cantidad-input" name="cantidad" min="1" x-model.number="cantidad"
+                   @input="if (cantidad < 1) cantidad = 1"
+                   class="w-14 bg-transparent border-x border-white/10 px-2 py-1.5 text-sm text-white text-center focus:outline-none no-spinner">
             <button type="button"
               class="px-3 py-1.5 text-sm text-[#DDAC23] hover:bg-[#DDAC23]/10 transition-all font-bold"
-              onclick="stepperCheckout(this, 1)">+</button>
+              @click="step(1)">+</button>
           </div>
         </div>
       </div>
 
       <div id="checkout-price-preview" class="text-center min-h-[4.5rem] flex flex-col items-center justify-center space-y-1">
-        {% if paquete_id and paquete_selected %}
-        <p class="text-xl text-white font-bold leading-none animate-price-float">
-          ${{ "%.0f"|format(precio_total) }} MXN
-        </p>
-        {% if paquete_selected.es_customizable and cantidad > 0 %}
-        <p class="text-xs text-white/40">${{ "%.0f"|format(precio_unitario) }} por cartón</p>
-        {% set ahorro = 120 - precio_unitario %}
-        {% if ahorro > 0 %}
-        <p class="text-xs text-[#90BDB5]">✨ Ahorras ${{ "%.0f"|format(ahorro * cantidad) }} MXN</p>
-        {% endif %}
-        {% endif %}
-        <p class="text-xs text-white/40">Incluye envío</p>
-        {% if not paquete_selected.es_customizable %}
-          {% if '1 Cartón' in paquete_selected.nombre %}
-          <p class="text-[11px] text-[#90BDB5]">✨ Prueba hoy — pide más y ahorras</p>
-          {% elif '4 Cartones' in paquete_selected.nombre %}
-          <p class="text-[11px] text-[#90BDB5]">🥚 El mejor precio por unidad</p>
-          {% endif %}
-        {% endif %}
-        {% else %}
-        <p class="text-white/40 text-xs">Selecciona un paquete</p>
-        {% endif %}
+        <template x-if="paqueteActual">
+          <div class="space-y-1">
+            <p class="text-xl text-white font-bold leading-none animate-price-float" x-text="'$' + precioTotal + ' MXN'"></p>
+            <p class="text-xs text-white/40" x-show="customizable"
+               x-text="'$' + Math.round(unitario) + ' por cartón'"></p>
+            <p class="text-xs text-[#90BDB5]" x-show="ahorro > 0"
+               x-text="'✨ Ahorras $' + Math.round(ahorro) + ' MXN'"></p>
+            <p class="text-xs text-white/40" x-text="'Incluye envío'"></p>
+            <template x-if="!customizable">
+              <p class="text-[11px] text-[#90BDB5]"
+                 x-text="paqueteActual.nombre.includes('1 Cartón') ? '✨ Prueba hoy — pide más y ahorras' : (paqueteActual.nombre.includes('4 Cartones') ? '🥚 El mejor precio por unidad' : '')"></p>
+            </template>
+          </div>
+        </template>
+        <template x-if="!paqueteActual">
+          <p class="text-white/40 text-xs">Selecciona un paquete</p>
+        </template>
       </div>
 
       <div class="space-y-3">
         <p class="text-xs text-white/50 uppercase tracking-wider">Tipo de pedido</p>
 
         <div class="flex rounded-xl overflow-hidden border border-[#DDAC23]/30 p-0.5 bg-[#DDAC23]/5">
-          <button type="button" @click="suscripcion = false; calcularPrecio()"
+          <button type="button" @click="suscripcion = false"
                   class="flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
                   :class="suscripcion ? 'text-white/50' : 'bg-[#DDAC23] text-[#1F200B] shadow-lg shadow-[#DDAC23]/20'">
             <span class="block leading-none">📦 Pedido único</span>
             <span class="block text-[10px] mt-1 font-normal" :class="suscripcion ? 'text-white/30' : 'text-[#1F200B]/70'">Pago contra entrega</span>
           </button>
-          <button type="button" @click="if (!tarjeta_disabled) { suscripcion = true; metodo_pago = 'tarjeta'; calcularPrecio(); }"
+          <button type="button" @click="if (!tarjeta_disabled) { suscripcion = true; metodo_pago = 'tarjeta'; }"
                   class="flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
                   :class="tarjeta_disabled ? 'opacity-30 cursor-not-allowed' : (suscripcion ? 'bg-[#DDAC23] text-[#1F200B] shadow-lg shadow-[#DDAC23]/20' : 'text-white/50')">
             <span class="block leading-none">🔄 Suscripción</span>
@@ -329,11 +380,22 @@
       <div class="sticky bottom-0 z-10 -mx-6 -mb-6 px-6 pb-6 pt-6 bg-gradient-to-t from-[#1F200B] via-[#1F200B]/98 to-transparent">
         <div id="checkout-result"></div>
 
-        <button id="submit-btn" type="submit"
-                class="w-full bg-[#DDAC23] text-[#1F200B] py-5 rounded-xl transition-all duration-500
-                       {% if paquete_id %}scale-100 shadow-lg shadow-[#DDAC23]/30 hover:scale-[1.03] hover:shadow-xl hover:shadow-[#DDAC23]/40 active
-                       {% else %}opacity-50 scale-90 cursor-not-allowed{% endif %}">
-          <span class="block text-base font-black tracking-tighter uppercase leading-none">Confirmar Pedido</span>
+        <button id="submit-btn" type="button"
+                @click.prevent="abrirAviso"
+                :disabled="!paqueteActual"
+                class="w-full bg-[#DDAC23] text-[#1F200B] py-5 rounded-xl transition-all duration-500"
+                :class="paqueteActual ? 'scale-100 shadow-lg shadow-[#DDAC23]/30 hover:scale-[1.03] hover:shadow-xl hover:shadow-[#DDAC23]/40 active' : 'opacity-50 scale-90 cursor-not-allowed'">
+          <template x-if="paqueteActual && customizable">
+            <span class="block text-base font-black tracking-tighter uppercase leading-none"
+                  x-text="'Confirmar ' + cantidad + ' cartones · $' + precioTotal + ' MXN'"></span>
+          </template>
+          <template x-if="paqueteActual && !customizable">
+            <span class="block text-base font-black tracking-tighter uppercase leading-none"
+                  x-text="'Confirmar ' + paqueteActual.nombre + ' · $' + precioTotal + ' MXN'"></span>
+          </template>
+          <template x-if="!paqueteActual">
+            <span class="block text-base font-black tracking-tighter uppercase leading-none">Selecciona un paquete</span>
+          </template>
           <span class="block text-[10px] font-mono font-bold tracking-widest text-black-mesa/50 mt-1 uppercase"
                 x-text="'Pago contra entrega · Te llamaremos'"></span>
         </button>
@@ -347,6 +409,53 @@
       </div>
 
     </form>
+
+    <!-- Aviso de confirmación (modal) -->
+    <div x-show="avisoAbierto" x-transition.opacity
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+         role="dialog" aria-modal="true" aria-label="Confirmar pedido">
+      <div class="bg-[#1F200B] border border-[#DDAC23]/30 rounded-2xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl">
+        <p class="text-[10px] text-[#90BDB5] font-medium tracking-[0.2em] uppercase text-center">Confirma tu pedido</p>
+        <h3 class="text-xl text-white font-bold text-center" x-text="paqueteActual ? paqueteActual.nombre : ''"></h3>
+
+        <div class="bg-[#584D14]/40 border border-[#DDAC23]/20 rounded-xl p-4 space-y-2 text-sm">
+          <p class="flex justify-between text-white/70">
+            <span>Cantidad</span>
+            <span class="text-white font-medium" x-text="cantidad + ' cartón(es)'"></span>
+          </p>
+          <p class="flex justify-between text-white/70">
+            <span>Precio unitario</span>
+            <span class="text-white font-medium" x-text="avUnitario"></span>
+          </p>
+          <p class="flex justify-between text-white/70">
+            <span>Subtotal</span>
+            <span class="text-white font-medium" x-text="avSubtotal"></span>
+          </p>
+          <p class="flex justify-between text-white/70">
+            <span>Envío</span>
+            <span class="text-white font-medium" x-text="avEnvio"></span>
+          </p>
+          <p class="flex justify-between border-t border-white/10 pt-2 text-white">
+            <span class="font-medium">Total</span>
+            <span class="font-black text-[#DDAC23]" x-text="avTotal"></span>
+          </p>
+        </div>
+
+        <p x-show="avCargando" class="text-xs text-white/40 text-center">Verificando total…</p>
+
+        <div class="flex flex-col gap-2">
+          <button type="button" @click="confirmarAviso" :disabled="avCargando"
+                  class="w-full bg-[#DDAC23] text-[#1F200B] py-4 rounded-xl font-black uppercase tracking-tight transition-all duration-300 hover:scale-[1.02]"
+                  :class="avCargando ? 'opacity-50 cursor-not-allowed' : ''">
+            <span x-text="'Sí, confirmar · ' + avTotal"></span>
+          </button>
+          <button type="button" @click="cerrarAviso"
+                  class="w-full border border-white/15 text-white/70 py-3 rounded-xl text-sm font-medium hover:bg-white/5 transition-all duration-300">
+            Volver a ajustar
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

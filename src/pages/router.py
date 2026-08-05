@@ -6,6 +6,7 @@ import os
 from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
+from typing import Optional
 from urllib.parse import quote as _urlquote
 from uuid import UUID
 
@@ -101,6 +102,19 @@ async def _get_cached_paquete_by_id(request: Request, repo: PaqueteRepoDep, paqu
         if str(p.id) == paquete_id:
             return p
     return None
+
+
+def _resolver_cantidad(paquete: Optional[Paquete], cantidad: int) -> int:
+    """Cantidad efectiva de cartones para el checkout.
+
+    Fuente de verdad en el servidor: un paquete con cantidad fija NO acepta
+    otra cantidad (evita que un pedido de "1 Cartón" se facture como 4 cartones
+    si el cliente o un enlace omiten el parámetro). Para paquetes personalizados
+    se garantiza al menos 1.
+    """
+    if paquete and not paquete.es_customizable:
+        return int(paquete.cantidad_fija)
+    return max(1, cantidad)
 
 
 async def _get_cached_clientes(request: Request, cliente_repo: ClienteRepoDep) -> list:
@@ -210,12 +224,14 @@ async def checkout_view(
     request: Request,
     repo: PaqueteRepoDep,
     paquete_id: UUID = Query(default=None),
-    cantidad: int = Query(default=4),
+    cantidad: int = Query(default=1),
 ):
     paquetes = await _get_cached_paquetes(request, repo)
     paquete_selected = next(
         (p for p in paquetes if str(p.id) == str(paquete_id)), None
     ) if paquete_id else None
+
+    cantidad = _resolver_cantidad(paquete_selected, cantidad)
 
     logger.info("Checkout form abierto | paquete_id=%s cantidad=%s", paquete_id, cantidad)
 
@@ -230,8 +246,26 @@ async def checkout_view(
         unitario = 0
         total = 0
 
+    paquetes_json = [
+        {
+            "id": str(p.id),
+            "nombre": p.nombre,
+            "precio": float(p.precio),
+            "precio_minimo": float(p.precio_minimo),
+            "costo_envio": float(p.costo_envio or 0),
+            "cantidad_fija": int(p.cantidad_fija),
+            "es_customizable": bool(p.es_customizable),
+            "tiers": [
+                {"min_cantidad": int(t.min_cantidad), "precio_unitario": float(t.precio_unitario)}
+                for t in p.tiers
+            ],
+        }
+        for p in paquetes
+    ]
+
     ctx = {
         "paquetes": paquetes,
+        "paquetes_json": _json.dumps(paquetes_json),
         "paquete_id": str(paquete_id) if paquete_id else None,
         "paquete_selected": paquete_selected,
         "cantidad": cantidad,

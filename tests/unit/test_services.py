@@ -10,6 +10,7 @@ from src.application.services import (
     PedidoService,
     SuscripcionService,
 )
+from src.pages.router import _resolver_cantidad
 from src.application.schemas import PedidoCreate, SuscripcionCreate
 from src.domain.interfaces import PaqueteRepository, SepomexRepository
 from tests.conftest import make_paquete, make_suscripcion, make_usuario
@@ -42,6 +43,35 @@ class MockSepomexRepository(SepomexRepository):
 
     async def existe(self, cp: str) -> bool:
         return cp in self._data
+
+
+# ── _resolver_cantidad (normalización server del checkout) ────────────────
+
+class TestResolverCantidad:
+    def test_sin_paquete_default_uno(self):
+        assert _resolver_cantidad(None, 1) == 1
+
+    def test_sin_paquete_respeta_cantidad(self):
+        assert _resolver_cantidad(None, 4) == 4
+
+    def test_customizable_minimo_uno(self, paquete_customizable):
+        assert _resolver_cantidad(paquete_customizable, 0) == 1
+        assert _resolver_cantidad(paquete_customizable, -5) == 1
+        assert _resolver_cantidad(paquete_customizable, 4) == 4
+
+    def test_fijo_un_carton_ignora_cantidad(self, paquete_tradicional):
+        """Regresión raíz: "1 Cartón" nunca debe facturarse con otra cantidad."""
+        assert paquete_tradicional.cantidad_fija == 1
+        assert _resolver_cantidad(paquete_tradicional, 4) == 1
+        assert _resolver_cantidad(paquete_tradicional, 2) == 1
+
+    def test_fijo_cuatro_cartones(self):
+        p4 = make_paquete(
+            nombre="4 Cartones", precio=Decimal("100"),
+            cantidad_fija=4, es_customizable=False,
+        )
+        assert _resolver_cantidad(p4, 1) == 4
+        assert _resolver_cantidad(p4, 9) == 4
 
 
 # ── _calcular_precio_unitario ────────────────────────────────────────────
