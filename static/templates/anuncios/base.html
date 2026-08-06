@@ -1,0 +1,12 @@
+{% extends "hero.html" %}
+
+{% block whatsapp_float %}{% endblock %}
+
+{% block content %}
+<nav class="flex items-center justify-between px-4 sm:px-8 py-2 max-w-6xl mx-auto mt-4">
+  <span class="text-display text-base sm:text-lg text-baroque">Granja Ceballos</span>
+</nav>
+<main class="w-full max-w-6xl mx-auto px-4 pt-8 pb-24">
+  {% block lienzo %}{% endblock %}
+</main>
+{% endblock %}

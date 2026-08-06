@@ -246,3 +246,36 @@ class TestApiEndpoints:
     def test_reverse_geocode_valid(self, client):
         resp = client.get("/api/reverse-geocode", params={"lat": 20.97, "lng": -89.62})
         assert resp.status_code in (200, 502, 400)
+
+
+class TestAnuncios:
+    def test_anuncio_existe_renderiza_200(self, client):
+        resp = client.get("/anuncios/fresco_vs_30dias")
+        assert resp.status_code == 200
+
+    def test_anuncio_contiene_og_tags(self, client):
+        html = client.get("/anuncios/fresco_vs_30dias").text
+        assert "¿Sabes qué pierde un huevo en 30 días?" in html
+        assert 'property="og:title"' in html
+        assert 'property="og:image"' in html
+        assert "static/anuncios/fresco_vs_30dias.png" in html
+
+    def test_anuncio_sin_whatsapp_float(self, client):
+        html = client.get("/anuncios/fresco_vs_30dias").text
+        assert "Envíanos un WhatsApp" not in html
+
+    def test_anuncio_contiene_tabla_comparativa(self, client):
+        html = client.get("/anuncios/fresco_vs_30dias").text
+        assert "Recién puesto" in html
+        assert "Hace 30 días" in html
+        assert "Vitamina A" in html
+        assert "wa.me/5219995050854" in html
+
+    def test_anuncio_invalido_404(self, client):
+        assert client.get("/anuncios/no-existe").status_code == 404
+
+    def test_api_anuncios_lista_slugs(self, client):
+        resp = client.get("/api/anuncios")
+        assert resp.status_code == 200
+        slugs = [a["slug"] for a in resp.json()["anuncios"]]
+        assert "fresco_vs_30dias" in slugs

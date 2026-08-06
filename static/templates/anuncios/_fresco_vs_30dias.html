@@ -1,0 +1,97 @@
+{% extends "anuncios/base.html" %}
+
+{% block title %}¿Sabes qué pierde un huevo en 30 días? — Granja Ceballos{% endblock %}
+{% block meta_description %}Comparativa honesta: huevo fresco de libre pastoreo vs huevo de hace 30 días. Vitaminas, frescura y sabor. Del campo a tu mesa en horas, en Mérida, Yucatán.{% endblock %}
+{% block og_title %}¿Sabes qué pierde un huevo en 30 días? 🥚 — Granja Ceballos{% endblock %}
+{% block og_description %}Un huevo fresco de libre pastoreo vs uno de hace 30 días: vitaminas, firmeza, sabor. Del campo a tu mesa en horas.{% endblock %}
+{% block og_image %}{{ request.url.scheme }}://{{ request.url.hostname }}/static/anuncios/fresco_vs_30dias.png{% endblock %}
+{% block og_image_width %}1200{% endblock %}
+{% block og_image_height %}630{% endblock %}
+
+{% block lienzo %}
+<section class="space-y-10">
+  <div class="text-center space-y-3 max-w-3xl mx-auto">
+    <p class="font-sans text-xs uppercase tracking-[0.2em] text-[#90BDB5]">
+      Granja Ceballos · Huevo fresco de libre pastoreo
+    </p>
+    <h1 class="font-heading tracking-tight text-white text-4xl sm:text-5xl md:text-6xl leading-tight">
+      ¿Sabes qué pierde un huevo<br>
+      <span class="text-baroque">en 30 días?</span>
+    </h1>
+    <p class="text-white/70 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
+      Del campo a tu mesa en <span class="text-[#DDAC23] font-semibold">horas, no en días</span>.
+      Cada día cuenta.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto items-stretch">
+
+    <div class="group relative overflow-hidden rounded-3xl p-6 sm:p-8 transition-all duration-500
+                bg-[#1F200B]/15 backdrop-blur-[40px] border border-[#DDAC23]/30 hover:border-[#DDAC23]/50 hover-glow">
+      <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#DDAC23]/60 to-transparent"></div>
+      <svg class="absolute inset-0 w-full h-full pointer-events-none mix-blend-overlay opacity-[0.03]" style="z-index: 0;">
+        <rect width="100%" height="100%" filter="url(#fractal-noise)"/>
+      </svg>
+
+      <div class="relative" style="z-index: 1;">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-2xl">🥚</span>
+          <h2 class="font-heading text-white text-2xl">Recién puesto</h2>
+          <span class="bg-[#DDAC23]/20 text-[#DDAC23] text-[10px] font-semibold px-2 py-0.5 rounded-full ml-auto">Granja Ceballos</span>
+        </div>
+
+        <ul class="space-y-2.5 text-sm">
+          <li class="flex justify-between gap-3"><span class="text-white/70">Vitamina A</span><span class="text-[#90BDB5] font-medium">✓ Alta</span></li>
+          <li class="flex justify-between gap-3"><span class="text-white/70">Vitamina D</span><span class="text-[#90BDB5] font-medium">✓ En la yema</span></li>
+          <li class="flex justify-between gap-3"><span class="text-white/70">Vitamina E</span><span class="text-[#90BDB5] font-medium">✓ Intacta</span></li>
+          <li class="flex justify-between gap-3"><span class="text-white/70">B12 + Folato</span><span class="text-[#90BDB5] font-medium">✓ Conservados</span></li>
+          <li class="flex justify-between gap-3"><span class="text-white/70">Luteína + Zeaxantina</span><span class="text-[#90BDB5] font-medium">✓ Yema naranja intensa</span></li>
+          <li class="flex justify-between gap-3"><span class="text-white/70">Clara (proteína)</span><span class="text-[#90BDB5] font-medium">✓ Firme, consistente</span></li>
+          <li class="flex justify-between gap-3"><span class="text-white/70">pH de la clara</span><span class="text-[#90BDB5] font-medium">✓ ~7.6</span></li>
+          <li class="flex justify-between gap-3"><span class="text-white/70">Cámara de aire</span><span class="text-[#90BDB5] font-medium">✓ Pequeña</span></li>
+          <li class="flex justify-between gap-3"><span class="text-white/70">Sabor y textura</span><span class="text-[#90BDB5] font-medium">✓ Superior</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="group relative overflow-hidden rounded-3xl p-6 sm:p-8 transition-all duration-500
+                bg-[#1F200B]/15 backdrop-blur-[40px] border border-white/10 hover:border-white/25 hover-glow">
+      <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+      <svg class="absolute inset-0 w-full h-full pointer-events-none mix-blend-overlay opacity-[0.03]" style="z-index: 0;">
+        <rect width="100%" height="100%" filter="url(#fractal-noise)"/>
+      </svg>
+
+      <div class="relative" style="z-index: 1;">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-2xl">🥚</span>
+          <h2 class="font-heading text-white/50 text-2xl">Hace 30 días</h2>
+          <span class="bg-white/10 text-white/40 text-[10px] font-semibold px-2 py-0.5 rounded-full ml-auto">Supermercado</span>
+        </div>
+
+        <ul class="space-y-2.5 text-sm">
+          <li class="flex justify-between gap-3"><span class="text-white/70">Vitamina A</span><span class="text-white/40 font-medium">↓ Se degrada</span></li>
+          <li class="flex justify-between gap-3"><span class="text-white/70">Vitamina D</span><span class="text-white/40 font-medium">↓ Disminuye</span></li>
+          <li class="flex justify-between gap-3"><span class="text-white/70">Vitamina E</span><span class="text-white/40 font-medium">↓ Se reduce</span></li>
+          <li class="flex justify-between gap-3"><span class="text-white/70">B12 + Folato</span><span class="text-white/40 font-medium">↓ Pierden potencia</span></li>
+          <li class="flex justify-between gap-3"><span class="text-white/70">Luteína + Zeaxantina</span><span class="text-white/40 font-medium">↓ Pálida, menos</span></li>
+          <li class="flex justify-between gap-3"><span class="text-white/70">Clara (proteína)</span><span class="text-white/40 font-medium">~ Líquida, más débil</span></li>
+          <li class="flex justify-between gap-3"><span class="text-white/70">pH de la clara</span><span class="text-white/40 font-medium">↑ &gt;9</span></li>
+          <li class="flex justify-between gap-3"><span class="text-white/70">Cámara de aire</span><span class="text-white/40 font-medium">↑ Grande</span></li>
+          <li class="flex justify-between gap-3"><span class="text-white/70">Sabor y textura</span><span class="text-white/40 font-medium">↓ Soso, aplastado</span></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="text-center space-y-5">
+    <p class="text-[#90BDB5]/70 text-xs tracking-wide">
+      Entrega el mismo día en Mérida · Sin semanas en cámara de frío
+    </p>
+    <a href="https://wa.me/5219995050854" target="_blank" rel="noopener"
+       class="inline-block bg-[#DDAC23] text-[#1F200B] px-10 py-4 rounded-full text-base font-semibold hover:scale-105 active:scale-[0.98] transition-all duration-300 cta-arrow animate-pulse-glow">
+      Compra el tuyo hoy · wa.me/5219995050854
+    </a>
+  </div>
+</section>
+{% endblock %}

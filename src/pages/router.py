@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 import asyncpg
 from fastapi import APIRouter, Depends, Form, Query, Request
-from fastapi.responses import HTMLResponse, FileResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 
 import pydantic
@@ -89,6 +89,10 @@ router = APIRouter()
 PARTIALS = {"welcome": "catalog/welcome.html"}
 _PARTIALS_NEED_PAQUETES = {"welcome", "pricing"}
 _PARTIALS_NEED_CLIENTES = {"welcome", "clientes"}
+
+# Anuncios/branding: cada entrada es un template de contenido que se monta en
+# anuncios/base.html. El SEO/OG vive dentro de cada template (edición manual).
+ANUNCIOS = {"fresco_vs_30dias": "anuncios/_fresco_vs_30dias.html"}
 
 
 async def _get_cached_paquetes(request: Request, repo: PaqueteRepoDep) -> list[Paquete]:
@@ -217,6 +221,26 @@ async def partial_view(
         return templates.TemplateResponse(request=request, name="index.html", context=ctx)
 
     return templates.TemplateResponse(request=request, name=PARTIALS[name], context=ctx)
+
+
+@router.get("/anuncios/{slug}", response_class=HTMLResponse)
+async def anuncio_view(request: Request, slug: str):
+    if slug not in ANUNCIOS:
+        return HTMLResponse("Anuncio no encontrado", status_code=404)
+    ctx: dict = {"whatsapp_phone": _WHATSAPP_PHONE}
+    return templates.TemplateResponse(
+        request=request, name=ANUNCIOS[slug], context=ctx,
+    )
+
+
+@router.get("/api/anuncios", response_class=JSONResponse)
+async def listar_anuncios():
+    return {
+        "anuncios": [
+            {"slug": slug, "url": f"/anuncios/{slug}"}
+            for slug in ANUNCIOS
+        ]
+    }
 
 
 @router.get("/checkout", response_class=HTMLResponse)

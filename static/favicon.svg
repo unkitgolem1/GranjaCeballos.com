@@ -1,4 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
-  <circle cx="96" cy="96" r="90" fill="#DDAC23"/>
-  <ellipse cx="96" cy="96" rx="48" ry="60" fill="#025270"/>
+  <defs>
+    <linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#025270"/>
+      <stop offset="1" stop-color="#03738C"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="192" height="192" rx="40" fill="url(#cielo)"/>
+  <rect x="4" y="4" width="184" height="184" rx="36" fill="none" stroke="#DDAC23" stroke-width="8"/>
+  <path d="M96 46 C 74 60, 58 86, 58 110 C 58 134, 74 150, 96 150 C 118 150, 134 134, 134 110 C 134 86, 118 60, 96 46 Z" fill="#FFFFFF"/>
+  <ellipse cx="96" cy="143" rx="30" ry="9" fill="#01293B" opacity="0.18"/>
 </svg>
